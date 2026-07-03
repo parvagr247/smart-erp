@@ -1,44 +1,46 @@
 import React, { Suspense, lazy, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import ProtectedRoute from './components/layout/ProtectedRoute';
-import AppLayout from './components/layout/AppLayout';
-import AdminLayout from './components/layout/AdminLayout';
-import { useAuth } from './context/AuthContext';
-import { useActiveCompany } from './context/ActiveCompanyContext';
-import { fetchCompaniesList } from './services/company-service';
+import ProtectedRoute from '@shared/layouts/ProtectedRoute';
+import AppLayout from '@shared/layouts/AppLayout';
+import AdminLayout from '@shared/layouts/AdminLayout';
+import AuthLayout from '@shared/layouts/AuthLayout';
+import { useAuth } from '@shared/context/AuthContext';
+import { useActiveCompany } from '@shared/context/ActiveCompanyContext';
+import { fetchCompaniesList } from '@modules/administration/company/services/company.service';
 
 // Lazy load views
-const LoginView = lazy(() => import('./views/LoginView'));
-const RegisterView = lazy(() => import('./views/RegisterView'));
-const CompanySelectionView = lazy(() => import('./views/company/CompanySelectionView'));
-const CreateCompanyView = lazy(() => import('./views/company/CreateCompanyView'));
-const EditCompanyView = lazy(() => import('./views/company/EditCompanyView'));
-const DashboardView = lazy(() => import('./views/DashboardView'));
+const LoginView = lazy(() => import('@modules/auth/views/LoginView'));
+const RegisterView = lazy(() => import('@modules/auth/views/RegisterView'));
+const CompanySelectionView = lazy(() => import('@modules/administration/company/views/CompanySelectionView'));
+const CreateCompanyView = lazy(() => import('@modules/administration/company/views/CreateCompanyView'));
+const EditCompanyView = lazy(() => import('@modules/administration/company/views/EditCompanyView'));
+const DashboardView = lazy(() => import('@modules/business/dashboard/views/DashboardView'));
 
-const LedgersView = lazy(() => import('./views/accounting/LedgersView'));
-const GroupsView = lazy(() => import('./views/accounting/GroupsView'));
-const CustomersView = lazy(() => import('./views/contacts/CustomersView'));
-const SuppliersView = lazy(() => import('./views/contacts/SuppliersView'));
-const StockGroupsView = lazy(() => import('./views/inventory/StockGroupsView'));
-const StockItemsView = lazy(() => import('./views/inventory/StockItemsView'));
+const CustomersView = lazy(() => import('@modules/inventory/customers/views/CustomersView'));
+const SuppliersView = lazy(() => import('@modules/inventory/suppliers/views/SuppliersView'));
+const StockGroupsView = lazy(() => import('@modules/inventory/stockgroups/views/StockGroupsView'));
+const StockItemsView = lazy(() => import('@modules/inventory/items/views/StockItemsView'));
 
-const AccountingView = lazy(() => import('./views/modules/AccountingView'));
-const SalesView = lazy(() => import('./views/modules/SalesView'));
-const PurchaseView = lazy(() => import('./views/modules/PurchaseView'));
-const GstView = lazy(() => import('./views/modules/GstView'));
-const BankingView = lazy(() => import('./views/modules/BankingView'));
-const ReportsView = lazy(() => import('./views/modules/ReportsView'));
-const AdministrationView = lazy(() => import('./views/modules/AdministrationView'));
+const AccountingDashboardView = lazy(() => import('@modules/accounting/views/AccountingDashboardView'));
+const AccountGroupsView = lazy(() => import('@modules/accounting/views/AccountGroupsView'));
+const LedgerListView = lazy(() => import('@modules/accounting/views/LedgerListView'));
+const CreateLedgerView = lazy(() => import('@modules/accounting/views/CreateLedgerView'));
+const EditLedgerView = lazy(() => import('@modules/accounting/views/EditLedgerView'));
+const LedgerDetailsView = lazy(() => import('@modules/accounting/views/LedgerDetailsView'));
+const SalesView = lazy(() => import('@modules/inventory/sales/views/SalesView'));
+const PurchaseView = lazy(() => import('@modules/inventory/purchase/views/PurchaseView'));
+const GstView = lazy(() => import('@modules/accounting/gst/views/GstView'));
+const BankingView = lazy(() => import('@modules/accounting/banking/views/BankingView'));
+const ReportsView = lazy(() => import('@modules/accounting/reports/views/ReportsView'));
 
-const AdminDashboardView = lazy(() => import('./views/admin/AdminDashboardView'));
-const AdminUsersView = lazy(() => import('./views/admin/AdminUsersView'));
-const AdminRolesView = lazy(() => import('./views/admin/AdminRolesView'));
-const AdminPermissionsView = lazy(() => import('./views/admin/AdminPermissionsView'));
-const AdminAuditLogsView = lazy(() => import('./views/admin/AdminAuditLogsView'));
-const AdminSettingsView = lazy(() => import('./views/admin/AdminSettingsView'));
+const AdminDashboardView = lazy(() => import('@modules/administration/dashboard/views/AdminDashboardView'));
+const AdminUsersView = lazy(() => import('@modules/administration/users/views/AdminUsersView'));
+const AdminRolesView = lazy(() => import('@modules/administration/roles/views/AdminRolesView'));
+const AdminPermissionsView = lazy(() => import('@modules/administration/permissions/views/AdminPermissionsView'));
+const AdminAuditLogsView = lazy(() => import('@modules/administration/audit/views/AdminAuditLogsView'));
+const AdminSettingsView = lazy(() => import('@modules/administration/settings/views/AdminSettingsView'));
 
-const NotFoundView = lazy(() => import('./views/NotFoundView'));
-const AuthLayout = lazy(() => import('./components/layout/AuthLayout'));
+const NotFoundView = lazy(() => import('@shared/components/NotFoundView'));
 
 const Loading = () => (
   <div className="flex items-center justify-center min-h-[40vh] text-sm text-[var(--text-muted)] font-semibold animate-pulse">
@@ -102,14 +104,19 @@ export default function App() {
         <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<DashboardView />} />
-          <Route path="masters/ledgers" element={<LedgersView />} />
-          <Route path="masters/groups" element={<GroupsView />} />
+          <Route path="masters/ledgers" element={<Navigate to="/accounting/ledgers" replace />} />
+          <Route path="masters/groups" element={<Navigate to="/accounting/groups" replace />} />
           <Route path="masters/customers" element={<CustomersView />} />
           <Route path="masters/suppliers" element={<SuppliersView />} />
           <Route path="inventory/stock-groups" element={<StockGroupsView />} />
           <Route path="inventory/stock-items" element={<StockItemsView />} />
           
-          <Route path="accounting" element={<AccountingView />} />
+          <Route path="accounting" element={<AccountingDashboardView />} />
+          <Route path="accounting/groups" element={<AccountGroupsView />} />
+          <Route path="accounting/ledgers" element={<LedgerListView />} />
+          <Route path="accounting/ledgers/create" element={<CreateLedgerView />} />
+          <Route path="accounting/ledgers/edit/:id" element={<EditLedgerView />} />
+          <Route path="accounting/ledgers/:id" element={<LedgerDetailsView />} />
           <Route path="sales" element={<SalesView />} />
           <Route path="purchase" element={<PurchaseView />} />
           <Route path="gst" element={<GstView />} />
