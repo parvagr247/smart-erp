@@ -57,21 +57,21 @@ export default function CompanySelectionView({ onSelectSuccess, onCreateCompany,
   }
 
   return (
-    <div className="company-selector-container">
-      <div className="w-full flex flex-col md:flex-row justify-between items-center gap-4 mb-6 pb-6 border-b border-[var(--border-light)]">
+    <div className="company-selector-container max-w-6xl mx-auto px-6 py-8">
+      <div className="w-full flex flex-col md:flex-row justify-between items-center gap-4 mb-8 pb-6 border-b border-slate-800">
         <div className="space-y-1 text-center md:text-left">
-          <h1 className="text-2xl font-bold font-heading text-[var(--text-primary)]">Select Company</h1>
-          <p className="text-xs text-[var(--text-secondary)]">
+          <h1 className="text-3xl font-extrabold text-white tracking-tight bg-clip-text bg-gradient-to-r from-white to-slate-400">Select Company</h1>
+          <p className="text-xs text-slate-400 font-medium">
             Choose a workspace company or create a new profile to proceed
           </p>
         </div>
-        <Button
+        <button
           onClick={onCreateCompany}
-          className="bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] cursor-pointer flex items-center gap-2"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold text-xs shadow-lg shadow-indigo-500/10 hover:shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
         >
-          <Plus size={16} />
+          <Plus size={15} />
           Create Company
-        </Button>
+        </button>
       </div>
 
       {error && (
@@ -104,30 +104,26 @@ export default function CompanySelectionView({ onSelectSuccess, onCreateCompany,
 
           {/* Pagination triggers */}
           {totalPages > 1 && (
-            <div className="pagination-bar">
-              <Button
-                variant="outline"
-                size="sm"
+            <div className="flex justify-center items-center gap-6 mt-10 w-full pt-6 border-t border-slate-800/60">
+              <button
                 onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
                 disabled={page === 0}
-                className="pagination-btn"
+                className="inline-flex items-center gap-1 px-4 py-2 rounded-xl border border-slate-800 bg-slate-900/40 text-slate-300 hover:text-white hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-xs font-semibold cursor-pointer"
               >
-                <ChevronLeft size={16} />
+                <ChevronLeft size={15} />
                 Previous
-              </Button>
-              <span className="text-sm font-semibold text-[var(--text-secondary)]">
+              </button>
+              <span className="text-xs font-bold text-slate-400">
                 Page {page + 1} of {totalPages}
               </span>
-              <Button
-                variant="outline"
-                size="sm"
+              <button
                 onClick={() => setPage((prev) => Math.min(prev + 1, totalPages - 1))}
                 disabled={page === totalPages - 1}
-                className="pagination-btn"
+                className="inline-flex items-center gap-1 px-4 py-2 rounded-xl border border-slate-800 bg-slate-900/40 text-slate-300 hover:text-white hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-xs font-semibold cursor-pointer"
               >
                 Next
-                <ChevronRight size={16} />
-              </Button>
+                <ChevronRight size={15} />
+              </button>
             </div>
           )}
         </>

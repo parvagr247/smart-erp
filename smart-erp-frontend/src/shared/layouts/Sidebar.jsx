@@ -13,8 +13,8 @@ const MENU_ITEMS = [
     title: 'Masters',
     icon: <Database size={18} />,
     children: [
-      { title: 'Ledgers', path: '/masters/ledgers' },
-      { title: 'Groups', path: '/masters/groups' },
+      { title: 'Ledgers', path: '/accounting/ledgers' },
+      { title: 'Groups', path: '/accounting/groups' },
       { title: 'Business Partners', path: '/inventory/partners' }
     ]
   },

@@ -18,7 +18,7 @@ public class SmartErpApplication {
 		return args -> {
 			try {
 				System.out.println("--- DB SCHEMA CLEANUP: REMOVING REDUNDANT NAME COLUMN ---");
-				jdbcTemplate.execute("ALTER TABLE companies DROP COLUMN IF EXISTS name");
+				jdbcTemplate.execute("ALTER TABLE administration.companies DROP COLUMN IF EXISTS name");
 				System.out.println("--- DB SCHEMA CLEANUP SUCCESSFUL ---");
 			} catch (Exception e) {
 				System.err.println("--- DB SCHEMA CLEANUP FAILED: " + e.getMessage() + " ---");

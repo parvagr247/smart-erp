@@ -27,10 +27,10 @@ public interface LedgerRepository extends JpaRepository<Ledger, UUID> {
     List<Ledger> findByCompany(Company company);
 
     @Query("SELECT l FROM Ledger l WHERE l.company = :company AND " +
-           "(:search IS NULL OR LOWER(l.name) LIKE LOWER(CONCAT('%', :search, '%')) " +
-           "OR LOWER(l.group.name) LIKE LOWER(CONCAT('%', :search, '%')) " +
-           "OR LOWER(l.gstNumber) LIKE LOWER(CONCAT('%', :search, '%')) " +
-           "OR LOWER(l.phone) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
+           "(:search IS NULL OR LOWER(l.name) LIKE :search " +
+           "OR LOWER(l.group.name) LIKE :search " +
+           "OR LOWER(l.gstNumber) LIKE :search " +
+           "OR LOWER(l.phone) LIKE :search) AND " +
            "(:groupId IS NULL OR l.group.id = :groupId) AND " +
            "(:isActive IS NULL OR l.isActive = :isActive) AND " +
            "(:balanceType IS NULL OR l.balanceType = :balanceType) AND " +

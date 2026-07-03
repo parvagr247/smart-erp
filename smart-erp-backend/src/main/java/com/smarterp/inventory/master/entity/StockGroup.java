@@ -34,6 +34,7 @@ public class StockGroup extends BaseEntity {
     @JoinColumn(name = "parent_id")
     private StockGroup parentGroup;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @OneToMany(mappedBy = "parentGroup", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     private List<StockGroup> childGroups = new ArrayList<>();

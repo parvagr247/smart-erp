@@ -15,11 +15,11 @@ import org.hibernate.annotations.SQLRestriction;
     name = "ledgers",
     schema = "accounting",
     uniqueConstraints = {
-        @UniqueConstraint(name = "uq_ledger_company_name", columnNames = {"company_id", "name"})
+        @UniqueConstraint(name = "uq_ledger_company_name", columnNames = {"company_id", "ledger_name"})
     },
     indexes = {
         @Index(name = "idx_ledger_company_id", columnList = "company_id"),
-        @Index(name = "idx_ledger_name", columnList = "name"),
+        @Index(name = "idx_ledger_name", columnList = "ledger_name"),
         @Index(name = "idx_ledger_email", columnList = "email"),
         @Index(name = "idx_ledger_phone", columnList = "phone"),
         @Index(name = "idx_ledger_gst_number", columnList = "gstNumber"),
@@ -35,7 +35,7 @@ import org.hibernate.annotations.SQLRestriction;
 @Builder
 public class Ledger extends BaseEntity {
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "ledger_name", nullable = false, length = 100)
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -1,7 +1,5 @@
 import React from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@shared/components/ui/card';
-import { Button } from '@shared/components/ui/button';
-import { Briefcase, Calendar, FileText, MapPin, Phone, Trash2, Edit } from 'lucide-react';
+import { Briefcase, Calendar, MapPin, Trash2, Edit, ArrowRight } from 'lucide-react';
 
 export default function CompanyCard({ company, onSelect, onEdit, onDelete }) {
   const createdDate = company.createdAt 
@@ -9,70 +7,73 @@ export default function CompanyCard({ company, onSelect, onEdit, onDelete }) {
     : 'N/A';
 
   return (
-    <Card className="hover:border-[var(--primary)] transition-all flex flex-col justify-between bg-[var(--bg-surface)] border-[var(--border-light)] shadow-sm">
-      <CardHeader className="pb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-[var(--primary-glow)] text-[var(--primary)] flex items-center justify-center">
-            <Briefcase size={20} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <CardTitle className="text-lg font-bold font-heading truncate text-[var(--text-primary)]" title={company.name}>
-              {company.name}
-            </CardTitle>
-            <CardDescription className="text-xs text-[var(--text-secondary)] font-mono">
-              GST: {company.gstNumber}
-            </CardDescription>
-          </div>
-        </div>
-      </CardHeader>
+    <div className="group relative rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl p-6 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-indigo-500/40 hover:shadow-2xl hover:shadow-indigo-500/5 flex flex-col justify-between h-full overflow-hidden">
+      {/* Decorative background glow */}
+      <div className="absolute -right-20 -top-20 h-40 w-40 rounded-full bg-indigo-500/10 blur-3xl transition-all duration-500 group-hover:bg-indigo-500/20" />
       
-      <CardContent className="space-y-3 pb-6 text-sm text-[var(--text-secondary)] flex-grow">
-        <div className="flex items-center gap-2">
-          <Calendar size={14} className="text-[var(--text-muted)]" />
-          <span>FY: <strong className="text-[var(--text-primary)]">{company.financialYear}</strong></span>
-        </div>
-        <div className="flex items-center gap-2">
-          <MapPin size={14} className="text-[var(--text-muted)]" />
-          <span className="truncate">State: <strong className="text-[var(--text-primary)]">{company.state}</strong></span>
-        </div>
-        {company.address && (
-          <div className="flex items-start gap-2">
-            <MapPin size={14} className="text-[var(--text-muted)] mt-0.5 flex-shrink-0" />
-            <span className="line-clamp-2 text-xs" title={company.address}>{company.address}</span>
+      <div>
+        <div className="flex items-start justify-between gap-4 mb-5">
+          <div className="flex items-center gap-3">
+            <div className="h-11 w-11 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20">
+              <Briefcase size={20} />
+            </div>
+            <div className="min-w-0">
+              <h3 className="text-base font-bold text-white tracking-tight truncate max-w-[200px]" title={company.name}>
+                {company.name}
+              </h3>
+              <span className="inline-flex items-center rounded-md bg-indigo-500/10 px-2 py-0.5 text-[10px] font-semibold text-indigo-400 ring-1 ring-inset ring-indigo-500/20 mt-1 font-mono">
+                GST: {company.gstNumber}
+              </span>
+            </div>
           </div>
-        )}
-        <div className="flex items-center gap-2 text-xs text-[var(--text-muted)] pt-2 border-t border-[var(--border-light)]">
-          <span>Created: {createdDate}</span>
         </div>
-      </CardContent>
 
-      <CardFooter className="flex justify-end gap-2 border-t border-[var(--border-light)] pt-4">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => onEdit(company)}
-          className="border-[var(--border-light)] text-[var(--text-primary)] hover:bg-[var(--bg-input)] cursor-pointer flex items-center gap-1"
-        >
-          <Edit size={14} />
-          Edit
-        </Button>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => onDelete(company)}
-          className="border-red-500/30 text-red-500 hover:bg-red-500/10 cursor-pointer flex items-center gap-1"
-        >
-          <Trash2 size={14} />
-          Delete
-        </Button>
-        <Button 
-          size="sm" 
+        <div className="space-y-3 my-4 text-sm text-slate-300">
+          <div className="flex items-center gap-2.5">
+            <Calendar size={14} className="text-slate-500" />
+            <span className="text-xs text-slate-400">Financial Year: <strong className="text-slate-200 font-medium">{company.financialYear}</strong></span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <MapPin size={14} className="text-slate-500" />
+            <span className="text-xs text-slate-400">State: <strong className="text-slate-200 font-medium">{company.state}</strong></span>
+          </div>
+          {company.address && (
+            <div className="flex items-start gap-2.5">
+              <MapPin size={14} className="text-slate-500 mt-0.5 flex-shrink-0" />
+              <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed" title={company.address}>
+                {company.address}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between gap-2 mt-4">
+        <div className="flex items-center gap-1">
+          <button 
+            onClick={() => onEdit(company)}
+            className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+            title="Edit Company"
+          >
+            <Edit size={15} />
+          </button>
+          <button 
+            onClick={() => onDelete(company)}
+            className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer"
+            title="Delete Company"
+          >
+            <Trash2 size={15} />
+          </button>
+        </div>
+        
+        <button 
           onClick={() => onSelect(company)}
-          className="bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold text-xs shadow-lg shadow-indigo-500/10 hover:shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
         >
           Open
-        </Button>
-      </CardFooter>
-    </Card>
+          <ArrowRight size={13} />
+        </button>
+      </div>
+    </div>
   );
 }

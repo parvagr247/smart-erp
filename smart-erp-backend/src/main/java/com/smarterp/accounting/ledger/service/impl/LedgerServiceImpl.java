@@ -124,7 +124,7 @@ public class LedgerServiceImpl implements LedgerService {
         
         Page<Ledger> ledgersPage = repository.searchAndFilter(
             company,
-            search != null && !search.trim().isEmpty() ? search.trim() : null,
+            search != null && !search.trim().isEmpty() ? "%" + search.trim().toLowerCase() + "%" : null,
             groupId,
             isActive,
             balanceType,

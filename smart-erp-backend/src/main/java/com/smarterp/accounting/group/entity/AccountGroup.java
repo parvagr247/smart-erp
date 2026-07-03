@@ -13,11 +13,11 @@ import org.hibernate.annotations.SQLRestriction;
     name = "ledger_groups",
     schema = "accounting",
     uniqueConstraints = {
-        @UniqueConstraint(name = "uq_group_company_name", columnNames = {"company_id", "name"})
+        @UniqueConstraint(name = "uq_group_company_name", columnNames = {"company_id", "group_name"})
     },
     indexes = {
         @Index(name = "idx_group_company_id", columnList = "company_id"),
-        @Index(name = "idx_group_name", columnList = "name")
+        @Index(name = "idx_group_name", columnList = "group_name")
     }
 )
 @SQLDelete(sql = "UPDATE ledger_groups SET deleted_at = NOW() WHERE id = ?")
@@ -29,7 +29,7 @@ import org.hibernate.annotations.SQLRestriction;
 @Builder
 public class AccountGroup extends BaseEntity {
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "group_name", nullable = false, length = 100)
     private String name;
 
     @Enumerated(EnumType.STRING)
