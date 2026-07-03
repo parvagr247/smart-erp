@@ -34,6 +34,7 @@ public class StockItemServiceImpl implements StockItemService {
     private final BrandRepository brandRepository;
     private final StockItemMapper mapper;
     private final StockItemValidator validator;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @Override
     public StockItemResponse createItem(StockItemRequest request, Company company) {
@@ -42,6 +43,9 @@ public class StockItemServiceImpl implements StockItemService {
 
         StockItem item = mapper.toEntity(request, company);
         StockItem savedItem = repository.save(item);
+
+        eventPublisher.publishEvent(new com.smarterp.inventory.master.event.StockItemCreatedEvent(
+                this, savedItem.getId(), company.getId(), savedItem.getName()));
 
         return mapper.toResponse(savedItem);
     }
@@ -54,9 +58,21 @@ public class StockItemServiceImpl implements StockItemService {
                 .orElseThrow(() -> new ResourceNotFoundException("Stock item not found."));
 
         validator.validateUpdate(company, id, request);
+        
+        BigDecimal oldQty = item.getCurrentQuantity() != null ? item.getCurrentQuantity() : BigDecimal.ZERO;
+        
         mapper.updateEntity(item, request);
 
         StockItem savedItem = repository.save(item);
+        
+        BigDecimal newQty = savedItem.getCurrentQuantity() != null ? savedItem.getCurrentQuantity() : BigDecimal.ZERO;
+        
+        if (oldQty.compareTo(newQty) != 0) {
+            eventPublisher.publishEvent(new com.smarterp.inventory.master.event.StockAdjustedEvent(
+                this, savedItem.getId(), company.getId(), savedItem.getName(), oldQty, newQty, "Manual Stock adjustment / edit"
+            ));
+        }
+
         return mapper.toResponse(savedItem);
     }
 

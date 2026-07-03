@@ -23,6 +23,7 @@ public class WarehouseController {
 
     private final WarehouseRepository repository;
     private final CompanyRepository companyRepository;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @PostMapping
     public ResponseEntity<ApiResponse<Warehouse>> createWarehouse(
@@ -50,6 +51,10 @@ public class WarehouseController {
         }
 
         Warehouse saved = repository.save(wh);
+        
+        eventPublisher.publishEvent(new com.smarterp.inventory.master.event.WarehouseCreatedEvent(
+                this, saved.getId(), company.getId(), saved.getName()));
+
         return new ResponseEntity<>(ApiResponse.<Warehouse>builder().success(true).message("Warehouse created.").data(saved).build(), HttpStatus.CREATED);
     }
 

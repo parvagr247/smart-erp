@@ -9,4 +9,5 @@ public interface DashboardService {
     DashboardSummaryResponse getSummary(Company company);
     RecentActivityResponse getRecentActivity(Company company);
     SearchResultResponse search(Company company, String query);
+    void evictCache(java.util.UUID companyId);
 }

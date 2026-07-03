@@ -84,6 +84,10 @@ public class PurchaseServiceImpl implements PurchaseService {
 
         Purchase saved = purchaseRepository.save(purchase);
 
+        // Publish PurchaseCreatedEvent
+        eventPublisher.publishEvent(new com.smarterp.inventory.purchase.event.PurchaseCreatedEvent(
+                this, saved.getId(), company.getId(), saved.getSupplier().getName(), saved.getGrandTotal(), userEmail));
+
         // Publish Lifecycle domain events if posted/approved immediately
         publishPurchaseLifecycleEvents(saved, company.getId(), userEmail, PurchaseStatus.DRAFT);
 
