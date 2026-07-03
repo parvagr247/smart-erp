@@ -2,7 +2,7 @@
 
 /* App Layout Grid/Flex Structures */
 .layout-wrapper {
-  @apply flex min-h-screen bg-[var(--bg-base)] text-[var(--text-primary)] overflow-hidden;
+  @apply flex h-screen bg-[var(--bg-base)] text-[var(--text-primary)] overflow-hidden;
 }
 
 .layout-main {

@@ -55,7 +55,7 @@ export default function App() {
         {getAuthRoutes(handleAuthSuccess, navigate)}
 
         {/* Administration company select, create, edit routes */}
-        {getAdministrationRoutes(updateActiveCompany, activeCompany)}
+        {getAdministrationRoutes(updateActiveCompany, activeCompany, 'company')}
 
         {/* Main App Layout routes */}
         <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
@@ -73,7 +73,7 @@ export default function App() {
           
           <Route index element={<Navigate to="dashboard" replace />} />
             
-          {getAdministrationRoutes(updateActiveCompany, activeCompany)}
+          {getAdministrationRoutes(updateActiveCompany, activeCompany, 'admin')}
         </Route>
 
         <Route path="/404" element={<NotFoundView />} />

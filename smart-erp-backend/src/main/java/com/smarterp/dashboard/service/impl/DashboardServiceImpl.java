@@ -143,7 +143,12 @@ public class DashboardServiceImpl implements DashboardService {
 
         // Merge, sort desc by timestamp, and return top 5
         List<RecentActivityResponse.ActivityItem> sorted = list.stream()
-                .sorted(Comparator.comparing(RecentActivityResponse.ActivityItem::getTimestamp).reversed())
+                .sorted((a, b) -> {
+                    if (a.getTimestamp() == null && b.getTimestamp() == null) return 0;
+                    if (a.getTimestamp() == null) return 1;
+                    if (b.getTimestamp() == null) return -1;
+                    return b.getTimestamp().compareTo(a.getTimestamp());
+                })
                 .limit(5)
                 .collect(Collectors.toList());
 

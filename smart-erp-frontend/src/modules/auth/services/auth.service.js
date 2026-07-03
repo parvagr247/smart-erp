@@ -5,9 +5,16 @@ import axiosClient from '@shared/api/axios-client';
    1. Central Session & Theme Hook (for App.jsx)
    ========================================================================== */
 export function useAuth() {
-  const [view, setView] = useState('login'); // 'login' | 'register' | 'dashboard'
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState('');
+  const [token, setToken] = useState(() => localStorage.getItem('token') || '');
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('user');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+  const [view, setView] = useState(() => localStorage.getItem('token') ? 'dashboard' : 'login');
   const [theme, setTheme] = useState('light');
 
   useEffect(() => {

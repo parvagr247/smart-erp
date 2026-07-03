@@ -1,188 +1,155 @@
-import axios from 'axios';
-
-const API_BASE = 'http://localhost:9521/api/v1/inventory';
-
-// Interceptor helper to append active company context
-const getHeaders = () => {
-  const companyId = localStorage.getItem('companyId');
-  return {
-    headers: {
-      'X-Company-ID': companyId || '',
-      'Content-Type': 'application/json'
-    }
-  };
-};
+import axiosClient from '@shared/api/axios-client';
 
 export const inventoryService = {
   // Items
   getItems: async (params) => {
-    const res = await axios.get(`${API_BASE}/items`, {
-      ...getHeaders(),
-      params
-    });
+    const res = await axiosClient.get('/inventory/items', { params });
     return res.data;
   },
   getItem: async (id) => {
-    const res = await axios.get(`${API_BASE}/items/${id}`, getHeaders());
+    const res = await axiosClient.get(`/inventory/items/${id}`);
     return res.data;
   },
   createItem: async (data) => {
-    const res = await axios.post(`${API_BASE}/items`, data, getHeaders());
+    const res = await axiosClient.post('/inventory/items', data);
     return res.data;
   },
   updateItem: async (id, data) => {
-    const res = await axios.put(`${API_BASE}/items/${id}`, data, getHeaders());
+    const res = await axiosClient.put(`/inventory/items/${id}`, data);
     return res.data;
   },
   deleteItem: async (id) => {
-    const res = await axios.delete(`${API_BASE}/items/${id}`, getHeaders());
+    const res = await axiosClient.delete(`/inventory/items/${id}`);
     return res.data;
   },
   getSummary: async () => {
-    const res = await axios.get(`${API_BASE}/items/summary`, getHeaders());
+    const res = await axiosClient.get('/inventory/items/summary');
     return res.data;
   },
 
   // Brands
   getBrands: async () => {
-    const res = await axios.get(`${API_BASE}/brands`, getHeaders());
+    const res = await axiosClient.get('/inventory/brands');
     return res.data;
   },
   createBrand: async (data) => {
-    const res = await axios.post(`${API_BASE}/brands`, data, getHeaders());
+    const res = await axiosClient.post('/inventory/brands', data);
     return res.data;
   },
   deleteBrand: async (id) => {
-    const res = await axios.delete(`${API_BASE}/brands/${id}`, getHeaders());
+    const res = await axiosClient.delete(`/inventory/brands/${id}`);
     return res.data;
   },
 
   // Manufacturers
   getManufacturers: async () => {
-    const res = await axios.get(`${API_BASE}/manufacturers`, getHeaders());
+    const res = await axiosClient.get('/inventory/manufacturers');
     return res.data;
   },
   createManufacturer: async (data) => {
-    const res = await axios.post(`${API_BASE}/manufacturers`, data, getHeaders());
+    const res = await axiosClient.post('/inventory/manufacturers', data);
     return res.data;
   },
   deleteManufacturer: async (id) => {
-    const res = await axios.delete(`${API_BASE}/manufacturers/${id}`, getHeaders());
+    const res = await axiosClient.delete(`/inventory/manufacturers/${id}`);
     return res.data;
   },
 
   // Categories
   getCategories: async () => {
-    const res = await axios.get(`${API_BASE}/categories`, getHeaders());
+    const res = await axiosClient.get('/inventory/categories');
     return res.data;
   },
   createCategory: async (data) => {
-    const res = await axios.post(`${API_BASE}/categories`, data, getHeaders());
+    const res = await axiosClient.post('/inventory/categories', data);
     return res.data;
   },
   deleteCategory: async (id) => {
-    const res = await axios.delete(`${API_BASE}/categories/${id}`, getHeaders());
+    const res = await axiosClient.delete(`/inventory/categories/${id}`);
     return res.data;
   },
 
   // Units
   getUnits: async () => {
-    const res = await axios.get(`${API_BASE}/units`, getHeaders());
+    const res = await axiosClient.get('/inventory/units');
     return res.data;
   },
   createUnit: async (data) => {
-    const res = await axios.post(`${API_BASE}/units`, data, getHeaders());
+    const res = await axiosClient.post('/inventory/units', data);
     return res.data;
   },
   deleteUnit: async (id) => {
-    const res = await axios.delete(`${API_BASE}/units/${id}`, getHeaders());
+    const res = await axiosClient.delete(`/inventory/units/${id}`);
     return res.data;
   },
 
   // Tax Categories
   getTaxCategories: async () => {
-    const res = await axios.get(`${API_BASE}/tax-categories`, getHeaders());
+    const res = await axiosClient.get('/inventory/tax-categories');
     return res.data;
   },
   createTaxCategory: async (data) => {
-    const res = await axios.post(`${API_BASE}/tax-categories`, data, getHeaders());
+    const res = await axiosClient.post('/inventory/tax-categories', data);
     return res.data;
   },
   deleteTaxCategory: async (id) => {
-    const res = await axios.delete(`${API_BASE}/tax-categories/${id}`, getHeaders());
+    const res = await axiosClient.delete(`/inventory/tax-categories/${id}`);
     return res.data;
   },
 
   // HSN
   getHsn: async () => {
-    const res = await axios.get(`${API_BASE}/hsn`, getHeaders());
+    const res = await axiosClient.get('/inventory/hsn');
     return res.data;
   },
   createHsn: async (data) => {
-    const res = await axios.post(`${API_BASE}/hsn`, data, getHeaders());
+    const res = await axiosClient.post('/inventory/hsn', data);
     return res.data;
   },
   deleteHsn: async (id) => {
-    const res = await axios.delete(`${API_BASE}/hsn/${id}`, getHeaders());
+    const res = await axiosClient.delete(`/inventory/hsn/${id}`);
     return res.data;
   },
 
   // Warehouses
   getWarehouses: async () => {
-    const res = await axios.get(`${API_BASE}/warehouses`, getHeaders());
+    const res = await axiosClient.get('/inventory/warehouses');
     return res.data;
   },
   createWarehouse: async (data) => {
-    const res = await axios.post(`${API_BASE}/warehouses`, data, getHeaders());
+    const res = await axiosClient.post('/inventory/warehouses', data);
     return res.data;
   },
   deleteWarehouse: async (id) => {
-    const res = await axios.delete(`${API_BASE}/warehouses/${id}`, getHeaders());
+    const res = await axiosClient.delete(`/inventory/warehouses/${id}`);
     return res.data;
   },
 
   // Stock Groups
   getGroups: async () => {
-    const res = await axios.get(`${API_BASE}/groups`, getHeaders());
+    const res = await axiosClient.get('/inventory/groups');
     return res.data;
   },
   createGroup: async (data) => {
-    const res = await axios.post(`${API_BASE}/groups`, data, getHeaders());
+    const res = await axiosClient.post('/inventory/groups', data);
     return res.data;
   },
   deleteGroup: async (id) => {
-    const res = await axios.delete(`${API_BASE}/groups/${id}`, getHeaders());
+    const res = await axiosClient.delete(`/inventory/groups/${id}`);
     return res.data;
   },
+
+  // Dashboard Stats
   getDashboardSummary: async () => {
-    const companyId = localStorage.getItem('companyId');
-    const res = await axios.get('http://localhost:9521/api/v1/dashboard/summary', {
-      headers: {
-        'X-Company-ID': companyId || '',
-        'Content-Type': 'application/json'
-      }
-    });
+    const res = await axiosClient.get('/dashboard/summary');
     return res.data;
   },
   getDashboardRecentActivity: async () => {
-    const companyId = localStorage.getItem('companyId');
-    const res = await axios.get('http://localhost:9521/api/v1/dashboard/recent-activity', {
-      headers: {
-        'X-Company-ID': companyId || '',
-        'Content-Type': 'application/json'
-      }
-    });
+    const res = await axiosClient.get('/dashboard/recent-activity');
     return res.data;
   },
   searchGlobal: async (query) => {
-    const companyId = localStorage.getItem('companyId');
-    const res = await axios.get('http://localhost:9521/api/v1/dashboard/search', {
-      headers: {
-        'X-Company-ID': companyId || '',
-        'Content-Type': 'application/json'
-      },
-      params: { query }
-    });
+    const res = await axiosClient.get('/dashboard/search', { params: { query } });
     return res.data;
   }
 };

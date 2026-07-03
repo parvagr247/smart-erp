@@ -1,80 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useActiveCompany } from '@shared/context/ActiveCompanyContext';
-import { fetchPurchaseById, updatePurchaseStatusApi, deletePurchaseApi } from '../services/purchase.service';
+import usePurchaseDetails from '../hooks/usePurchaseDetails';
 import PurchaseStatusBadge from '../components/PurchaseStatusBadge';
 import PageContainer from '@shared/components/PageContainer';
 import PageHeader from '@shared/components/PageHeader';
-import ActionButton from '@shared/components/ActionButton';
 
 export default function PurchaseDetailsView() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { activeCompany } = useActiveCompany();
 
-  const [purchase, setPurchase] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [updating, setUpdating] = useState(false);
+  const details = usePurchaseDetails(id, () => navigate('/inventory/purchases'));
 
-  const loadPurchase = async () => {
-    try {
-      const res = await fetchPurchaseById(id);
-      if (res.success && res.data) {
-        setPurchase(res.data);
-      } else {
-        setError(res.message || 'Failed to load purchase details.');
-      }
-    } catch (err) {
-      console.error(err);
-      setError('Server error occurred while loading purchase voucher.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadPurchase();
-  }, [id]);
-
-  const handleStatusTransition = async (newStatus) => {
-    setUpdating(true);
-    setError('');
-    try {
-      const res = await updatePurchaseStatusApi(id, newStatus);
-      if (res.success) {
-        loadPurchase();
-      } else {
-        setError(res.message || 'Failed to update status.');
-      }
-    } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.message || 'Server error occurred during status transition.');
-    } finally {
-      setUpdating(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete this draft purchase?')) return;
-    try {
-      const res = await deletePurchaseApi(id);
-      if (res.success) {
-        navigate('/inventory/purchases');
-      } else {
-        setError(res.message || 'Failed to delete purchase.');
-      }
-    } catch (err) {
-      console.error(err);
-      setError('Server error occurred during deletion.');
-    }
-  };
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  if (loading) {
+  if (details.loading) {
     return (
       <PageContainer>
         <div className="p-8 text-center text-sm text-[var(--text-muted)] animate-pulse">
@@ -84,11 +23,11 @@ export default function PurchaseDetailsView() {
     );
   }
 
-  if (error && !purchase) {
+  if (details.error && !details.purchase) {
     return (
       <PageContainer>
         <div className="bg-red-100 border border-red-200 text-red-800 text-sm p-4 rounded-lg text-left">
-          <span className="font-semibold">Error:</span> {error}
+          <span className="font-semibold">Error:</span> {details.error}
         </div>
         <button
           onClick={() => navigate('/inventory/purchases')}
@@ -101,50 +40,50 @@ export default function PurchaseDetailsView() {
   }
 
   const isIntraState = () => {
-    if (!purchase) return true;
-    return purchase.cgst > 0 || purchase.sgst > 0 || purchase.igst === 0;
+    if (!details.purchase) return true;
+    return details.purchase.cgst > 0 || details.purchase.sgst > 0 || details.purchase.igst === 0;
   };
 
   return (
     <PageContainer>
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b border-[var(--border-color)] pb-4 print:hidden">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b border-[var(--border-color)] pb-4 print:hidden text-left">
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-xl font-bold text-[var(--text-primary)]">
-              Purchase Invoice: {purchase.purchaseNumber}
+              Purchase Invoice: {details.purchase.purchaseNumber}
             </h1>
-            <PurchaseStatusBadge status={purchase.status} />
+            <PurchaseStatusBadge status={details.purchase.status} />
           </div>
           <p className="text-xs text-[var(--text-muted)] mt-1">
-            Recorded by {purchase.createdBy} on {new Date(purchase.purchaseDate).toLocaleDateString('en-IN')}
+            Recorded by {details.purchase.createdBy} on {new Date(details.purchase.purchaseDate).toLocaleDateString('en-IN')}
           </p>
         </div>
 
         <div className="flex flex-wrap gap-2">
           <button
-            onClick={handlePrint}
+            onClick={details.printInvoice}
             className="px-3 py-1.5 bg-[var(--bg-card)] hover:bg-[var(--border-color)] border border-[var(--border-color)] text-xs font-semibold rounded text-[var(--text-primary)] transition-all"
           >
             🖨️ Print Invoice
           </button>
 
-          {purchase.status === 'DRAFT' && (
+          {details.purchase.status === 'DRAFT' && (
             <>
               <Link
-                to={`/inventory/purchases/edit/${id}`}
+                to={`/purchase/edit/${id}`}
                 className="px-3 py-1.5 bg-[var(--bg-body)] hover:bg-[var(--border-color)] border border-[var(--border-color)] text-xs font-semibold rounded text-[var(--text-primary)] transition-all"
               >
                 ✏️ Edit Draft
               </Link>
               <button
-                onClick={() => handleStatusTransition('APPROVED')}
-                disabled={updating}
+                onClick={() => details.handleStatusTransition('APPROVED')}
+                disabled={details.updating}
                 className="px-3 py-1.5 bg-[var(--color-primary)] hover:opacity-90 text-xs font-semibold rounded text-white transition-all disabled:opacity-50"
               >
                 ✔️ Approve & Post
               </button>
               <button
-                onClick={handleDelete}
+                onClick={details.deleteDraft}
                 className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-xs font-semibold rounded text-white transition-all"
               >
                 🗑️ Delete Draft
@@ -152,18 +91,18 @@ export default function PurchaseDetailsView() {
             </>
           )}
 
-          {purchase.status === 'APPROVED' && (
+          {details.purchase.status === 'APPROVED' && (
             <>
               <button
-                onClick={() => handleStatusTransition('RECEIVED')}
-                disabled={updating}
+                onClick={() => details.handleStatusTransition('RECEIVED')}
+                disabled={details.updating}
                 className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-xs font-semibold rounded text-white transition-all disabled:opacity-50"
               >
                 📦 Mark as Received
               </button>
               <button
-                onClick={() => handleStatusTransition('CANCELLED')}
-                disabled={updating}
+                onClick={() => details.handleStatusTransition('CANCELLED')}
+                disabled={details.updating}
                 className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-xs font-semibold rounded text-white transition-all disabled:opacity-50"
               >
                 ❌ Cancel Voucher
@@ -171,10 +110,10 @@ export default function PurchaseDetailsView() {
             </>
           )}
 
-          {purchase.status === 'RECEIVED' && (
+          {details.purchase.status === 'RECEIVED' && (
             <button
-              onClick={() => handleStatusTransition('COMPLETED')}
-              disabled={updating}
+              onClick={() => details.handleStatusTransition('COMPLETED')}
+              disabled={details.updating}
               className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-xs font-semibold rounded text-white transition-all disabled:opacity-50"
             >
               🏁 Complete Transaction
@@ -183,9 +122,9 @@ export default function PurchaseDetailsView() {
         </div>
       </div>
 
-      {error && (
+      {details.error && (
         <div className="bg-red-100 border border-red-200 text-red-800 text-sm p-4 rounded-lg mb-4 text-left">
-          <span className="font-semibold">Error:</span> {error}
+          <span className="font-semibold">Error:</span> {details.error}
         </div>
       )}
 
@@ -209,12 +148,12 @@ export default function PurchaseDetailsView() {
               Purchase Invoice
             </h3>
             <p className="text-sm font-semibold text-[var(--text-primary)] mt-1">
-              Invoice No: {purchase.purchaseNumber}
+              Invoice No: {details.purchase.purchaseNumber}
             </p>
             <p className="text-xs text-[var(--text-muted)] mt-1">
-              Date: {new Date(purchase.purchaseDate).toLocaleDateString('en-IN')}
-              {purchase.dueDate && (
-                <> | Due: {new Date(purchase.dueDate).toLocaleDateString('en-IN')}</>
+              Date: {new Date(details.purchase.purchaseDate).toLocaleDateString('en-IN')}
+              {details.purchase.dueDate && (
+                <> | Due: {new Date(details.purchase.dueDate).toLocaleDateString('en-IN')}</>
               )}
             </p>
           </div>
@@ -227,10 +166,10 @@ export default function PurchaseDetailsView() {
               Supplier (From)
             </h4>
             <div className="text-sm font-semibold text-[var(--text-primary)]">
-              {purchase.supplierName}
+              {details.purchase.supplierName}
             </div>
             <p className="text-xs text-[var(--text-muted)] mt-1 leading-relaxed">
-              Payment Terms: {purchase.paymentTerms || 'N/A'}
+              Payment Terms: {details.purchase.paymentTerms || 'N/A'}
             </p>
           </div>
 
@@ -239,7 +178,7 @@ export default function PurchaseDetailsView() {
               Delivery Warehouse (Ship To)
             </h4>
             <div className="text-sm font-semibold text-[var(--text-primary)]">
-              {purchase.warehouseName}
+              {details.purchase.warehouseName}
             </div>
             <p className="text-xs text-[var(--text-muted)] mt-1 leading-relaxed">
               Standard receiving warehouse for line items.
@@ -262,7 +201,7 @@ export default function PurchaseDetailsView() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border-color)] text-sm text-[var(--text-primary)]">
-              {purchase.lineItems.map((line, idx) => (
+              {details.purchase.lineItems.map((line, idx) => (
                 <tr key={idx}>
                   <td className="py-3 px-1">
                     <div className="font-semibold">{line.stockItemName}</div>
@@ -311,12 +250,12 @@ export default function PurchaseDetailsView() {
           <div className="text-xs text-[var(--text-muted)] space-y-2">
             <h5 className="font-bold uppercase text-[var(--text-muted)]">Notes / Remarks</h5>
             <p className="leading-relaxed bg-[var(--bg-body)] p-3 rounded-md border border-[var(--border-color)]">
-              {purchase.notes || 'No remarks added to this purchase voucher.'}
+              {details.purchase.notes || 'No remarks added to this purchase voucher.'}
             </p>
-            {purchase.attachments && (
+            {details.purchase.attachments && (
               <div className="pt-2">
                 <span className="font-semibold block mb-1">Attachments:</span>
-                <span className="text-[var(--color-primary)] truncate block">{purchase.attachments}</span>
+                <span className="text-[var(--color-primary)] truncate block">{details.purchase.attachments}</span>
               </div>
             )}
           </div>
@@ -324,13 +263,13 @@ export default function PurchaseDetailsView() {
           <div className="space-y-2 text-sm text-[var(--text-primary)] max-w-sm ml-auto w-full">
             <div className="flex justify-between">
               <span className="text-[var(--text-muted)]">Voucher Subtotal</span>
-              <span>₹{(purchase.grossAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+              <span>₹{(details.purchase.grossAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
             </div>
 
-            {purchase.discountAmount > 0 && (
+            {details.purchase.discountAmount > 0 && (
               <div className="flex justify-between text-red-500">
                 <span>Extra Discounts</span>
-                <span>- ₹{purchase.discountAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                <span>- ₹{details.purchase.discountAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
               </div>
             )}
 
@@ -340,37 +279,37 @@ export default function PurchaseDetailsView() {
               <>
                 <div className="flex justify-between text-xs text-[var(--text-muted)]">
                   <span>CGST Input Tax</span>
-                  <span>₹{(purchase.cgst || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                  <span>₹{(details.purchase.cgst || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                 </div>
                 <div className="flex justify-between text-xs text-[var(--text-muted)]">
                   <span>SGST Input Tax</span>
-                  <span>₹{(purchase.sgst || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                  <span>₹{(details.purchase.sgst || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                 </div>
               </>
             ) : (
               <div className="flex justify-between text-xs text-[var(--text-muted)]">
                 <span>IGST Input Tax</span>
-                <span>₹{(purchase.igst || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                <span>₹{(details.purchase.igst || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
               </div>
             )}
 
-            {purchase.cess > 0 && (
+            {details.purchase.cess > 0 && (
               <div className="flex justify-between text-xs text-[var(--text-muted)]">
                 <span>CESS Input Tax</span>
-                <span>₹{purchase.cess.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                <span>₹{details.purchase.cess.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
               </div>
             )}
 
             <div className="flex justify-between text-xs text-[var(--text-muted)]">
               <span>Round Off</span>
-              <span>₹{(purchase.roundOff || 0).toFixed(2)}</span>
+              <span>₹{(details.purchase.roundOff || 0).toFixed(2)}</span>
             </div>
 
             <div className="border-t border-[var(--border-color)] my-1"></div>
 
             <div className="flex justify-between text-base font-bold text-[var(--color-primary)]">
               <span>Voucher Grand Total</span>
-              <span>₹{(purchase.grandTotal || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+              <span>₹{(details.purchase.grandTotal || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
             </div>
           </div>
         </div>
