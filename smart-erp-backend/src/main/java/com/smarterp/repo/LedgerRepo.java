@@ -1,6 +1,6 @@
 package com.smarterp.repo;
 
-import com.smarterp.entities.Company;
+import com.smarterp.company.entity.Company;
 import com.smarterp.entities.Ledger;
 import com.smarterp.entities.enums.LedgerType;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,6 +1,7 @@
 package com.smarterp.entities;
 
 import com.smarterp.entities.enums.Role;
+import com.smarterp.company.entity.Company;
 import jakarta.persistence.*;
 import lombok.*;
 

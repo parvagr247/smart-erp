@@ -1,0 +1,80 @@
+package com.smarterp.company.controller;
+
+import com.smarterp.company.dto.*;
+import com.smarterp.company.service.CompanyService;
+import com.smarterp.dto.ApiResponse;
+import com.smarterp.security.AuthenticatedUser;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/api/v1/companies")
+@RequiredArgsConstructor
+public class CompanyController {
+
+    private final CompanyService companyService;
+
+    @PostMapping
+    public ResponseEntity<ApiResponse<CompanyResponse>> createCompany(
+            @Valid @RequestBody CreateCompanyRequest request,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        CompanyResponse response = companyService.createCompany(request, authenticatedUser.getUser());
+        return new ResponseEntity<>(ApiResponse.success("Company created successfully", response), HttpStatus.CREATED);
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<Page<CompanySummaryResponse>>> getCompanies(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        Sort sort = direction.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<CompanySummaryResponse> response = companyService.getCompanies(authenticatedUser.getUser(), pageable);
+        return ResponseEntity.ok(ApiResponse.success("Companies list retrieved successfully", response));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<CompanyResponse>> getCompany(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        CompanyResponse response = companyService.getCompany(id, authenticatedUser.getUser());
+        return ResponseEntity.ok(ApiResponse.success("Company details retrieved successfully", response));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<CompanyResponse>> updateCompany(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateCompanyRequest request,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        CompanyResponse response = companyService.updateCompany(id, request, authenticatedUser.getUser());
+        return ResponseEntity.ok(ApiResponse.success("Company updated successfully", response));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteCompany(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        companyService.deleteCompany(id, authenticatedUser.getUser());
+        return ResponseEntity.ok(ApiResponse.success("Company deleted successfully", null));
+    }
+
+    @PostMapping("/{id}/switch")
+    public ResponseEntity<ApiResponse<CompanyResponse>> switchCompany(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        CompanyResponse response = companyService.switchCompany(id, authenticatedUser.getUser());
+        return ResponseEntity.ok(ApiResponse.success("Active company switched successfully", response));
+    }
+}

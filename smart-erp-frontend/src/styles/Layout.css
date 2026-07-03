@@ -1,0 +1,140 @@
+@reference "./global.css";
+
+/* App Layout Grid/Flex Structures */
+.layout-wrapper {
+  @apply flex min-h-screen bg-[var(--bg-base)] text-[var(--text-primary)] overflow-hidden;
+}
+
+.layout-main {
+  @apply flex flex-col flex-grow min-w-0 transition-all duration-200;
+}
+
+.layout-content-scroll {
+  @apply flex-grow overflow-y-auto overflow-x-hidden p-6 md:p-8;
+}
+
+/* Sidebar Styling & Transitions */
+.sidebar-panel {
+  @apply bg-[var(--bg-surface)] border-r border-[var(--border-light)] flex flex-col h-screen shrink-0 transition-all duration-250 select-none;
+}
+
+.sidebar-expanded {
+  @apply w-64;
+}
+
+.sidebar-collapsed {
+  @apply w-16;
+}
+
+.sidebar-header {
+  @apply flex items-center justify-between p-4 border-b border-[var(--border-light)] h-16 shrink-0;
+}
+
+.sidebar-title {
+  @apply font-bold font-heading text-base text-[var(--primary)] truncate;
+}
+
+.sidebar-menu-list {
+  @apply flex-grow overflow-y-auto py-4 px-3 space-y-1 scrollbar-none;
+}
+
+/* Sidebar Menu Items */
+.sidebar-link {
+  @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-input)] hover:text-[var(--text-primary)] transition-all cursor-pointer select-none;
+}
+
+.sidebar-link-active {
+  @apply bg-[var(--primary-glow)] text-[var(--primary)] hover:bg-[var(--primary-glow)] hover:text-[var(--primary)];
+}
+
+.sidebar-link-icon {
+  @apply w-5 h-5 shrink-0 flex items-center justify-center;
+}
+
+.sidebar-link-text {
+  @apply truncate transition-opacity duration-200;
+}
+
+/* Nested submenus inside sidebar */
+.submenu-container {
+  @apply ml-4 pl-3 border-l border-[var(--border-light)] mt-1 space-y-1;
+}
+
+.submenu-link {
+  @apply flex items-center gap-2 px-3 py-2 rounded-md text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all cursor-pointer;
+}
+
+.submenu-link-active {
+  @apply text-[var(--primary)];
+}
+
+.sidebar-footer {
+  @apply p-4 border-t border-[var(--border-light)] shrink-0;
+}
+
+/* Top Navbar Styling */
+.navbar-top {
+  @apply bg-[var(--bg-surface)] border-b border-[var(--border-light)] h-16 shrink-0 flex items-center justify-between px-6 z-40 shadow-xs;
+}
+
+.navbar-left {
+  @apply flex items-center gap-4;
+}
+
+.navbar-right {
+  @apply flex items-center gap-3;
+}
+
+/* Notification Dropdown Panel */
+.notification-menu {
+  @apply absolute right-0 mt-2 w-80 bg-[var(--bg-surface)] border border-[var(--border-light)] rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150;
+}
+
+.notification-header {
+  @apply flex justify-between items-center px-4 py-3 border-b border-[var(--border-light)] bg-[var(--bg-input)];
+}
+
+.notification-title {
+  @apply font-semibold text-sm text-[var(--text-primary)];
+}
+
+.notification-list {
+  @apply divide-y divide-[var(--border-light)] max-h-72 overflow-y-auto;
+}
+
+.notification-item {
+  @apply flex gap-3 p-4 hover:bg-[var(--bg-input)] cursor-pointer transition-colors;
+}
+
+.notification-item-unread {
+  @apply bg-[var(--primary-glow)]/30;
+}
+
+.notification-item-icon {
+  @apply w-8 h-8 rounded-full bg-[var(--primary-glow)] text-[var(--primary)] flex items-center justify-center shrink-0;
+}
+
+.notification-item-content {
+  @apply flex-grow text-xs space-y-1;
+}
+
+.notification-item-title {
+  @apply font-bold text-[var(--text-primary)];
+}
+
+.notification-item-desc {
+  @apply text-[var(--text-secondary)];
+}
+
+.notification-item-time {
+  @apply text-[var(--text-muted)] text-[10px];
+}
+
+.notification-footer {
+  @apply border-t border-[var(--border-light)] p-2 text-center bg-[var(--bg-input)];
+}
+
+/* Footer layout rules */
+.layout-footer {
+  @apply bg-[var(--bg-surface)] border-t border-[var(--border-light)] px-6 py-3 text-center text-xs text-[var(--text-muted)];
+}

@@ -1,0 +1,98 @@
+import { useState, useEffect, useMemo } from 'react';
+
+const SEARCHABLE_ITEMS = [
+  { id: 'dash', category: 'Modules', title: 'Dashboard', path: '/dashboard', subtitle: 'View stats and quick overview' },
+  { id: 'acct', category: 'Modules', title: 'Accounting', path: '/masters/ledgers', subtitle: 'Ledgers, groups and journals' },
+  { id: 'inv', category: 'Modules', title: 'Inventory', path: '/inventory/stock-items', subtitle: 'Stock balance and items' },
+  { id: 'sales', category: 'Modules', title: 'Sales', path: '/sales', subtitle: 'Tax invoices and sales journals' },
+  { id: 'pur', category: 'Modules', title: 'Purchase', path: '/purchase', subtitle: 'Vendor bills and vouchers' },
+  { id: 'gst', category: 'Modules', title: 'GST', path: '/gst', subtitle: 'Tax filings and GSTR logs' },
+  { id: 'bank', category: 'Modules', title: 'Banking', path: '/banking', subtitle: 'Bank book reconciliation' },
+  
+  { id: 'ledg_page', category: 'Pages', title: 'Ledger Masters', path: '/masters/ledgers', subtitle: 'Create and manage ledger accounts' },
+  { id: 'group_page', category: 'Pages', title: 'Account Groups', path: '/masters/groups', subtitle: 'Configure Tally-style account groups' },
+  { id: 'cust_page', category: 'Pages', title: 'Customers', path: '/masters/customers', subtitle: 'Manage customer accounts' },
+  { id: 'supp_page', category: 'Pages', title: 'Suppliers', path: '/masters/suppliers', subtitle: 'Manage supplier accounts' },
+  { id: 'sg_page', category: 'Pages', title: 'Stock Groups', path: '/inventory/stock-groups', subtitle: 'Configure stock classifications' },
+  { id: 'si_page', category: 'Pages', title: 'Stock Items', path: '/inventory/stock-items', subtitle: 'Configure catalog stock items' },
+  
+  { id: 'act_ledger', category: 'Actions', title: 'Create Ledger', path: '/masters/ledgers', subtitle: 'Quick add accounting ledger' },
+  { id: 'act_invoice', category: 'Actions', title: 'Create Sales Invoice', path: '/sales', subtitle: 'Billing voucher creation' },
+  { id: 'act_stock', category: 'Actions', title: 'Add Stock Item', path: '/inventory/stock-items', subtitle: 'Quick catalog stock additions' },
+  
+  { id: 'admin_dash', category: 'Administration', title: 'Admin Dashboard', path: '/admin/dashboard', subtitle: 'System administration stats' },
+  { id: 'admin_users', category: 'Administration', title: 'Users Configuration', path: '/admin/users', subtitle: 'Manage system users and access' },
+  { id: 'admin_audit', category: 'Administration', title: 'Audit logs', path: '/admin/audit-logs', subtitle: 'View system audit trails' },
+];
+
+export default function useCommandPalette(onNavigate) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  // Monitor global shortcut Ctrl+K / Cmd+K
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const filteredItems = useMemo(() => {
+    if (!query.trim()) return SEARCHABLE_ITEMS;
+    const cleanQuery = query.toLowerCase();
+    return SEARCHABLE_ITEMS.filter(
+      (item) =>
+        item.title.toLowerCase().includes(cleanQuery) ||
+        item.category.toLowerCase().includes(cleanQuery) ||
+        item.subtitle.toLowerCase().includes(cleanQuery)
+    );
+  }, [query]);
+
+  // Reset selected index when search query updates
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [query]);
+
+  const handleSelect = (item) => {
+    setIsOpen(false);
+    setQuery('');
+    if (onNavigate) {
+      onNavigate(item.path);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (!isOpen) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActiveIndex((prev) => (prev + 1) % filteredItems.length);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActiveIndex((prev) => (prev - 1 + filteredItems.length) % filteredItems.length);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (filteredItems[activeIndex]) {
+        handleSelect(filteredItems[activeIndex]);
+      }
+    } else if (e.key === 'Escape') {
+      setIsOpen(false);
+    }
+  };
+
+  return {
+    isOpen,
+    setIsOpen,
+    query,
+    setQuery,
+    activeIndex,
+    filteredItems,
+    handleSelect,
+    handleKeyDown,
+  };
+}

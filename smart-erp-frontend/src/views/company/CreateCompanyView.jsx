@@ -1,0 +1,29 @@
+import React from 'react';
+import { useCompanyForm } from '../../services/company-service';
+import CompanyForm from '../../components/company/CompanyForm';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import '../../styles/CompanyView.css';
+
+export default function CreateCompanyView({ onSaveSuccess, onCancel }) {
+  const formHooks = useCompanyForm(null, onSaveSuccess);
+
+  return (
+    <div className="w-full max-w-2xl mx-auto py-8">
+      <Card className="shadow-lg border border-[var(--border-light)] bg-[var(--bg-surface)]">
+        <CardHeader className="text-center pb-6">
+          <CardTitle className="text-2xl font-bold font-heading tracking-tight text-[var(--text-primary)]">
+            Create New Company
+          </CardTitle>
+          <CardDescription className="text-sm text-[var(--text-secondary)]">
+            Configure your enterprise workspace parameters
+          </CardDescription>
+        </CardHeader>
+        <CompanyForm 
+          formHooks={formHooks} 
+          onCancel={onCancel} 
+          isEdit={false} 
+        />
+      </Card>
+    </div>
+  );
+}

@@ -14,6 +14,13 @@ axiosClient.interceptors.request.use(
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
+    
+    // Inject Active Company ID for backend scoping
+    const companyId = localStorage.getItem('activeCompanyId');
+    if (companyId) {
+      config.headers['X-Company-ID'] = companyId;
+    }
+    
     return config;
   },
   (error) => {

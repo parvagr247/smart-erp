@@ -95,19 +95,31 @@ export function useLoginForm(onLoginSuccess) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+
+  const validateField = (name, value) => {
+    let err = '';
+    if (name === 'email') {
+      if (!value) err = 'Email is required.';
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) err = 'Invalid email format.';
+    } else if (name === 'password') {
+      if (!value) err = 'Password is required.';
+    }
+    setErrors(prev => ({ ...prev, [name]: err }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    if (!email || !password) {
-      setError('Please fill in all fields.');
+    // Pre-flight checks
+    if (!email || !password || errors.email || errors.password) {
+      setError('Please resolve all validation errors before logging in.');
       return;
     }
 
     setLoading(true);
-
     try {
       const response = await axiosClient.post('/auth/login', { email, password });
       const { token, user } = response.data;
@@ -122,18 +134,27 @@ export function useLoginForm(onLoginSuccess) {
 
   const emailBind = {
     value: email,
-    onChange: (e) => setEmail(e.target.value),
+    onChange: (e) => {
+      const val = e.target.value;
+      setEmail(val);
+      validateField('email', val);
+    },
     disabled: loading,
   };
 
   const passwordBind = {
     value: password,
-    onChange: (e) => setPassword(e.target.value),
+    onChange: (e) => {
+      const val = e.target.value;
+      setPassword(val);
+      validateField('password', val);
+    },
     disabled: loading,
   };
 
   return {
     error,
+    errors,
     loading,
     handleSubmit,
     emailBind,
@@ -150,24 +171,31 @@ export function useRegisterForm(onRegisterSuccess) {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('ACCOUNTANT');
   const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+
+  const validateField = (name, value) => {
+    let err = '';
+    if (name === 'fullName') {
+      if (!value) err = 'Full name is required.';
+      else if (value.length < 2) err = 'Full name must be at least 2 characters.';
+    } else if (name === 'email') {
+      if (!value) err = 'Email is required.';
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) err = 'Invalid email format.';
+    } else if (name === 'password') {
+      if (!value) err = 'Password is required.';
+      else if (value.length < 6) err = 'Password must be at least 6 characters.';
+    }
+    setErrors(prev => ({ ...prev, [name]: err }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    if (!fullName || !email || !password || !role) {
-      setError('Please fill in all fields.');
-      return;
-    }
-
-    if (fullName.length < 2) {
-      setError('Full name must be at least 2 characters.');
-      return;
-    }
-
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters.');
+    // Pre-flight checks
+    if (!fullName || !email || !password || !role || errors.fullName || errors.email || errors.password) {
+      setError('Please resolve all validation errors before submitting.');
       return;
     }
 
@@ -197,19 +225,31 @@ export function useRegisterForm(onRegisterSuccess) {
 
   const nameBind = {
     value: fullName,
-    onChange: (e) => setFullName(e.target.value),
+    onChange: (e) => {
+      const val = e.target.value;
+      setFullName(val);
+      validateField('fullName', val);
+    },
     disabled: loading,
   };
 
   const emailBind = {
     value: email,
-    onChange: (e) => setEmail(e.target.value),
+    onChange: (e) => {
+      const val = e.target.value;
+      setEmail(val);
+      validateField('email', val);
+    },
     disabled: loading,
   };
 
   const passwordBind = {
     value: password,
-    onChange: (e) => setPassword(e.target.value),
+    onChange: (e) => {
+      const val = e.target.value;
+      setPassword(val);
+      validateField('password', val);
+    },
     disabled: loading,
   };
 
@@ -221,6 +261,7 @@ export function useRegisterForm(onRegisterSuccess) {
 
   return {
     error,
+    errors,
     loading,
     handleSubmit,
     nameBind,
