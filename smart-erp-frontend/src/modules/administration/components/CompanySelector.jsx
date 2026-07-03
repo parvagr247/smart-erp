@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useActiveCompany } from '@shared/context/ActiveCompanyContext';
-import { fetchCompaniesList } from '@modules/administration/company/services/company.service';
+import { fetchCompaniesList } from '../services/company.service';
 
 export default function CompanySelector() {
   const { activeCompany, updateActiveCompany } = useActiveCompany();

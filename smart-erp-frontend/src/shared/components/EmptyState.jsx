@@ -1,5 +1,5 @@
 import React from 'react';
-import '@modules/administration/company/styles/company.css';
+import '@modules/administration/styles/company.css';
 
 export default function EmptyState({ title, description, icon, actionButton }) {
   return (

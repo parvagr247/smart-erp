@@ -1,9 +1,9 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { useCompanyForm } from '@modules/administration/company/services/company.service';
-import CompanyForm from '@modules/administration/company/components/CompanyForm';
+import { useCompanyForm } from '../services/company.service';
+import CompanyForm from '../components/CompanyForm';
 import { Card, CardHeader, CardTitle, CardDescription } from '@shared/components/ui/card';
-import '@modules/administration/company/styles/company.css';
+import '../styles/company.css';
 
 export default function EditCompanyView({ companyId, onSaveSuccess, onCancel }) {
   const { id } = useParams();

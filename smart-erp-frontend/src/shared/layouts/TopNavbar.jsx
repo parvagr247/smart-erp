@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useActiveCompany } from '@shared/context/ActiveCompanyContext';
 import { useAuth } from '@shared/context/AuthContext';
-import CompanySelector from '@modules/administration/company/components/CompanySelector';
+import CompanySelector from '@modules/administration/components/CompanySelector';
 import useNotifications from '@shared/hooks/useNotifications';
 import { Search, Bell, Sun, Moon, LogOut, Settings, User as UserIcon } from 'lucide-react';
 

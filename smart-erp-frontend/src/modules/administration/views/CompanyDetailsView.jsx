@@ -1,9 +1,9 @@
 import React from 'react';
-import { useCompanyDetails } from '@modules/administration/company/services/company.service';
+import { useCompanyDetails } from '../services/company.service';
 import { Button } from '@shared/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@shared/components/ui/card';
 import { ChevronLeft } from 'lucide-react';
-import '@modules/administration/company/styles/company.css';
+import '../styles/company.css';
 
 export default function CompanyDetailsView({ companyId, onBack }) {
   const { company, loading, error } = useCompanyDetails(companyId);

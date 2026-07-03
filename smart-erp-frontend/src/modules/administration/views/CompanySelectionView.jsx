@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { useCompanySelection, deleteCompanyApi } from '@modules/administration/company/services/company.service';
-import CompanyCard from '@modules/administration/company/components/CompanyCard';
-import EmptyCompanyState from '@modules/administration/company/components/EmptyCompanyState';
-import DeleteConfirmationDialog from '@modules/administration/company/components/DeleteConfirmationDialog';
+import { useCompanySelection, deleteCompanyApi } from '../services/company.service';
+import CompanyCard from '../components/CompanyCard';
+import EmptyCompanyState from '../components/EmptyCompanyState';
+import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
 import { Button } from '@shared/components/ui/button';
 import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
-import '@modules/administration/company/styles/company.css';
+import '../styles/company.css';
 
 export default function CompanySelectionView({ onSelectSuccess, onCreateCompany, onEditCompany }) {
   const {

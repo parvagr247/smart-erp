@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@shared/components/ui/button';
 import { AlertCircle } from 'lucide-react';
-import '@modules/administration/company/styles/company.css';
+import '@modules/administration/styles/company.css';
 
 export default function ConfirmationDialog({ 
   isOpen, 

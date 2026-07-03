@@ -153,5 +153,36 @@ export const inventoryService = {
   deleteGroup: async (id) => {
     const res = await axios.delete(`${API_BASE}/groups/${id}`, getHeaders());
     return res.data;
+  },
+  getDashboardSummary: async () => {
+    const companyId = localStorage.getItem('companyId');
+    const res = await axios.get('http://localhost:9521/api/v1/dashboard/summary', {
+      headers: {
+        'X-Company-ID': companyId || '',
+        'Content-Type': 'application/json'
+      }
+    });
+    return res.data;
+  },
+  getDashboardRecentActivity: async () => {
+    const companyId = localStorage.getItem('companyId');
+    const res = await axios.get('http://localhost:9521/api/v1/dashboard/recent-activity', {
+      headers: {
+        'X-Company-ID': companyId || '',
+        'Content-Type': 'application/json'
+      }
+    });
+    return res.data;
+  },
+  searchGlobal: async (query) => {
+    const companyId = localStorage.getItem('companyId');
+    const res = await axios.get('http://localhost:9521/api/v1/dashboard/search', {
+      headers: {
+        'X-Company-ID': companyId || '',
+        'Content-Type': 'application/json'
+      },
+      params: { query }
+    });
+    return res.data;
   }
 };

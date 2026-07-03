@@ -1,0 +1,9 @@
+export const InventoryPermissions = [
+  'STOCK_ITEM_VIEW',
+  'STOCK_ITEM_CREATE',
+  'STOCK_ITEM_EDIT',
+  'STOCK_ITEM_DELETE',
+  'PARTNER_VIEW',
+  'PARTNER_CREATE',
+  'PARTNER_EDIT'
+];

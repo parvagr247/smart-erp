@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@shared/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import '@modules/administration/company/styles/company.css';
+import '@modules/administration/styles/company.css';
 
 export default function Pagination({ page, totalPages, onPageChange }) {
   if (totalPages <= 1) return null;

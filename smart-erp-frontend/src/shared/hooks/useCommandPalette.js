@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { inventoryService } from '@modules/inventory/services/inventory.service';
 
 const SEARCHABLE_ITEMS = [
   { id: 'dash', category: 'Modules', title: 'Dashboard', path: '/dashboard', subtitle: 'View stats and quick overview' },
@@ -9,16 +10,16 @@ const SEARCHABLE_ITEMS = [
   { id: 'gst', category: 'Modules', title: 'GST', path: '/gst', subtitle: 'Tax filings and GSTR logs' },
   { id: 'bank', category: 'Modules', title: 'Banking', path: '/banking', subtitle: 'Bank book reconciliation' },
   
-  { id: 'ledg_page', category: 'Pages', title: 'Ledger Masters', path: '/masters/ledgers', subtitle: 'Create and manage ledger accounts' },
-  { id: 'group_page', category: 'Pages', title: 'Account Groups', path: '/masters/groups', subtitle: 'Configure Tally-style account groups' },
-  { id: 'cust_page', category: 'Pages', title: 'Customers', path: '/masters/customers', subtitle: 'Manage customer accounts' },
-  { id: 'supp_page', category: 'Pages', title: 'Suppliers', path: '/masters/suppliers', subtitle: 'Manage supplier accounts' },
+  { id: 'ledg_page', category: 'Pages', title: 'Ledger Masters', path: '/accounting/ledgers', subtitle: 'Create and manage ledger accounts' },
+  { id: 'group_page', category: 'Pages', title: 'Account Groups', path: '/accounting/groups', subtitle: 'Configure Tally-style account groups' },
+  { id: 'cust_page', category: 'Pages', title: 'Customers', path: '/inventory/partners', subtitle: 'Manage customer accounts' },
+  { id: 'supp_page', category: 'Pages', title: 'Suppliers', path: '/inventory/partners', subtitle: 'Manage supplier accounts' },
   { id: 'sg_page', category: 'Pages', title: 'Stock Groups', path: '/inventory/stock-groups', subtitle: 'Configure stock classifications' },
   { id: 'si_page', category: 'Pages', title: 'Stock Items', path: '/inventory/stock-items', subtitle: 'Configure catalog stock items' },
   
-  { id: 'act_ledger', category: 'Actions', title: 'Create Ledger', path: '/masters/ledgers', subtitle: 'Quick add accounting ledger' },
+  { id: 'act_ledger', category: 'Actions', title: 'Create Ledger', path: '/accounting/ledgers/create', subtitle: 'Quick add accounting ledger' },
   { id: 'act_invoice', category: 'Actions', title: 'Create Sales Invoice', path: '/sales', subtitle: 'Billing voucher creation' },
-  { id: 'act_stock', category: 'Actions', title: 'Add Stock Item', path: '/inventory/stock-items', subtitle: 'Quick catalog stock additions' },
+  { id: 'act_stock', category: 'Actions', title: 'Add Stock Item', path: '/inventory/stock-items/create', subtitle: 'Quick catalog stock additions' },
   
   { id: 'admin_dash', category: 'Administration', title: 'Admin Dashboard', path: '/admin/dashboard', subtitle: 'System administration stats' },
   { id: 'admin_users', category: 'Administration', title: 'Users Configuration', path: '/admin/users', subtitle: 'Manage system users and access' },
@@ -29,6 +30,7 @@ export default function useCommandPalette(onNavigate) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
+  const [dynamicHits, setDynamicHits] = useState([]);
 
   // Monitor global shortcut Ctrl+K / Cmd+K
   useEffect(() => {
@@ -42,16 +44,44 @@ export default function useCommandPalette(onNavigate) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Debounced backend query trigger
+  useEffect(() => {
+    if (!query.trim()) {
+      setDynamicHits([]);
+      return;
+    }
+
+    const delayDebounce = setTimeout(async () => {
+      try {
+        const res = await inventoryService.searchGlobal(query.trim());
+        if (res.success && res.data && res.data.hits) {
+          const formatted = res.data.hits.map(hit => ({
+            id: hit.id,
+            category: 'Database Records',
+            title: hit.title,
+            path: hit.path,
+            subtitle: hit.subtitle
+          }));
+          setDynamicHits(formatted);
+        }
+      } catch (e) {
+        console.error("Global search fetch error", e);
+      }
+    }, 250); // 250ms debounce
+
+    return () => clearTimeout(delayDebounce);
+  }, [query]);
+
   const filteredItems = useMemo(() => {
-    if (!query.trim()) return SEARCHABLE_ITEMS;
     const cleanQuery = query.toLowerCase();
-    return SEARCHABLE_ITEMS.filter(
+    const staticFiltered = SEARCHABLE_ITEMS.filter(
       (item) =>
         item.title.toLowerCase().includes(cleanQuery) ||
         item.category.toLowerCase().includes(cleanQuery) ||
         item.subtitle.toLowerCase().includes(cleanQuery)
     );
-  }, [query]);
+    return [...staticFiltered, ...dynamicHits];
+  }, [query, dynamicHits]);
 
   // Reset selected index when search query updates
   useEffect(() => {

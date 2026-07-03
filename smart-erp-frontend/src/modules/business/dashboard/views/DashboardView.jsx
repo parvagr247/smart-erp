@@ -1,81 +1,238 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useActiveCompany } from '@shared/context/ActiveCompanyContext';
+import { useAuth } from '@shared/context/AuthContext';
+import { inventoryService } from '@modules/inventory/services/inventory.service';
 import PageContainer from '@shared/components/PageContainer';
-import StatCard from '@shared/components/StatCard';
 import SectionCard from '@shared/components/SectionCard';
-import DataTable from '@shared/components/DataTable';
 import ActionButton from '@shared/components/ActionButton';
-import { Landmark, Box, ShoppingBag, ShoppingCart, Plus } from 'lucide-react';
-
-const STATS = [
-  { title: 'Total Sales', value: '₹2,45,000.00', icon: <ShoppingBag size={16} />, trend: { value: '+12.5%', isPositive: true } },
-  { title: 'Total Purchases', value: '₹1,12,000.00', icon: <ShoppingCart size={16} />, trend: { value: '+8.3%', isPositive: true } },
-  { title: 'Low Stock Items', value: '2 items', icon: <Box size={16} />, trend: { value: 'Reorder', isPositive: false } },
-  { title: 'Pending Receivables', value: '₹34,500.00', icon: <Landmark size={16} />, trend: { value: '3 invoices', isPositive: false } }
-];
-
-const QUICK_ACTIONS = [
-  { label: 'Create Ledger', path: '/masters/ledgers' },
-  { label: 'Create Customer', path: '/masters/customers' },
-  { label: 'Create Supplier', path: '/masters/suppliers' },
-  { label: 'Create Invoice', path: '/sales' },
-  { label: 'Create Purchase', path: '/purchase' },
-  { label: 'Add Stock', path: '/inventory/stock-items' }
-];
-
-const MOCK_TX = [
-  { id: '1', date: '2026-07-03', ledger: 'Acme Traders', type: 'Sales', amount: '₹14,500.00' },
-  { id: '2', date: '2026-07-03', ledger: 'Cash Account', type: 'Receipt', amount: '₹2,500.00' },
-  { id: '3', date: '2026-07-02', ledger: 'Zeta Manufacturing', type: 'Purchase', amount: '₹84,300.00' }
-];
+import { Landmark, Box, ShoppingBag, Plus, Calendar, User, Building2, ShieldAlert } from 'lucide-react';
 
 export default function DashboardView() {
   const navigate = useNavigate();
+  const { activeCompany } = useActiveCompany();
+  const { user } = useAuth();
+  
+  const [summary, setSummary] = useState({
+    ledgerCount: 0,
+    partnerCount: 0,
+    stockItemCount: 0,
+    warehouseCount: 0,
+    totalInventoryValue: 0,
+    lowStockCount: 0
+  });
+
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (activeCompany) {
+      fetchDashboardData();
+    }
+  }, [activeCompany]);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const sumRes = await inventoryService.getDashboardSummary();
+      if (sumRes.success && sumRes.data) {
+        setSummary(sumRes.data);
+      }
+      
+      const actRes = await inventoryService.getDashboardRecentActivity();
+      if (actRes.success && actRes.data) {
+        setActivities(actRes.data.activities || []);
+      }
+    } catch (err) {
+      console.error("Error loading dashboard data", err);
+      setError("Unable to sync dashboard statistics with backend services.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const todayStr = new Date().toLocaleDateString(undefined, { 
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+  });
+
+  if (!activeCompany) {
+    return (
+      <div className="p-6 text-center text-slate-500 max-w-md mx-auto space-y-4 mt-12">
+        <h2 className="text-lg font-bold">No Active Company Context</h2>
+        <p className="text-sm">Please select or register a company context to load the SmartERP dashboard.</p>
+        <button
+          onClick={() => navigate('/company-select')}
+          className="px-4 py-2 bg-indigo-600 text-white rounded text-sm hover:bg-indigo-700 transition"
+        >
+          Select Company
+        </button>
+      </div>
+    );
+  }
+
+  const stats = [
+    { title: 'Ledger Accounts', value: summary.ledgerCount, desc: 'Active financial ledgers' },
+    { title: 'Business Partners', value: summary.partnerCount, desc: 'Registered customers & suppliers' },
+    { title: 'Stock Items', value: summary.stockItemCount, desc: 'Unique SKU records' },
+    { title: 'Warehouses', value: summary.warehouseCount, desc: 'Storage locations' },
+    { title: 'Inventory Valuation', value: `₹${summary.totalInventoryValue.toLocaleString()}`, desc: 'Total opening value' }
+  ];
 
   return (
     <PageContainer>
-      <div className="stat-card-grid">
-        {STATS.map((s, idx) => <StatCard key={idx} {...s} />)}
+      {/* Context Banner */}
+      <div className="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/80 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-slate-800 dark:text-slate-100 font-semibold">
+            <Building2 size={16} className="text-indigo-500" />
+            <span>{activeCompany.companyName}</span>
+            <span className="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 text-[10px] uppercase font-bold rounded">
+              FY {activeCompany.financialYear}
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Company registration ID: {activeCompany.id}</p>
+        </div>
+        <div className="flex flex-wrap gap-4 text-xs text-slate-500 dark:text-slate-400">
+          <div className="flex items-center gap-1.5">
+            <User size={14} className="text-indigo-400" />
+            <span>{user?.email || 'Administrator'}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Calendar size={14} className="text-indigo-400" />
+            <span>{todayStr}</span>
+          </div>
+        </div>
       </div>
+
+      {error && (
+        <div className="p-4 bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 text-sm font-semibold rounded-lg border border-rose-200 dark:border-rose-900/50 flex justify-between items-center">
+          <span>{error}</span>
+          <button onClick={fetchDashboardData} className="px-3 py-1 bg-white dark:bg-slate-700 rounded text-xs border border-rose-200 dark:border-slate-600">Retry</button>
+        </div>
+      )}
+
+      {/* Main Statistics Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        {stats.map((s, idx) => (
+          <div key={idx} className="p-5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700/80 shadow-sm flex flex-col justify-between">
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{s.title}</span>
+            <span className="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-2">{s.value}</span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">{s.desc}</span>
+          </div>
+        ))}
+      </div>
+
+      {summary.lowStockCount > 0 && (
+        <div className="p-4 bg-amber-50 dark:bg-amber-950/20 rounded-xl border border-amber-200 dark:border-amber-900/50 flex items-center gap-3">
+          <ShieldAlert className="text-amber-600 dark:text-amber-400" size={20} />
+          <div>
+            <div className="text-sm font-semibold text-amber-800 dark:text-amber-300">Low Stock Alert!</div>
+            <p className="text-xs text-amber-700 dark:text-amber-400">There are {summary.lowStockCount} stock items that are at or below reorder levels. Please review inventory listings.</p>
+          </div>
+          <button
+            onClick={() => navigate('/inventory/stock-items')}
+            className="ml-auto px-3 py-1.5 bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/50 dark:hover:bg-amber-900 text-amber-800 dark:text-amber-200 font-semibold rounded text-xs transition"
+          >
+            Review Stock
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">
         {/* Quick Actions Panel */}
-        <SectionCard title="Quick Actions" description="Fast master files and vouchers creation tools" className="lg:col-span-2">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {QUICK_ACTIONS.map((a, idx) => (
-              <ActionButton 
-                key={idx} 
-                label={a.label} 
-                icon={<Plus size={12} />} 
-                variant="outline" 
-                onClick={() => navigate(a.path)} 
-                className="w-full justify-start py-3"
-              />
-            ))}
+        <SectionCard title="Accounting & Inventory Shortcuts" description="Instantly open master setup and configuration sheets" className="lg:col-span-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            <ActionButton 
+              label="Create Ledger" 
+              icon={<Plus size={14} />} 
+              variant="outline" 
+              onClick={() => navigate('/accounting/ledgers/create')} 
+              className="w-full justify-start py-3"
+            />
+            <ActionButton 
+              label="Create Business Partner" 
+              icon={<Plus size={14} />} 
+              variant="outline" 
+              onClick={() => navigate('/inventory/partners/create')} 
+              className="w-full justify-start py-3"
+            />
+            <ActionButton 
+              label="Add Stock Item" 
+              icon={<Plus size={14} />} 
+              variant="outline" 
+              onClick={() => navigate('/inventory/stock-items/create')} 
+              className="w-full justify-start py-3"
+            />
+            <ActionButton 
+              label="Manage Warehouses" 
+              icon={<Plus size={14} />} 
+              variant="outline" 
+              onClick={() => navigate('/inventory/warehouses')} 
+              className="w-full justify-start py-3"
+            />
+            <ActionButton 
+              label="Manage Units" 
+              icon={<Plus size={14} />} 
+              variant="outline" 
+              onClick={() => navigate('/inventory/units')} 
+              className="w-full justify-start py-3"
+            />
+            <ActionButton 
+              label="Manage Tax & HSN" 
+              icon={<Plus size={14} />} 
+              variant="outline" 
+              onClick={() => navigate('/inventory/tax-categories')} 
+              className="w-full justify-start py-3"
+            />
           </div>
         </SectionCard>
         
-        {/* Announcements */}
-        <SectionCard title="Announcements" description="SmartERP system highlights">
-          <div className="text-xs text-[var(--text-secondary)] space-y-3 text-left">
-            <div className="p-2.5 rounded-lg bg-[var(--primary-glow)] border-l-4 border-[var(--primary)]">
-              <strong className="text-[var(--text-primary)] block">GST Filings Deadline</strong>
-              Submit all outstanding quarterly invoice records before the upcoming GST portal window locks.
+        {/* Announcements (Real check) */}
+        <SectionCard title="System Notifications" description="Updates from company audit activities">
+          <div className="text-xs text-slate-500 dark:text-slate-400 space-y-3 text-left">
+            <div className="p-3 rounded-lg bg-indigo-50/50 dark:bg-indigo-950/20 border-l-4 border-indigo-500">
+              <strong className="text-slate-800 dark:text-slate-200 block mb-0.5">Welcome to SmartERP!</strong>
+              All master parameters, tax sheets, and warehouses are fully configured and synced with the active company database.
+            </div>
+            <div className="text-[10px] text-slate-400 text-center py-2">
+              No new system announcements available.
             </div>
           </div>
         </SectionCard>
       </div>
 
-      <SectionCard title="Recent Ledger Transactions" description="List of latest voucher registries and accounts adjustments">
-        <DataTable 
-          columns={[
-            { key: 'date', header: 'Date' },
-            { key: 'ledger', header: 'Party / Ledger' },
-            { key: 'type', header: 'Voucher Type' },
-            { key: 'amount', header: 'Voucher Amount', cellClassName: 'font-bold text-[var(--text-primary)]' }
-          ]} 
-          data={MOCK_TX} 
-        />
+      {/* Recent Timeline Activities */}
+      <SectionCard title="Recent Activity Timeline" description="Trace of recent master ledger modifications and inventory additions">
+        {loading ? (
+          <div className="text-center py-8 text-xs text-slate-400">Loading timeline data...</div>
+        ) : activities.length === 0 ? (
+          <div className="text-center py-8 text-xs text-slate-400">
+            No activity records found. Get started by creating your first Ledger, Partner, or Stock Item.
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
+            {activities.map((act, idx) => (
+              <div key={idx} className="py-3 flex justify-between items-start">
+                <div>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold mr-3 ${
+                    act.type === 'LEDGER' ? 'bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400' :
+                    act.type === 'PARTNER' ? 'bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-400' :
+                    'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400'
+                  }`}>
+                    {act.type}
+                  </span>
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">{act.title}</span>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{act.details}</p>
+                </div>
+                <span className="text-[10px] text-slate-400 font-medium">
+                  {new Date(act.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </SectionCard>
     </PageContainer>
   );
