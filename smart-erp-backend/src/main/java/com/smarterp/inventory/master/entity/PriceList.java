@@ -8,7 +8,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "item_price_lists")
+@Table(
+    name = "item_price_lists",
+    schema = "inventory"
+)
 @Getter
 @Setter
 @NoArgsConstructor

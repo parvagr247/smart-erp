@@ -7,13 +7,20 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import org.hibernate.annotations.Check;
+
 @Entity
 @Table(
     name = "tax_categories",
+    schema = "inventory",
     uniqueConstraints = {
         @UniqueConstraint(columnNames = {"company_id", "taxCode"})
+    },
+    indexes = {
+        @Index(name = "idx_tax_category_company_code", columnList = "company_id, taxCode")
     }
 )
+@Check(constraints = "gst_rate >= 0 AND gst_rate <= 100 AND cgst_rate >= 0 AND sgst_rate >= 0 AND igst_rate >= 0")
 @Getter
 @Setter
 @NoArgsConstructor

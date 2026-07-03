@@ -7,8 +7,22 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
 
+import org.hibernate.annotations.Check;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+
 @Entity
-@Table(name = "purchase_line_items")
+@Table(
+    name = "purchase_lines",
+    schema = "purchase",
+    indexes = {
+        @Index(name = "idx_purchase_line_purchase_id", columnList = "purchase_id"),
+        @Index(name = "idx_purchase_line_item_id", columnList = "stock_item_id")
+    }
+)
+@SQLDelete(sql = "UPDATE purchase_lines SET deleted_at = NOW() WHERE id = ?")
+@SQLRestriction("deleted_at IS NULL")
+@Check(constraints = "quantity > 0 AND rate >= 0 AND discount >= 0 AND tax_percentage >= 0 AND tax_percentage <= 100")
 @Getter
 @Setter
 @NoArgsConstructor

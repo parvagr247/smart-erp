@@ -8,8 +8,12 @@ import lombok.*;
 @Entity
 @Table(
     name = "item_manufacturers",
+    schema = "inventory",
     uniqueConstraints = {
         @UniqueConstraint(columnNames = {"company_id", "name"})
+    },
+    indexes = {
+        @Index(name = "idx_manufacturer_company_name", columnList = "company_id, name")
     }
 )
 @Getter

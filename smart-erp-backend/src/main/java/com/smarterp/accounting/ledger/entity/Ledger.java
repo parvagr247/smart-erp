@@ -7,17 +7,27 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
 
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+
 @Entity
 @Table(
     name = "ledgers",
+    schema = "accounting",
     uniqueConstraints = {
         @UniqueConstraint(name = "uq_ledger_company_name", columnNames = {"company_id", "name"})
     },
     indexes = {
         @Index(name = "idx_ledger_company_id", columnList = "company_id"),
-        @Index(name = "idx_ledger_name", columnList = "name")
+        @Index(name = "idx_ledger_name", columnList = "name"),
+        @Index(name = "idx_ledger_email", columnList = "email"),
+        @Index(name = "idx_ledger_phone", columnList = "phone"),
+        @Index(name = "idx_ledger_gst_number", columnList = "gstNumber"),
+        @Index(name = "idx_ledger_pan", columnList = "pan")
     }
 )
+@SQLDelete(sql = "UPDATE ledgers SET deleted_at = NOW() WHERE id = ?")
+@SQLRestriction("deleted_at IS NULL")
 @Getter
 @Setter
 @NoArgsConstructor

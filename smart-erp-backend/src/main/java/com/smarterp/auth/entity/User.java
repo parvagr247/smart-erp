@@ -11,8 +11,19 @@ import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+
 @Entity
-@Table(name = "users")
+@Table(
+    name = "users",
+    schema = "app_auth",
+    indexes = {
+        @Index(name = "idx_user_email", columnList = "email")
+    }
+)
+@SQLDelete(sql = "UPDATE users SET deleted_at = NOW() WHERE id = ?")
+@SQLRestriction("deleted_at IS NULL")
 @Getter
 @Setter
 @NoArgsConstructor

@@ -5,15 +5,21 @@ import com.smarterp.auth.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+
 @Entity
 @Table(
     name = "companies",
+    schema = "administration",
     indexes = {
         @Index(name = "idx_company_gst_number", columnList = "gstNumber"),
         @Index(name = "idx_company_owner_id", columnList = "owner_id"),
         @Index(name = "idx_company_name", columnList = "company_name")
     }
 )
+@SQLDelete(sql = "UPDATE companies SET deleted_at = NOW() WHERE id = ?")
+@SQLRestriction("deleted_at IS NULL")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -52,7 +58,4 @@ public class Company extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
-
-    @Version
-    private Long version;
 }

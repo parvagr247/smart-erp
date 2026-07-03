@@ -8,6 +8,7 @@ import lombok.*;
 @Entity
 @Table(
     name = "payment_terms_masters",
+    schema = "common",
     uniqueConstraints = {
         @UniqueConstraint(columnNames = {"company_id", "name"})
     }

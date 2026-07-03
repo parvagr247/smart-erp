@@ -5,7 +5,10 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "warehouse_bins")
+@Table(
+    name = "warehouse_bins",
+    schema = "inventory"
+)
 @Getter
 @Setter
 @NoArgsConstructor

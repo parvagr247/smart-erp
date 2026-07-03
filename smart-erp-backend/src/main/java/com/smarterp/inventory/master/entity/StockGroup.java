@@ -10,8 +10,12 @@ import java.util.List;
 @Entity
 @Table(
     name = "stock_groups",
+    schema = "inventory",
     uniqueConstraints = {
         @UniqueConstraint(columnNames = {"company_id", "name"})
+    },
+    indexes = {
+        @Index(name = "idx_stock_group_company_name", columnList = "company_id, name")
     }
 )
 @Getter

@@ -10,9 +10,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.hibernate.annotations.Check;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+
 @Entity
 @Table(
     name = "stock_items",
+    schema = "inventory",
     uniqueConstraints = {
         @UniqueConstraint(columnNames = {"company_id", "code"}),
         @UniqueConstraint(columnNames = {"company_id", "sku"})
@@ -24,6 +29,9 @@ import java.util.Set;
         @Index(name = "idx_item_barcode", columnList = "company_id, barcode")
     }
 )
+@SQLDelete(sql = "UPDATE stock_items SET deleted_at = NOW() WHERE id = ?")
+@SQLRestriction("deleted_at IS NULL")
+@Check(constraints = "reorder_level >= 0 AND opening_quantity >= 0 AND current_quantity >= 0 AND average_cost >= 0")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -63,6 +71,7 @@ public class StockItem extends BaseEntity {
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "stock_item_categories_mapping",
+        schema = "inventory",
         joinColumns = @JoinColumn(name = "stock_item_id"),
         inverseJoinColumns = @JoinColumn(name = "category_id")
     )
@@ -160,6 +169,7 @@ public class StockItem extends BaseEntity {
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "stock_item_tags_mapping",
+        schema = "inventory",
         joinColumns = @JoinColumn(name = "stock_item_id"),
         inverseJoinColumns = @JoinColumn(name = "tag_id")
     )

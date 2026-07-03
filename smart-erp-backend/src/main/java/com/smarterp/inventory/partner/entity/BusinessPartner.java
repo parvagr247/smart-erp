@@ -10,17 +10,28 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.Check;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+
 @Entity
 @Table(
     name = "business_partners",
+    schema = "partner",
     uniqueConstraints = {
         @UniqueConstraint(columnNames = {"company_id", "code"})
     },
     indexes = {
         @Index(name = "idx_partner_company_code", columnList = "company_id, code"),
-        @Index(name = "idx_partner_company_name", columnList = "company_id, name")
+        @Index(name = "idx_partner_company_name", columnList = "company_id, name"),
+        @Index(name = "idx_partner_email", columnList = "email"),
+        @Index(name = "idx_partner_phone", columnList = "phone"),
+        @Index(name = "idx_partner_gst_number", columnList = "gstNumber")
     }
 )
+@SQLDelete(sql = "UPDATE business_partners SET deleted_at = NOW() WHERE id = ?")
+@SQLRestriction("deleted_at IS NULL")
+@Check(constraints = "credit_limit >= 0")
 @Getter
 @Setter
 @NoArgsConstructor

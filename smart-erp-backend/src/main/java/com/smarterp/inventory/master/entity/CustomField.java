@@ -6,7 +6,10 @@ import lombok.*;
 import java.util.UUID;
 
 @Entity
-@Table(name = "entity_custom_fields")
+@Table(
+    name = "entity_custom_fields",
+    schema = "common"
+)
 @Getter
 @Setter
 @NoArgsConstructor

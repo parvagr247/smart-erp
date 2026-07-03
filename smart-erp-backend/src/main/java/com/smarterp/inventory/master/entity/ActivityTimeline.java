@@ -7,7 +7,10 @@ import lombok.*;
 import java.util.UUID;
 
 @Entity
-@Table(name = "activity_timelines")
+@Table(
+    name = "activity_timelines",
+    schema = "common"
+)
 @Getter
 @Setter
 @NoArgsConstructor

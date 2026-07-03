@@ -7,7 +7,10 @@ import lombok.*;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "item_unit_conversions")
+@Table(
+    name = "item_unit_conversions",
+    schema = "inventory"
+)
 @Getter
 @Setter
 @NoArgsConstructor

@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 @Entity
 @Table(
     name = "currencies",
+    schema = "common",
     uniqueConstraints = {
         @UniqueConstraint(columnNames = {"company_id", "code"})
     }

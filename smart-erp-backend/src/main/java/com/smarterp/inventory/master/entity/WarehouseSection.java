@@ -7,7 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "warehouse_sections")
+@Table(
+    name = "warehouse_sections",
+    schema = "inventory"
+)
 @Getter
 @Setter
 @NoArgsConstructor

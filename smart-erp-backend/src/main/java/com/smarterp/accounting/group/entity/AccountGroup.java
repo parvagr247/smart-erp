@@ -5,9 +5,13 @@ import com.smarterp.administration.company.entity.Company;
 import jakarta.persistence.*;
 import lombok.*;
 
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+
 @Entity
 @Table(
     name = "ledger_groups",
+    schema = "accounting",
     uniqueConstraints = {
         @UniqueConstraint(name = "uq_group_company_name", columnNames = {"company_id", "name"})
     },
@@ -16,6 +20,8 @@ import lombok.*;
         @Index(name = "idx_group_name", columnList = "name")
     }
 )
+@SQLDelete(sql = "UPDATE ledger_groups SET deleted_at = NOW() WHERE id = ?")
+@SQLRestriction("deleted_at IS NULL")
 @Getter
 @Setter
 @NoArgsConstructor
