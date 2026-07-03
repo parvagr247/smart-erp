@@ -1,14 +1,11 @@
 package com.smarterp.entities;
 
-
 import com.smarterp.entities.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "users")
@@ -17,7 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User extends BaseEntity{
+public class User extends BaseEntity {
 
     @Column(nullable = false)
     private String fullName;
@@ -33,11 +30,12 @@ public class User extends BaseEntity{
     private Role role;
 
     @Column(nullable = false)
+    @Builder.Default
     private Boolean enabled = true;
 
     @OneToMany(mappedBy = "owner")
+    @Builder.Default
     private List<Company> companies = new ArrayList<>();
-
-
-
 }
+
+
