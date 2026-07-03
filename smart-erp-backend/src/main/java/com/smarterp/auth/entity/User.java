@@ -1,3 +1,4 @@
+package com.smarterp.auth.entity;
 
 
 import com.smarterp.common.entity.BaseEntity;

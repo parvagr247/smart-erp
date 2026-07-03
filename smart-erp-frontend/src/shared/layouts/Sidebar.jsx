@@ -15,8 +15,7 @@ const MENU_ITEMS = [
     children: [
       { title: 'Ledgers', path: '/masters/ledgers' },
       { title: 'Groups', path: '/masters/groups' },
-      { title: 'Customers', path: '/masters/customers' },
-      { title: 'Suppliers', path: '/masters/suppliers' }
+      { title: 'Business Partners', path: '/inventory/partners' }
     ]
   },
   {
@@ -34,6 +33,7 @@ const MENU_ITEMS = [
     title: 'Inventory',
     icon: <Box size={18} />,
     children: [
+      { title: 'Dashboard', path: '/inventory' },
       { title: 'Stock Groups', path: '/inventory/stock-groups' },
       { title: 'Stock Items', path: '/inventory/stock-items' }
     ]

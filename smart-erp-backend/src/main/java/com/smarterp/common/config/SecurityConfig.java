@@ -1,4 +1,4 @@
-package com.smarterp.common.config;
+package com.smarterp.common.security;
 
 import com.smarterp.common.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
@@ -54,7 +54,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cache-Control", "Accept"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cache-Control", "Accept", "X-Company-ID", "x-company-id"));
         configuration.setExposedHeaders(List.of("Authorization"));
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

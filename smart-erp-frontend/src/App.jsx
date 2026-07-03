@@ -16,10 +16,24 @@ const CreateCompanyView = lazy(() => import('@modules/administration/company/vie
 const EditCompanyView = lazy(() => import('@modules/administration/company/views/EditCompanyView'));
 const DashboardView = lazy(() => import('@modules/business/dashboard/views/DashboardView'));
 
-const CustomersView = lazy(() => import('@modules/inventory/customers/views/CustomersView'));
-const SuppliersView = lazy(() => import('@modules/inventory/suppliers/views/SuppliersView'));
 const StockGroupsView = lazy(() => import('@modules/inventory/stockgroups/views/StockGroupsView'));
 const StockItemsView = lazy(() => import('@modules/inventory/items/views/StockItemsView'));
+const PartnerDashboardView = lazy(() => import('@modules/inventory/partner/views/PartnerDashboardView'));
+const PartnerListView = lazy(() => import('@modules/inventory/partner/views/PartnerListView'));
+const CreatePartnerView = lazy(() => import('@modules/inventory/partner/views/CreatePartnerView'));
+const EditPartnerView = lazy(() => import('@modules/inventory/partner/views/EditPartnerView'));
+const PartnerDetailsView = lazy(() => import('@modules/inventory/partner/views/PartnerDetailsView'));
+
+const InventoryDashboardView = lazy(() => import('@modules/inventory/views/InventoryDashboardView'));
+const CreateItemView = lazy(() => import('@modules/inventory/views/CreateItemView'));
+const EditItemView = lazy(() => import('@modules/inventory/views/EditItemView'));
+const ItemDetailsView = lazy(() => import('@modules/inventory/views/ItemDetailsView'));
+const BrandListView = lazy(() => import('@modules/inventory/views/BrandListView'));
+const ManufacturerListView = lazy(() => import('@modules/inventory/views/ManufacturerListView'));
+const CategoryListView = lazy(() => import('@modules/inventory/views/CategoryListView'));
+const UnitListView = lazy(() => import('@modules/inventory/views/UnitListView'));
+const TaxListView = lazy(() => import('@modules/inventory/views/TaxListView'));
+const WarehouseListView = lazy(() => import('@modules/inventory/views/WarehouseListView'));
 
 const AccountingDashboardView = lazy(() => import('@modules/accounting/views/AccountingDashboardView'));
 const AccountGroupsView = lazy(() => import('@modules/accounting/views/AccountGroupsView'));
@@ -106,10 +120,26 @@ export default function App() {
           <Route path="dashboard" element={<DashboardView />} />
           <Route path="masters/ledgers" element={<Navigate to="/accounting/ledgers" replace />} />
           <Route path="masters/groups" element={<Navigate to="/accounting/groups" replace />} />
-          <Route path="masters/customers" element={<CustomersView />} />
-          <Route path="masters/suppliers" element={<SuppliersView />} />
+          <Route path="masters/customers" element={<Navigate to="/inventory/partners" replace />} />
+          <Route path="masters/suppliers" element={<Navigate to="/inventory/partners" replace />} />
+          <Route path="inventory" element={<InventoryDashboardView />} />
           <Route path="inventory/stock-groups" element={<StockGroupsView />} />
           <Route path="inventory/stock-items" element={<StockItemsView />} />
+          <Route path="inventory/stock-items/create" element={<CreateItemView />} />
+          <Route path="inventory/stock-items/edit/:id" element={<EditItemView />} />
+          <Route path="inventory/stock-items/:id" element={<ItemDetailsView />} />
+          <Route path="inventory/brands" element={<BrandListView />} />
+          <Route path="inventory/manufacturers" element={<ManufacturerListView />} />
+          <Route path="inventory/categories" element={<CategoryListView />} />
+          <Route path="inventory/units" element={<UnitListView />} />
+          <Route path="inventory/tax-categories" element={<TaxListView />} />
+          <Route path="inventory/warehouses" element={<WarehouseListView />} />
+          
+          <Route path="inventory/partners" element={<PartnerDashboardView />} />
+          <Route path="inventory/partners/list" element={<PartnerListView />} />
+          <Route path="inventory/partners/create" element={<CreatePartnerView />} />
+          <Route path="inventory/partners/edit/:id" element={<EditPartnerView />} />
+          <Route path="inventory/partners/:id" element={<PartnerDetailsView />} />
           
           <Route path="accounting" element={<AccountingDashboardView />} />
           <Route path="accounting/groups" element={<AccountGroupsView />} />

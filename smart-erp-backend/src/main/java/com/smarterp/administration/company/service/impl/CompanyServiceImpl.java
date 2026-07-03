@@ -36,7 +36,7 @@ public class CompanyServiceImpl implements CompanyService {
         Company company = mapper.toEntity(request, owner);
         Company savedCompany = repository.save(company);
         
-        eventPublisher.publishEvent(new com.smarterp.company.event.CompanyCreatedEvent(this, savedCompany.getId()));
+        eventPublisher.publishEvent(new com.smarterp.administration.company.event.CompanyCreatedEvent(this, savedCompany.getId()));
         
         return mapper.toResponse(savedCompany);
     }

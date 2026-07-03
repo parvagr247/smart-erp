@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { inventoryService } from '../../services/inventory.service';
+import { inventoryService } from '../services/inventory.service';
 
-export default function StockItemsView() {
+export default function ItemListView() {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -90,7 +90,7 @@ export default function StockItemsView() {
           <p className="text-sm text-slate-500 dark:text-slate-400">Manage products, opening balance details, and pricing lists.</p>
         </div>
         <button
-          onClick={() => navigate('/inventory/stock-items/create')}
+          onClick={() => navigate('/inventory/items/create')}
           className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg text-sm transition"
         >
           + Add Stock Item
@@ -181,7 +181,7 @@ export default function StockItemsView() {
                           <div>{item.sku}</div>
                           <div className="text-xs text-slate-400">{item.code}</div>
                         </td>
-                        <td className="py-3 px-4 font-medium text-slate-800 dark:text-slate-100 cursor-pointer hover:underline" onClick={() => navigate(`/inventory/stock-items/${item.id}`)}>
+                        <td className="py-3 px-4 font-medium text-slate-800 dark:text-slate-100 cursor-pointer hover:underline" onClick={() => navigate(`/inventory/items/${item.id}`)}>
                           {item.name}
                         </td>
                         <td className="py-3 px-4 text-slate-600 dark:text-slate-400">{item.brandName || '-'}</td>
@@ -199,7 +199,7 @@ export default function StockItemsView() {
                         </td>
                         <td className="py-3 px-4 text-right space-x-2">
                           <button
-                            onClick={() => navigate(`/inventory/stock-items/edit/${item.id}`)}
+                            onClick={() => navigate(`/inventory/items/${item.id}/edit`)}
                             className="text-xs text-indigo-600 hover:text-indigo-700 font-semibold"
                           >
                             Edit
