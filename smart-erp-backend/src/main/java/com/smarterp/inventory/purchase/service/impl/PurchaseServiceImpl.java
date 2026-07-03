@@ -50,6 +50,7 @@ public class PurchaseServiceImpl implements PurchaseService {
     private final WarehouseRepository warehouseRepository;
     private final TaxCalculationStrategy taxCalculationStrategy;
     private final ApplicationEventPublisher eventPublisher;
+    private final com.smarterp.common.workflow.WorkflowEngine workflowEngine;
 
     @Override
     public PurchaseResponse createPurchase(PurchaseRequest request, Company company, String userEmail) {
@@ -158,8 +159,8 @@ public class PurchaseServiceImpl implements PurchaseService {
             return mapToResponse(purchase);
         }
 
-        if (oldStatus == PurchaseStatus.APPROVED || oldStatus == PurchaseStatus.COMPLETED || oldStatus == PurchaseStatus.CANCELLED) {
-            throw new BusinessValidationException("Status of approved, completed, or cancelled purchase cannot be altered.");
+        if (!workflowEngine.canTransition(oldStatus.name(), status.name())) {
+            throw new BusinessValidationException("Invalid status transition from " + oldStatus + " to " + status + ".");
         }
 
         purchase.setStatus(status);

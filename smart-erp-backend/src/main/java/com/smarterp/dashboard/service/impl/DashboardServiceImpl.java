@@ -37,6 +37,8 @@ public class DashboardServiceImpl implements DashboardService {
     private final StockItemRepository stockItemRepository;
     private final WarehouseRepository warehouseRepository;
     private final PurchaseRepository purchaseRepository;
+    private final com.smarterp.inventory.sales.repository.SalesRepository salesRepository;
+    private final com.smarterp.accounting.voucher.repository.VoucherRepository voucherRepository;
 
     private final java.util.concurrent.ConcurrentHashMap<java.util.UUID, DashboardSummaryResponse> summaryCache = new java.util.concurrent.ConcurrentHashMap<>();
     private final java.util.concurrent.ConcurrentHashMap<java.util.UUID, RecentActivityResponse> activityCache = new java.util.concurrent.ConcurrentHashMap<>();
@@ -75,6 +77,69 @@ public class DashboardServiceImpl implements DashboardService {
                     .map(p -> p.getGrandTotal() != null ? p.getGrandTotal() : BigDecimal.ZERO)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+            long salesCount = salesRepository.countByCompany(company);
+            BigDecimal totalSalesValue = salesRepository.findAll((root, query, cb) -> cb.equal(root.get("company"), company))
+                    .stream()
+                    .map(s -> s.getGrandTotal() != null ? s.getGrandTotal() : BigDecimal.ZERO)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            BigDecimal revenueToday = salesRepository.findAll((root, query, cb) -> cb.and(
+                            cb.equal(root.get("company"), company),
+                            cb.equal(root.get("salesDate"), java.time.LocalDate.now())
+                    ))
+                    .stream()
+                    .map(s -> s.getGrandTotal() != null ? s.getGrandTotal() : BigDecimal.ZERO)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            BigDecimal purchaseToday = purchaseRepository.findAll((root, query, cb) -> cb.and(
+                            cb.equal(root.get("company"), company),
+                            cb.equal(root.get("purchaseDate"), java.time.LocalDate.now())
+                    ))
+                    .stream()
+                    .map(p -> p.getGrandTotal() != null ? p.getGrandTotal() : BigDecimal.ZERO)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            BigDecimal receivables = ledgerRepository.findAll((root, query, cb) -> cb.and(
+                            cb.equal(root.get("company"), company),
+                            cb.equal(root.get("group").get("name"), "Current Assets")
+                    ))
+                    .stream()
+                    .map(l -> l.getOpeningBalance() != null ? l.getOpeningBalance() : BigDecimal.ZERO)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            BigDecimal payables = ledgerRepository.findAll((root, query, cb) -> cb.and(
+                            cb.equal(root.get("company"), company),
+                            cb.equal(root.get("group").get("name"), "Current Liabilities")
+                    ))
+                    .stream()
+                    .map(l -> l.getOpeningBalance() != null ? l.getOpeningBalance() : BigDecimal.ZERO)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            BigDecimal cashPosition = ledgerRepository.findAll((root, query, cb) -> cb.and(
+                            cb.equal(root.get("company"), company),
+                            root.get("group").get("name").in("Bank Accounts", "Cash-in-Hand")
+                    ))
+                    .stream()
+                    .map(l -> l.getOpeningBalance() != null ? l.getOpeningBalance() : BigDecimal.ZERO)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            long draftPurchases = purchaseRepository.count((root, query, cb) -> cb.and(
+                    cb.equal(root.get("company"), company),
+                    cb.equal(root.get("status"), com.smarterp.inventory.purchase.entity.PurchaseStatus.DRAFT)
+            ));
+
+            long draftSales = salesRepository.count((root, query, cb) -> cb.and(
+                    cb.equal(root.get("company"), company),
+                    cb.equal(root.get("status"), com.smarterp.inventory.sales.entity.SalesStatus.DRAFT)
+            ));
+
+            long draftVouchers = voucherRepository.count((root, query, cb) -> cb.and(
+                    cb.equal(root.get("company"), company),
+                    cb.equal(root.get("status"), com.smarterp.accounting.voucher.entity.VoucherStatus.DRAFT)
+            ));
+
+            long pendingApprovals = draftPurchases + draftSales + draftVouchers;
+
             return DashboardSummaryResponse.builder()
                     .ledgerCount(ledgerCount)
                     .partnerCount(partnerCount)
@@ -84,6 +149,14 @@ public class DashboardServiceImpl implements DashboardService {
                     .lowStockCount(lowStockCount)
                     .purchaseCount(purchaseCount)
                     .totalPurchaseValue(totalPurchaseValue)
+                    .salesCount(salesCount)
+                    .totalSalesValue(totalSalesValue)
+                    .revenueToday(revenueToday)
+                    .purchaseToday(purchaseToday)
+                    .receivables(receivables)
+                    .payables(payables)
+                    .cashPosition(cashPosition)
+                    .pendingApprovals(pendingApprovals)
                     .build();
         });
     }
@@ -236,6 +309,33 @@ public class DashboardServiceImpl implements DashboardService {
                 .title(p.getPurchaseNumber())
                 .subtitle("Purchase Invoice | Supplier: " + p.getSupplier().getName() + " | Total: ₹" + p.getGrandTotal())
                 .path("/purchase/" + p.getId())
+                .build()));
+
+        // 5. Search Sales
+        salesRepository.findAll((root, q, cb) -> cb.and(
+                cb.equal(root.get("company"), company),
+                cb.or(
+                        cb.like(cb.lower(root.get("salesNumber")), "%" + cleanQuery + "%"),
+                        cb.like(cb.lower(root.get("customer").get("name")), "%" + cleanQuery + "%")
+                )
+        )).stream().limit(5).forEach(s -> hits.add(com.smarterp.dashboard.dto.SearchResultResponse.SearchHit.builder()
+                .id(s.getId())
+                .type("SALES")
+                .title(s.getSalesNumber())
+                .subtitle("Sales Invoice | Customer: " + s.getCustomer().getName() + " | Total: ₹" + s.getGrandTotal())
+                .path("/sales/" + s.getId())
+                .build()));
+
+        // 6. Search Vouchers
+        voucherRepository.findAll((root, q, cb) -> cb.and(
+                cb.equal(root.get("company"), company),
+                cb.like(cb.lower(root.get("voucherNumber")), "%" + cleanQuery + "%")
+        )).stream().limit(5).forEach(v -> hits.add(com.smarterp.dashboard.dto.SearchResultResponse.SearchHit.builder()
+                .id(v.getId())
+                .type("VOUCHER")
+                .title(v.getVoucherNumber())
+                .subtitle(v.getVoucherType() + " Voucher | Date: " + v.getVoucherDate() + " | Status: " + v.getStatus())
+                .path("/accounting/vouchers/" + v.getId())
                 .build()));
 
         return com.smarterp.dashboard.dto.SearchResultResponse.builder().hits(hits).build();

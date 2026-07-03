@@ -199,3 +199,51 @@ export function useLedgerForm(ledgerId, onSaveSuccess) {
 
   return { loading, error, errors, formData, setFormData, bind, handleSubmit };
 }
+
+/* ==========================================================================
+   4. Report Engine API Calls
+   ========================================================================== */
+export const fetchTrialBalance = async () => {
+  const response = await axiosClient.get('/reports/trial-balance');
+  return response.data;
+};
+
+export const fetchProfitLoss = async (params) => {
+  const response = await axiosClient.get('/reports/profit-loss', { params });
+  return response.data;
+};
+
+export const fetchBalanceSheet = async (params) => {
+  const response = await axiosClient.get('/reports/balance-sheet', { params });
+  return response.data;
+};
+
+export const fetchCashBankBook = async (params) => {
+  const response = await axiosClient.get('/reports/cash-bank-book', { params });
+  return response.data;
+};
+
+export const fetchOutstanding = async (params) => {
+  const response = await axiosClient.get('/reports/outstanding', { params });
+  return response.data;
+};
+
+export const fetchInventoryValuation = async () => {
+  const response = await axiosClient.get('/reports/inventory-valuation');
+  return response.data;
+};
+
+export const fetchStockRegister = async (params) => {
+  const response = await axiosClient.get('/reports/stock-register', { params });
+  return response.data;
+};
+
+export const fetchGstSummary = async (params) => {
+  const response = await axiosClient.get('/reports/gst-summary', { params });
+  return response.data;
+};
+
+export const fetchKpis = async () => {
+  const response = await axiosClient.get('/reports/kpis');
+  return response.data;
+};

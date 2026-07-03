@@ -26,12 +26,14 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/inventory/purchases")
 @RequiredArgsConstructor
+@org.springframework.security.access.prepost.PreAuthorize("hasAuthority('Company.View')")
 public class PurchaseController {
 
     private final PurchaseService service;
     private final CompanyRepository companyRepository;
 
     @PostMapping
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('Purchase.Create')")
     public ResponseEntity<ApiResponse<PurchaseResponse>> createPurchase(
             @RequestHeader("X-Company-ID") UUID companyId,
             @Valid @RequestBody PurchaseRequest request,
@@ -46,6 +48,7 @@ public class PurchaseController {
     }
 
     @PutMapping("/{id}")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('Purchase.Create')")
     public ResponseEntity<ApiResponse<PurchaseResponse>> updatePurchase(
             @PathVariable UUID id,
             @RequestHeader("X-Company-ID") UUID companyId,
@@ -74,6 +77,7 @@ public class PurchaseController {
     }
 
     @PostMapping("/{id}/status")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyAuthority('Purchase.Approve', 'Purchase.Cancel')")
     public ResponseEntity<ApiResponse<PurchaseResponse>> updatePurchaseStatus(
             @PathVariable UUID id,
             @RequestHeader("X-Company-ID") UUID companyId,
@@ -113,6 +117,7 @@ public class PurchaseController {
     }
 
     @DeleteMapping("/{id}")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('Purchase.Delete')")
     public ResponseEntity<ApiResponse<Void>> deletePurchase(
             @PathVariable UUID id,
             @RequestHeader("X-Company-ID") UUID companyId) {

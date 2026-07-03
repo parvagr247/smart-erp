@@ -25,6 +25,7 @@ public class CompanyController {
     private final CompanyService companyService;
 
     @PostMapping
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('Company.Create')")
     public ResponseEntity<ApiResponse<CompanyResponse>> createCompany(
             @Valid @RequestBody CreateCompanyRequest request,
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
@@ -33,6 +34,7 @@ public class CompanyController {
     }
 
     @GetMapping
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('Company.View')")
     public ResponseEntity<ApiResponse<Page<CompanySummaryResponse>>> getCompanies(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -46,6 +48,7 @@ public class CompanyController {
     }
 
     @GetMapping("/{id}")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('Company.View')")
     public ResponseEntity<ApiResponse<CompanyResponse>> getCompany(
             @PathVariable UUID id,
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
@@ -54,6 +57,7 @@ public class CompanyController {
     }
 
     @PutMapping("/{id}")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('Company.Update')")
     public ResponseEntity<ApiResponse<CompanyResponse>> updateCompany(
             @PathVariable UUID id,
             @Valid @RequestBody UpdateCompanyRequest request,
@@ -63,6 +67,7 @@ public class CompanyController {
     }
 
     @DeleteMapping("/{id}")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('Company.Delete')")
     public ResponseEntity<ApiResponse<Void>> deleteCompany(
             @PathVariable UUID id,
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
@@ -71,6 +76,7 @@ public class CompanyController {
     }
 
     @PostMapping("/{id}/switch")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('Company.View')")
     public ResponseEntity<ApiResponse<CompanyResponse>> switchCompany(
             @PathVariable UUID id,
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {

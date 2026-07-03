@@ -73,11 +73,13 @@ export default function DashboardView() {
   }
 
   const stats = [
-    { title: 'Ledger Accounts', value: summary.ledgerCount, desc: 'Active financial ledgers' },
-    { title: 'Business Partners', value: summary.partnerCount, desc: 'Registered customers & suppliers' },
-    { title: 'Stock Items', value: summary.stockItemCount, desc: 'Unique SKU records' },
-    { title: 'Warehouses', value: summary.warehouseCount, desc: 'Storage locations' },
-    { title: 'Inventory Valuation', value: `₹${summary.totalInventoryValue.toLocaleString()}`, desc: 'Total opening value' }
+    { title: 'Pending Approvals', value: summary.pendingApprovals || 0, desc: 'Awaiting review', path: '/accounting/vouchers' },
+    { title: "Today's Sales", value: `₹${(summary.revenueToday || 0).toLocaleString()}`, desc: 'Completed invoices today', path: '/inventory/sales' },
+    { title: "Today's Purchases", value: `₹${(summary.purchaseToday || 0).toLocaleString()}`, desc: 'Purchase orders today', path: '/inventory/purchases' },
+    { title: 'Receivables', value: `₹${(summary.receivables || 0).toLocaleString()}`, desc: 'Customer outstandings', path: '/accounting/reports' },
+    { title: 'Payables', value: `₹${(summary.payables || 0).toLocaleString()}`, desc: 'Supplier outstandings', path: '/accounting/reports' },
+    { title: 'Cash Position', value: `₹${(summary.cashPosition || 0).toLocaleString()}`, desc: 'Liquid funds on hand', path: '/accounting/reports' },
+    { title: 'Inventory Valuation', value: `₹${(summary.totalInventoryValue || 0).toLocaleString()}`, desc: 'Total asset value', path: '/accounting/reports' }
   ];
 
   return (
@@ -114,9 +116,13 @@ export default function DashboardView() {
       )}
 
       {/* Main Statistics Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((s, idx) => (
-          <div key={idx} className="p-5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700/80 shadow-sm flex flex-col justify-between">
+          <div 
+            key={idx} 
+            onClick={() => s.path && navigate(s.path)}
+            className="p-5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700/80 shadow-sm flex flex-col justify-between cursor-pointer hover:border-indigo-500 transition duration-150"
+          >
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{s.title}</span>
             <span className="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-2">{s.value}</span>
             <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">{s.desc}</span>

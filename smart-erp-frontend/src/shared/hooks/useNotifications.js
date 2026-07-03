@@ -1,58 +1,63 @@
-import { useState, useMemo } from 'react';
-
-const INITIAL_MOCK_NOTIFICATIONS = [
-  {
-    id: 'n1',
-    title: 'GST Deadline Reminder',
-    desc: 'GSTR-1 filing deadline for the current quarter is in 5 days.',
-    time: '2 hours ago',
-    type: 'warning',
-    isRead: false,
-  },
-  {
-    id: 'n2',
-    title: 'Low Stock Alert',
-    desc: 'Item "Industrial Motor 5HP" is below the reorder point of 10 units.',
-    time: '4 hours ago',
-    type: 'danger',
-    isRead: false,
-  },
-  {
-    id: 'n3',
-    title: 'Welcome to SmartERP',
-    desc: 'Your company workspace has been initialized successfully. Let\'s configure master files!',
-    time: '1 day ago',
-    type: 'info',
-    isRead: true,
-  },
-];
+import { useState, useEffect, useCallback } from 'react';
+import axiosClient from '@shared/api/axios-client';
+import { useActiveCompany } from '@shared/context/ActiveCompanyContext';
 
 export default function useNotifications() {
-  const [notifications, setNotifications] = useState(INITIAL_MOCK_NOTIFICATIONS);
+  const { activeCompany } = useActiveCompany();
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  const unreadCount = useMemo(() => {
-    return notifications.filter((n) => !n.isRead).length;
-  }, [notifications]);
+  const fetchNotifications = useCallback(async () => {
+    if (!activeCompany?.id) return;
+    try {
+      const res = await axiosClient.get('/notifications');
+      if (res.data?.success) {
+        setNotifications((res.data.data || []).map(n => ({
+          id: n.id,
+          title: n.title,
+          desc: n.message,
+          time: new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          isRead: n.read
+        })));
+      }
+      
+      const countRes = await axiosClient.get('/notifications/unread-count');
+      if (countRes.data?.success) {
+        setUnreadCount(countRes.data.data || 0);
+      }
+    } catch (err) {
+      console.error('Failed to load notifications', err);
+    }
+  }, [activeCompany?.id]);
 
-  const markAsRead = (id) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
-    );
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 10000);
+    return () => clearInterval(interval);
+  }, [fetchNotifications]);
+
+  const markAsRead = async (id) => {
+    try {
+      await axiosClient.patch(`/notifications/${id}/read`);
+      fetchNotifications();
+    } catch (err) {
+      console.error('Failed to mark read', err);
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-  };
-
-  const deleteNotification = (id) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  const markAllAsRead = async () => {
+    try {
+      await axiosClient.patch('/notifications/read-all');
+      fetchNotifications();
+    } catch (err) {
+      console.error('Failed to mark all read', err);
+    }
   };
 
   return {
     notifications,
     unreadCount,
     markAsRead,
-    markAllAsRead,
-    deleteNotification,
+    markAllAsRead
   };
 }

@@ -16,4 +16,12 @@ public class DashboardSummaryResponse {
     private long lowStockCount;
     private long purchaseCount;
     private BigDecimal totalPurchaseValue;
+    private long salesCount;
+    private BigDecimal totalSalesValue;
+    private BigDecimal revenueToday;
+    private BigDecimal purchaseToday;
+    private BigDecimal receivables;
+    private BigDecimal payables;
+    private BigDecimal cashPosition;
+    private long pendingApprovals;
 }

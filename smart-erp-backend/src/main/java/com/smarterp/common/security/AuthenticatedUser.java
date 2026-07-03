@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.ArrayList;
 
 @RequiredArgsConstructor
 @Getter
@@ -18,7 +19,61 @@ public class AuthenticatedUser implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+
+        switch (user.getRole()) {
+            case ADMIN -> {
+                authorities.add(new SimpleGrantedAuthority("Company.Create"));
+                authorities.add(new SimpleGrantedAuthority("Company.Update"));
+                authorities.add(new SimpleGrantedAuthority("Company.Delete"));
+                authorities.add(new SimpleGrantedAuthority("Company.View"));
+                authorities.add(new SimpleGrantedAuthority("Purchase.Create"));
+                authorities.add(new SimpleGrantedAuthority("Purchase.Approve"));
+                authorities.add(new SimpleGrantedAuthority("Purchase.Cancel"));
+                authorities.add(new SimpleGrantedAuthority("Purchase.Delete"));
+                authorities.add(new SimpleGrantedAuthority("Sales.Create"));
+                authorities.add(new SimpleGrantedAuthority("Sales.Approve"));
+                authorities.add(new SimpleGrantedAuthority("Sales.Cancel"));
+                authorities.add(new SimpleGrantedAuthority("Sales.Print"));
+                authorities.add(new SimpleGrantedAuthority("Inventory.Create"));
+                authorities.add(new SimpleGrantedAuthority("Inventory.Update"));
+                authorities.add(new SimpleGrantedAuthority("Inventory.Transfer"));
+                authorities.add(new SimpleGrantedAuthority("Inventory.Adjust"));
+                authorities.add(new SimpleGrantedAuthority("Accounting.CreateVoucher"));
+                authorities.add(new SimpleGrantedAuthority("Accounting.ApproveVoucher"));
+                authorities.add(new SimpleGrantedAuthority("Accounting.ViewReports"));
+                authorities.add(new SimpleGrantedAuthority("Administration.Users"));
+                authorities.add(new SimpleGrantedAuthority("Administration.Roles"));
+                authorities.add(new SimpleGrantedAuthority("Administration.Settings"));
+            }
+            case ACCOUNTANT -> {
+                authorities.add(new SimpleGrantedAuthority("Company.View"));
+                authorities.add(new SimpleGrantedAuthority("Purchase.Create"));
+                authorities.add(new SimpleGrantedAuthority("Purchase.Cancel"));
+                authorities.add(new SimpleGrantedAuthority("Sales.Create"));
+                authorities.add(new SimpleGrantedAuthority("Sales.Cancel"));
+                authorities.add(new SimpleGrantedAuthority("Sales.Print"));
+                authorities.add(new SimpleGrantedAuthority("Accounting.CreateVoucher"));
+                authorities.add(new SimpleGrantedAuthority("Accounting.ApproveVoucher"));
+                authorities.add(new SimpleGrantedAuthority("Accounting.ViewReports"));
+            }
+            case INVENTORY_MANAGER -> {
+                authorities.add(new SimpleGrantedAuthority("Company.View"));
+                authorities.add(new SimpleGrantedAuthority("Purchase.Create"));
+                authorities.add(new SimpleGrantedAuthority("Purchase.Approve"));
+                authorities.add(new SimpleGrantedAuthority("Purchase.Cancel"));
+                authorities.add(new SimpleGrantedAuthority("Sales.Create"));
+                authorities.add(new SimpleGrantedAuthority("Sales.Approve"));
+                authorities.add(new SimpleGrantedAuthority("Sales.Cancel"));
+                authorities.add(new SimpleGrantedAuthority("Sales.Print"));
+                authorities.add(new SimpleGrantedAuthority("Inventory.Create"));
+                authorities.add(new SimpleGrantedAuthority("Inventory.Update"));
+                authorities.add(new SimpleGrantedAuthority("Inventory.Transfer"));
+                authorities.add(new SimpleGrantedAuthority("Inventory.Adjust"));
+            }
+        }
+        return authorities;
     }
 
     @Override
