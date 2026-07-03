@@ -61,14 +61,18 @@ export default function App() {
         <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
           <Route index element={<Navigate to="/dashboard" replace />} />
           {getBusinessRoutes()}
+          
           {getAccountingRoutes()}
+
           {getInventoryRoutes()}
           <Route path="settings" element={<div className="p-6 font-bold text-left">Personal Settings (Coming Soon)</div>} />
         </Route>
 
         {/* Administration console layout routes */}
         <Route path="/admin" element={<ProtectedRoute requireAdmin={true}><AdminLayout /></ProtectedRoute>}>
+          
           <Route index element={<Navigate to="dashboard" replace />} />
+            
           {getAdministrationRoutes(updateActiveCompany, activeCompany)}
         </Route>
 

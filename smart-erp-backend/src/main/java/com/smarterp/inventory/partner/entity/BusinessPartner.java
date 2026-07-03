@@ -6,6 +6,7 @@ import com.smarterp.administration.company.entity.Company;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +57,12 @@ public class BusinessPartner extends BaseEntity {
     @Column(precision = 15, scale = 2)
     @Builder.Default
     private BigDecimal openingBalance = BigDecimal.ZERO;
+
+    @Column(precision = 15, scale = 2)
+    @Builder.Default
+    private BigDecimal outstandingBalance = BigDecimal.ZERO;
+
+    private LocalDate lastPurchaseDate;
 
     @Enumerated(EnumType.STRING)
     private BalanceType balanceType;

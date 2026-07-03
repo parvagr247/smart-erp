@@ -14,4 +14,6 @@ public class DashboardSummaryResponse {
     private long warehouseCount;
     private BigDecimal totalInventoryValue;
     private long lowStockCount;
+    private long purchaseCount;
+    private BigDecimal totalPurchaseValue;
 }

@@ -22,7 +22,11 @@ const EditPartnerView = lazy(() => import('./partner/views/EditPartnerView'));
 const PartnerDetailsView = lazy(() => import('./partner/views/PartnerDetailsView'));
 
 const SalesView = lazy(() => import('./sales/views/SalesView'));
-const PurchaseView = lazy(() => import('./purchase/views/PurchaseView'));
+const PurchaseDashboardView = lazy(() => import('./purchase/views/PurchaseDashboardView'));
+const PurchaseListView = lazy(() => import('./purchase/views/PurchaseListView'));
+const CreatePurchaseView = lazy(() => import('./purchase/views/CreatePurchaseView'));
+const EditPurchaseView = lazy(() => import('./purchase/views/EditPurchaseView'));
+const PurchaseDetailsView = lazy(() => import('./purchase/views/PurchaseDetailsView'));
 
 export const getInventoryRoutes = () => (
   <>
@@ -47,6 +51,10 @@ export const getInventoryRoutes = () => (
     <Route path="inventory/partners/:id" element={<PartnerDetailsView />} />
 
     <Route path="sales" element={<SalesView />} />
-    <Route path="purchase" element={<PurchaseView />} />
+    <Route path="purchase" element={<PurchaseDashboardView />} />
+    <Route path="purchase/list" element={<PurchaseListView />} />
+    <Route path="purchase/create" element={<CreatePurchaseView />} />
+    <Route path="purchase/edit/:id" element={<EditPurchaseView />} />
+    <Route path="purchase/:id" element={<PurchaseDetailsView />} />
   </>
 );

@@ -99,6 +99,14 @@ public class StockItem extends BaseEntity {
 
     @Column(precision = 15, scale = 4)
     @Builder.Default
+    private BigDecimal currentQuantity = BigDecimal.ZERO;
+
+    @Column(precision = 15, scale = 2)
+    @Builder.Default
+    private BigDecimal averageCost = BigDecimal.ZERO;
+
+    @Column(precision = 15, scale = 4)
+    @Builder.Default
     private BigDecimal minimumStock = BigDecimal.ZERO;
 
     @Column(precision = 15, scale = 4)

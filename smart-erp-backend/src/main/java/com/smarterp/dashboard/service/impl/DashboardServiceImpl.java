@@ -11,6 +11,8 @@ import com.smarterp.inventory.master.repository.WarehouseRepository;
 import com.smarterp.dashboard.dto.DashboardSummaryResponse;
 import com.smarterp.dashboard.dto.RecentActivityResponse;
 import com.smarterp.dashboard.service.DashboardService;
+import com.smarterp.inventory.purchase.repository.PurchaseRepository;
+import com.smarterp.inventory.purchase.entity.Purchase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -33,6 +35,7 @@ public class DashboardServiceImpl implements DashboardService {
     private final PartnerRepository partnerRepository;
     private final StockItemRepository stockItemRepository;
     private final WarehouseRepository warehouseRepository;
+    private final PurchaseRepository purchaseRepository;
 
     @Override
     public DashboardSummaryResponse getSummary(Company company) {
@@ -53,6 +56,12 @@ public class DashboardServiceImpl implements DashboardService {
                 cb.lessThanOrEqualTo(root.get("openingQuantity"), root.get("reorderLevel"))
         )).size();
 
+        long purchaseCount = purchaseRepository.countByCompany(company);
+        BigDecimal totalPurchaseValue = purchaseRepository.findAll((root, query, cb) -> cb.equal(root.get("company"), company))
+                .stream()
+                .map(p -> p.getGrandTotal() != null ? p.getGrandTotal() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         return DashboardSummaryResponse.builder()
                 .ledgerCount(ledgerCount)
                 .partnerCount(partnerCount)
@@ -60,6 +69,8 @@ public class DashboardServiceImpl implements DashboardService {
                 .warehouseCount(warehouseCount)
                 .totalInventoryValue(totalInventoryValue)
                 .lowStockCount(lowStockCount)
+                .purchaseCount(purchaseCount)
+                .totalPurchaseValue(totalPurchaseValue)
                 .build();
     }
 
@@ -111,6 +122,22 @@ public class DashboardServiceImpl implements DashboardService {
                     .title("Stock Item Onboarded: " + i.getName())
                     .details("SKU: " + i.getSku() + " | Initial Qty: " + i.getOpeningQuantity())
                     .timestamp(i.getCreatedAt())
+                    .build());
+        }
+
+        // Fetch latest 3 Purchases
+        Specification<Purchase> purchaseSpec = (root, query, cb) -> cb.equal(root.get("company"), company);
+        List<Purchase> purchases = purchaseRepository.findAll(
+                purchaseSpec,
+                PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "createdAt"))
+        ).getContent();
+
+        for (Purchase p : purchases) {
+            list.add(RecentActivityResponse.ActivityItem.builder()
+                    .type("PURCHASE")
+                    .title("Purchase Voucher: " + p.getPurchaseNumber())
+                    .details("Supplier: " + p.getSupplier().getName() + " | Grand Total: ₹" + p.getGrandTotal() + " | Status: " + p.getStatus())
+                    .timestamp(p.getCreatedAt())
                     .build());
         }
 
@@ -172,6 +199,21 @@ public class DashboardServiceImpl implements DashboardService {
                 .title(i.getName())
                 .subtitle("Stock Item | SKU: " + i.getSku())
                 .path("/inventory/stock-items/" + i.getId())
+                .build()));
+
+        // 4. Search Purchases
+        purchaseRepository.findAll((root, q, cb) -> cb.and(
+                cb.equal(root.get("company"), company),
+                cb.or(
+                        cb.like(cb.lower(root.get("purchaseNumber")), "%" + cleanQuery + "%"),
+                        cb.like(cb.lower(root.get("supplier").get("name")), "%" + cleanQuery + "%")
+                )
+        )).stream().limit(5).forEach(p -> hits.add(com.smarterp.dashboard.dto.SearchResultResponse.SearchHit.builder()
+                .id(p.getId())
+                .type("PURCHASE")
+                .title(p.getPurchaseNumber())
+                .subtitle("Purchase Invoice | Supplier: " + p.getSupplier().getName() + " | Total: ₹" + p.getGrandTotal())
+                .path("/purchase/" + p.getId())
                 .build()));
 
         return com.smarterp.dashboard.dto.SearchResultResponse.builder().hits(hits).build();
