@@ -1,0 +1,5 @@
+@reference "../../../../shared/styles/global.css";
+
+.db-timeline-item {
+  @apply py-3 flex justify-between items-start;
+}

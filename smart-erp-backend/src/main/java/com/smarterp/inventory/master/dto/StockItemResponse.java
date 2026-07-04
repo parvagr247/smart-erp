@@ -72,4 +72,67 @@ public class StockItemResponse {
     
     @Builder.Default
     private List<PriceListDto> priceLists = new ArrayList<>();
+
+    public static StockItemResponse fromEntity(com.smarterp.inventory.master.entity.StockItem item) {
+        if (item == null) return null;
+
+        java.util.List<PriceListDto> priceDtos = item.getPriceLists().stream()
+                .map(pl -> PriceListDto.builder()
+                        .name(pl.getName())
+                        .priceType(pl.getPriceType())
+                        .price(pl.getPrice())
+                        .effectiveFrom(pl.getEffectiveFrom())
+                        .effectiveTo(pl.getEffectiveTo())
+                        .build())
+                .collect(java.util.stream.Collectors.toList());
+
+        java.util.List<UUID> catIds = item.getCategories().stream().map(com.smarterp.inventory.master.entity.StockCategory::getId).collect(java.util.stream.Collectors.toList());
+        java.util.List<String> catNames = item.getCategories().stream().map(com.smarterp.inventory.master.entity.StockCategory::getName).collect(java.util.stream.Collectors.toList());
+
+        return StockItemResponse.builder()
+                .id(item.getId())
+                .code(item.getCode())
+                .name(item.getName())
+                .alias(item.getAlias())
+                .description(item.getDescription())
+                .sku(item.getSku())
+                .barcode(item.getBarcode())
+                .qrCode(item.getQrCode())
+                .brandId(item.getBrand() != null ? item.getBrand().getId() : null)
+                .brandName(item.getBrand() != null ? item.getBrand().getName() : null)
+                .manufacturerId(item.getManufacturer() != null ? item.getManufacturer().getId() : null)
+                .manufacturerName(item.getManufacturer() != null ? item.getManufacturer().getName() : null)
+                .stockGroupId(item.getStockGroup() != null ? item.getStockGroup().getId() : null)
+                .stockGroupName(item.getStockGroup() != null ? item.getStockGroup().getName() : null)
+                .categoryIds(catIds)
+                .categoryNames(catNames)
+                .primaryUnitId(item.getPrimaryUnit() != null ? item.getPrimaryUnit().getId() : null)
+                .primaryUnitCode(item.getPrimaryUnit() != null ? item.getPrimaryUnit().getCode() : null)
+                .secondaryUnitId(item.getSecondaryUnit() != null ? item.getSecondaryUnit().getId() : null)
+                .secondaryUnitCode(item.getSecondaryUnit() != null ? item.getSecondaryUnit().getCode() : null)
+                .warehouseId(item.getWarehouse() != null ? item.getWarehouse().getId() : null)
+                .warehouseName(item.getWarehouse() != null ? item.getWarehouse().getName() : null)
+                .taxCategoryId(item.getTaxCategory() != null ? item.getTaxCategory().getId() : null)
+                .taxCategoryName(item.getTaxCategory() != null ? item.getTaxCategory().getName() : null)
+                .hsnId(item.getHsn() != null ? item.getHsn().getId() : null)
+                .hsnCode(item.getHsn() != null ? item.getHsn().getHsnCode() : null)
+                .openingQuantity(item.getOpeningQuantity())
+                .openingValue(item.getOpeningValue())
+                .minimumStock(item.getMinimumStock())
+                .maximumStock(item.getMaximumStock())
+                .reorderLevel(item.getReorderLevel())
+                .reorderQuantity(item.getReorderQuantity())
+                .weight(item.getWeight())
+                .dimensions(item.getDimensions())
+                .image(item.getImage())
+                .notes(item.getNotes())
+                .status(item.getStatus())
+                .isBatchManaged(item.getIsBatchManaged())
+                .isSerialNumberManaged(item.getIsSerialNumberManaged())
+                .hasVariants(item.getHasVariants())
+                .createdAt(item.getCreatedAt())
+                .updatedAt(item.getUpdatedAt())
+                .priceLists(priceDtos)
+                .build();
+    }
 }

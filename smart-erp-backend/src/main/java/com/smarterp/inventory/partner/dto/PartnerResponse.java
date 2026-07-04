@@ -40,4 +40,57 @@ public class PartnerResponse {
     
     @Builder.Default
     private List<PartnerContactDto> contacts = new ArrayList<>();
+
+    public static PartnerResponse fromEntity(com.smarterp.inventory.partner.entity.BusinessPartner partner) {
+        if (partner == null) return null;
+
+        java.util.List<AddressDto> addressDtos = partner.getAddresses().stream()
+                .map(a -> AddressDto.builder()
+                        .id(a.getId())
+                        .addressType(a.getAddressType())
+                        .addressLine1(a.getAddressLine1())
+                        .addressLine2(a.getAddressLine2())
+                        .city(a.getCity())
+                        .state(a.getState())
+                        .country(a.getCountry())
+                        .pincode(a.getPincode())
+                        .build())
+                .collect(java.util.stream.Collectors.toList());
+
+        java.util.List<PartnerContactDto> contactDtos = partner.getContacts().stream()
+                .map(c -> PartnerContactDto.builder()
+                        .id(c.getId())
+                        .contactName(c.getContactName())
+                        .designation(c.getDesignation())
+                        .email(c.getEmail())
+                        .phone(c.getPhone())
+                        .mobile(c.getMobile())
+                        .isPrimary(c.getIsPrimary())
+                        .build())
+                .collect(java.util.stream.Collectors.toList());
+
+        return PartnerResponse.builder()
+                .id(partner.getId())
+                .code(partner.getCode())
+                .name(partner.getName())
+                .type(partner.getType())
+                .gstNumber(partner.getGstNumber())
+                .pan(partner.getPan())
+                .email(partner.getEmail())
+                .phone(partner.getPhone())
+                .mobile(partner.getMobile())
+                .website(partner.getWebsite())
+                .creditLimit(partner.getCreditLimit())
+                .openingBalance(partner.getOpeningBalance())
+                .balanceType(partner.getBalanceType())
+                .paymentTerms(partner.getPaymentTerms())
+                .status(partner.getStatus())
+                .notes(partner.getNotes())
+                .isActive(partner.getIsActive())
+                .createdAt(partner.getCreatedAt())
+                .updatedAt(partner.getUpdatedAt())
+                .addresses(addressDtos)
+                .contacts(contactDtos)
+                .build();
+    }
 }

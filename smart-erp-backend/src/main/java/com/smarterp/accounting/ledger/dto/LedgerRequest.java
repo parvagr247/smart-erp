@@ -51,4 +51,42 @@ public class LedgerRequest {
     private String address;
 
     private Boolean isActive;
+
+    public com.smarterp.accounting.ledger.entity.Ledger toEntity(
+            com.smarterp.administration.company.entity.Company company, 
+            com.smarterp.accounting.group.entity.AccountGroup group) {
+        return com.smarterp.accounting.ledger.entity.Ledger.builder()
+                .name(this.name.trim())
+                .group(group)
+                .openingBalance(this.openingBalance != null ? this.openingBalance : BigDecimal.ZERO)
+                .balanceType(this.balanceType)
+                .gstApplicable(this.gstApplicable != null ? this.gstApplicable : false)
+                .gstNumber(this.gstNumber != null ? this.gstNumber.trim() : null)
+                .pan(this.pan != null ? this.pan.trim() : null)
+                .email(this.email != null ? this.email.trim() : null)
+                .phone(this.phone != null ? this.phone.trim() : null)
+                .address(this.address != null ? this.address.trim() : null)
+                .company(company)
+                .isActive(this.isActive != null ? this.isActive : true)
+                .build();
+    }
+
+    public void updateEntity(
+            com.smarterp.accounting.ledger.entity.Ledger entity, 
+            com.smarterp.accounting.group.entity.AccountGroup group) {
+        if (entity == null) return;
+        entity.setName(this.name.trim());
+        entity.setGroup(group);
+        entity.setOpeningBalance(this.openingBalance != null ? this.openingBalance : BigDecimal.ZERO);
+        entity.setBalanceType(this.balanceType);
+        entity.setGstApplicable(this.gstApplicable != null ? this.gstApplicable : false);
+        entity.setGstNumber(this.gstNumber != null ? this.gstNumber.trim() : null);
+        entity.setPan(this.pan != null ? this.pan.trim() : null);
+        entity.setEmail(this.email != null ? this.email.trim() : null);
+        entity.setPhone(this.phone != null ? this.phone.trim() : null);
+        entity.setAddress(this.address != null ? this.address.trim() : null);
+        if (this.isActive != null) {
+            entity.setIsActive(this.isActive);
+        }
+    }
 }

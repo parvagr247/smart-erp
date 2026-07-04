@@ -17,10 +17,9 @@ import com.smarterp.inventory.purchase.entity.Purchase;
 import com.smarterp.inventory.purchase.entity.PurchaseLine;
 import com.smarterp.inventory.purchase.entity.PurchaseStatus;
 import com.smarterp.inventory.purchase.event.PurchaseApprovedEvent;
-import com.smarterp.inventory.purchase.event.PurchaseCompletedEvent;
 import com.smarterp.inventory.purchase.repository.PurchaseRepository;
 import com.smarterp.inventory.purchase.service.PurchaseService;
-import com.smarterp.inventory.purchase.strategy.TaxCalculationStrategy;
+import com.smarterp.inventory.purchase.domain.TaxCalculator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -48,9 +47,9 @@ public class PurchaseServiceImpl implements PurchaseService {
     private final PartnerRepository partnerRepository;
     private final StockItemRepository stockItemRepository;
     private final WarehouseRepository warehouseRepository;
-    private final TaxCalculationStrategy taxCalculationStrategy;
+    private final TaxCalculator taxCalculator;
     private final ApplicationEventPublisher eventPublisher;
-    private final com.smarterp.common.workflow.WorkflowEngine workflowEngine;
+    private final com.smarterp.common.audit.AuditLogService auditLogService;
 
     @Override
     public PurchaseResponse createPurchase(PurchaseRequest request, Company company, String userEmail) {
@@ -85,9 +84,8 @@ public class PurchaseServiceImpl implements PurchaseService {
 
         Purchase saved = purchaseRepository.save(purchase);
 
-        // Publish PurchaseCreatedEvent
-        eventPublisher.publishEvent(new com.smarterp.inventory.purchase.event.PurchaseCreatedEvent(
-                this, saved.getId(), company.getId(), saved.getSupplier().getName(), saved.getGrandTotal(), userEmail));
+        auditLogService.saveLog(company.getId(), "Purchase", saved.getId(), "CREATED", 
+                "Purchase Voucher created. Supplier: " + saved.getSupplier().getName() + " | Grand Total: " + saved.getGrandTotal());
 
         // Publish Lifecycle domain events if posted/approved immediately
         publishPurchaseLifecycleEvents(saved, company.getId(), userEmail, PurchaseStatus.DRAFT);
@@ -159,7 +157,7 @@ public class PurchaseServiceImpl implements PurchaseService {
             return mapToResponse(purchase);
         }
 
-        if (!workflowEngine.canTransition(oldStatus.name(), status.name())) {
+        if (!canTransition(oldStatus, status)) {
             throw new BusinessValidationException("Invalid status transition from " + oldStatus + " to " + status + ".");
         }
 
@@ -306,7 +304,7 @@ public class PurchaseServiceImpl implements PurchaseService {
             BigDecimal rate = req.getRate();
             BigDecimal lineDiscount = req.getDiscount() != null ? req.getDiscount() : BigDecimal.ZERO;
 
-            TaxCalculationStrategy.TaxCalculationResult taxResult = taxCalculationStrategy.calculateTax(
+            TaxCalculator.TaxCalculationResult taxResult = taxCalculator.calculateTax(
                     item, qty, rate, lineDiscount, inclusive, isIntraState
             );
 
@@ -373,8 +371,6 @@ public class PurchaseServiceImpl implements PurchaseService {
         if (oldStatus == PurchaseStatus.DRAFT) {
             if (purchase.getStatus() == PurchaseStatus.APPROVED) {
                 eventPublisher.publishEvent(new PurchaseApprovedEvent(this, purchase.getId(), companyId, performedBy));
-            } else if (purchase.getStatus() == PurchaseStatus.COMPLETED) {
-                eventPublisher.publishEvent(new PurchaseCompletedEvent(this, purchase.getId(), companyId, performedBy));
             }
         }
     }
@@ -423,5 +419,21 @@ public class PurchaseServiceImpl implements PurchaseService {
                 .createdBy(purchase.getCreatedBy())
                 .lineItems(lines)
                 .build();
+    }
+    private boolean canTransition(PurchaseStatus current, PurchaseStatus target) {
+        if (current == target) return true;
+        switch (current) {
+            case DRAFT:
+                return target == PurchaseStatus.APPROVED || target == PurchaseStatus.CANCELLED;
+            case APPROVED:
+                return target == PurchaseStatus.RECEIVED || target == PurchaseStatus.COMPLETED || target == PurchaseStatus.CANCELLED;
+            case RECEIVED:
+                return target == PurchaseStatus.COMPLETED || target == PurchaseStatus.CANCELLED;
+            case COMPLETED:
+            case CANCELLED:
+                return false;
+            default:
+                return false;
+        }
     }
 }

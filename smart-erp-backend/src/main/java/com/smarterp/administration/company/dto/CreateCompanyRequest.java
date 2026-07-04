@@ -57,4 +57,23 @@ public class CreateCompanyRequest {
 
     private String currency;
     private String logo;
+
+    public com.smarterp.administration.company.entity.Company toEntity(com.smarterp.auth.entity.User owner) {
+        return com.smarterp.administration.company.entity.Company.builder()
+                .name(this.name)
+                .gstNumber(this.gstNumber)
+                .panNumber(this.panNumber)
+                .financialYear(this.financialYear)
+                .address(this.address)
+                .city(this.city)
+                .state(this.state)
+                .country(this.country)
+                .pincode(this.pincode)
+                .phone(this.phone)
+                .email(this.email)
+                .currency(this.currency)
+                .logo(this.logo)
+                .owner(owner)
+                .build();
+    }
 }

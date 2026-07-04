@@ -9,7 +9,6 @@ import com.smarterp.accounting.group.entity.GroupNature;
 import com.smarterp.accounting.group.repository.AccountGroupRepository;
 import com.smarterp.inventory.sales.entity.Sales;
 import com.smarterp.inventory.sales.event.SalesApprovedEvent;
-import com.smarterp.inventory.sales.event.SalesCompletedEvent;
 import com.smarterp.inventory.sales.repository.SalesRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,13 +30,6 @@ public class SalesAccountingListener {
     @Transactional
     public void onSalesApproved(SalesApprovedEvent event) {
         log.info("Sales Accounting listener reacting to SalesApprovedEvent for Sales ID: {}", event.getSalesId());
-        postSalesLedgerJournals(event.getSalesId());
-    }
-
-    @EventListener
-    @Transactional
-    public void onSalesCompleted(SalesCompletedEvent event) {
-        log.info("Sales Accounting listener reacting to SalesCompletedEvent for Sales ID: {}", event.getSalesId());
         postSalesLedgerJournals(event.getSalesId());
     }
 

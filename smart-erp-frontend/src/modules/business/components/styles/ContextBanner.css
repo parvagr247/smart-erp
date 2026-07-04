@@ -1,0 +1,9 @@
+@reference "../../../../shared/styles/global.css";
+
+.db-banner {
+  @apply p-5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/80 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4;
+}
+
+.db-banner-meta {
+  @apply flex flex-wrap gap-4 text-xs text-slate-500 dark:text-slate-400;
+}

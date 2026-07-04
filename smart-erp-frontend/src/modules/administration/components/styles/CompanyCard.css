@@ -1,0 +1,45 @@
+@reference "../../../../shared/styles/global.css";
+
+.company-card-container {
+  @apply relative rounded-2xl border border-[var(--border-light)] bg-[var(--bg-surface)] p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:border-[var(--primary)] hover:shadow-lg flex flex-col justify-between h-full overflow-hidden text-left;
+}
+
+.company-card-glow {
+  @apply absolute -right-20 -top-20 h-40 w-40 rounded-full bg-[var(--primary-glow)] blur-3xl transition-all duration-500 group-hover:opacity-100 opacity-60;
+}
+
+.company-card-header {
+  @apply flex items-start justify-between gap-4 mb-5;
+}
+
+.company-card-header-icon-wrap {
+  @apply h-11 w-11 rounded-xl bg-gradient-to-tr from-[var(--primary)] to-indigo-600 text-white flex items-center justify-center shadow-md;
+}
+
+.company-card-tag {
+  @apply inline-flex items-center rounded-md bg-[var(--primary-glow)] px-2 py-0.5 text-[10px] font-semibold text-[var(--primary)] ring-1 ring-inset ring-[var(--primary)]/20 mt-1 font-mono;
+}
+
+.company-card-body {
+  @apply space-y-3 my-4 text-sm text-[var(--text-secondary)];
+}
+
+.company-card-footer {
+  @apply pt-4 border-t border-[var(--border-light)] flex items-center justify-between gap-2 mt-4;
+}
+
+.company-card-footer-actions {
+  @apply flex items-center gap-1;
+}
+
+.company-card-btn-edit {
+  @apply p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-input)] rounded-lg transition-colors cursor-pointer;
+}
+
+.company-card-btn-delete {
+  @apply p-2 text-[var(--text-secondary)] hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer;
+}
+
+.company-card-btn-open {
+  @apply inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[var(--primary)] to-indigo-600 hover:opacity-95 text-white font-semibold text-xs shadow-md transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98];
+}

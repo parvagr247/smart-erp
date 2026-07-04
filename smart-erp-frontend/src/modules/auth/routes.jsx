@@ -2,8 +2,8 @@ import React, { lazy } from 'react';
 import { Route } from 'react-router-dom';
 import AuthLayout from '@shared/layouts/AuthLayout';
 
-const LoginView = lazy(() => import('./views/LoginView'));
-const RegisterView = lazy(() => import('./views/RegisterView'));
+const LoginView = lazy(() => import('./pages/LoginView'));
+const RegisterView = lazy(() => import('./pages/RegisterView'));
 
 export const getAuthRoutes = (handleAuthSuccess, navigate) => (
   <Route element={<AuthLayout />}>

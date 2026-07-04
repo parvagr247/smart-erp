@@ -157,3 +157,60 @@
     @apply font-sans;
   }
 }
+
+/* Auth Layout Utilities */
+.auth-card {
+  @apply w-full max-w-md shadow-lg border border-[var(--border-light)] bg-[var(--bg-surface)];
+}
+
+.auth-header {
+  @apply text-center space-y-1;
+}
+
+.auth-title {
+  @apply text-2xl font-bold font-heading tracking-tight text-[var(--text-primary)];
+}
+
+.auth-desc {
+  @apply text-sm text-[var(--text-secondary)];
+}
+
+.auth-content {
+  @apply space-y-4;
+}
+
+.error-alert {
+  @apply p-3 text-sm text-red-500 rounded-lg bg-red-500/10 border border-red-500/30;
+}
+
+.form-group {
+  @apply space-y-2;
+}
+
+.form-group label {
+  @apply text-xs font-semibold text-[var(--text-secondary)] block;
+}
+
+.form-group input {
+  @apply bg-[var(--bg-input)] border-[var(--border-light)] focus:border-[var(--border-focus)] focus-visible:ring-1 focus-visible:ring-[var(--border-focus)] placeholder:text-[var(--text-muted)];
+}
+
+.form-group select {
+  @apply w-full px-3 py-2 text-sm bg-[var(--bg-input)] border border-[var(--border-light)] rounded-md text-[var(--text-primary)] focus:border-[var(--border-focus)] focus:outline-none focus:ring-1 focus:ring-[var(--border-focus)];
+}
+
+.auth-footer {
+  @apply flex flex-col space-y-4;
+}
+
+.auth-footer button {
+  @apply w-full bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] cursor-pointer;
+}
+
+.auth-toggle {
+  @apply text-sm text-center text-[var(--text-secondary)];
+}
+
+.auth-toggle span {
+  @apply text-[var(--primary)] hover:underline font-semibold cursor-pointer;
+}

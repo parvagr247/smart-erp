@@ -17,10 +17,9 @@ import com.smarterp.inventory.sales.entity.Sales;
 import com.smarterp.inventory.sales.entity.SalesLine;
 import com.smarterp.inventory.sales.entity.SalesStatus;
 import com.smarterp.inventory.sales.event.SalesApprovedEvent;
-import com.smarterp.inventory.sales.event.SalesCompletedEvent;
 import com.smarterp.inventory.sales.repository.SalesRepository;
 import com.smarterp.inventory.sales.service.SalesService;
-import com.smarterp.inventory.purchase.strategy.TaxCalculationStrategy;
+import com.smarterp.inventory.purchase.domain.TaxCalculator;
 import com.smarterp.inventory.master.service.InventoryTransactionService;
 import com.smarterp.inventory.master.dto.InventoryTransactionRequest;
 import com.smarterp.inventory.master.entity.InventoryTransactionType;
@@ -52,10 +51,9 @@ public class SalesServiceImpl implements SalesService {
     private final PartnerRepository partnerRepository;
     private final StockItemRepository stockItemRepository;
     private final WarehouseRepository warehouseRepository;
-    private final TaxCalculationStrategy taxCalculationStrategy;
+    private final TaxCalculator taxCalculator;
     private final InventoryTransactionService inventoryTransactionService;
     private final ApplicationEventPublisher eventPublisher;
-    private final com.smarterp.common.workflow.WorkflowEngine workflowEngine;
 
     @Override
     public SalesResponse createSales(SalesRequest request, Company company, String userEmail) {
@@ -178,11 +176,11 @@ public class SalesServiceImpl implements SalesService {
             return mapToResponse(sales);
         }
 
-        if (!workflowEngine.canTransition(oldStatus.name(), status.name())) {
+        if (!canTransition(oldStatus, status)) {
             throw new BusinessValidationException("Invalid status transition from " + oldStatus + " to " + status + ".");
         }
 
-        if (status == SalesStatus.APPROVED || status == SalesStatus.COMPLETED) {
+        if (oldStatus == SalesStatus.DRAFT && (status == SalesStatus.APPROVED || status == SalesStatus.COMPLETED)) {
             // Check stock of existing saved lines
             List<SalesLineRequest> lines = sales.getLineItems().stream()
                     .map(l -> SalesLineRequest.builder()
@@ -196,7 +194,7 @@ public class SalesServiceImpl implements SalesService {
         sales.setStatus(status);
         Sales saved = salesRepository.save(sales);
 
-        if (saved.getStatus() == SalesStatus.APPROVED || saved.getStatus() == SalesStatus.COMPLETED) {
+        if (oldStatus == SalesStatus.DRAFT && (saved.getStatus() == SalesStatus.APPROVED || saved.getStatus() == SalesStatus.COMPLETED)) {
             reduceInventory(saved, userEmail);
         }
 
@@ -330,7 +328,7 @@ public class SalesServiceImpl implements SalesService {
             BigDecimal rate = req.getRate();
             BigDecimal lineDiscount = req.getDiscount() != null ? req.getDiscount() : BigDecimal.ZERO;
 
-            TaxCalculationStrategy.TaxCalculationResult taxResult = taxCalculationStrategy.calculateTax(
+            TaxCalculator.TaxCalculationResult taxResult = taxCalculator.calculateTax(
                     item, qty, rate, lineDiscount, inclusive, isIntraState
             );
 
@@ -398,8 +396,6 @@ public class SalesServiceImpl implements SalesService {
         if (oldStatus == SalesStatus.DRAFT) {
             if (sales.getStatus() == SalesStatus.APPROVED) {
                 eventPublisher.publishEvent(new SalesApprovedEvent(this, sales.getId(), companyId, performedBy));
-            } else if (sales.getStatus() == SalesStatus.COMPLETED) {
-                eventPublisher.publishEvent(new SalesCompletedEvent(this, sales.getId(), companyId, performedBy));
             }
         }
     }
@@ -464,5 +460,19 @@ public class SalesServiceImpl implements SalesService {
                 .lineItems(lines)
                 .createdAt(s.getCreatedAt())
                 .build();
+    }
+    private boolean canTransition(SalesStatus current, SalesStatus target) {
+        if (current == target) return true;
+        switch (current) {
+            case DRAFT:
+                return target == SalesStatus.APPROVED || target == SalesStatus.CANCELLED;
+            case APPROVED:
+                return target == SalesStatus.COMPLETED || target == SalesStatus.CANCELLED;
+            case COMPLETED:
+            case CANCELLED:
+                return false;
+            default:
+                return false;
+        }
     }
 }

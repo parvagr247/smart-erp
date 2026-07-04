@@ -1,0 +1,17 @@
+@reference "../../../../shared/styles/global.css";
+
+.table-actions-container {
+  @apply flex items-center gap-2;
+}
+
+.table-btn-info {
+  @apply text-xs text-[var(--primary)] hover:underline flex items-center gap-0.5 cursor-pointer;
+}
+
+.table-btn-warning {
+  @apply text-xs text-amber-500 hover:underline flex items-center gap-0.5 cursor-pointer;
+}
+
+.table-btn-danger {
+  @apply text-xs text-red-500 hover:underline flex items-center gap-0.5 cursor-pointer;
+}

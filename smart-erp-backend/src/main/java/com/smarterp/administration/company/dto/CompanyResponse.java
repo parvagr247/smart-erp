@@ -31,4 +31,28 @@ public class CompanyResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long version;
+
+    public static CompanyResponse fromEntity(com.smarterp.administration.company.entity.Company company) {
+        if (company == null) return null;
+        return CompanyResponse.builder()
+                .id(company.getId())
+                .name(company.getName())
+                .gstNumber(company.getGstNumber())
+                .panNumber(company.getPanNumber())
+                .financialYear(company.getFinancialYear())
+                .address(company.getAddress())
+                .city(company.getCity())
+                .state(company.getState())
+                .country(company.getCountry())
+                .pincode(company.getPincode())
+                .phone(company.getPhone())
+                .email(company.getEmail())
+                .currency(company.getCurrency())
+                .logo(company.getLogo())
+                .isActive(company.getIsActive())
+                .createdAt(company.getCreatedAt())
+                .updatedAt(company.getUpdatedAt())
+                .version(company.getVersion())
+                .build();
+    }
 }

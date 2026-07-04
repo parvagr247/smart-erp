@@ -160,31 +160,7 @@ public class StockItem extends BaseEntity {
 
     @OneToMany(mappedBy = "stockItem", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
-    private List<ItemVariant> variants = new ArrayList<>();
-
-    @OneToMany(mappedBy = "stockItem", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @Builder.Default
     private List<PriceList> priceLists = new ArrayList<>();
-
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "stock_item_tags_mapping",
-        schema = "inventory",
-        joinColumns = @JoinColumn(name = "stock_item_id"),
-        inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
-    @Builder.Default
-    private Set<Tag> tags = new HashSet<>();
-
-    public void addVariant(ItemVariant variant) {
-        variants.add(variant);
-        variant.setStockItem(this);
-    }
-
-    public void removeVariant(ItemVariant variant) {
-        variants.remove(variant);
-        variant.setStockItem(null);
-    }
 
     public void addPriceList(PriceList priceList) {
         priceLists.add(priceList);

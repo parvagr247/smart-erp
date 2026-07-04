@@ -9,7 +9,6 @@ import com.smarterp.accounting.group.entity.GroupNature;
 import com.smarterp.accounting.group.repository.AccountGroupRepository;
 import com.smarterp.inventory.purchase.entity.Purchase;
 import com.smarterp.inventory.purchase.event.PurchaseApprovedEvent;
-import com.smarterp.inventory.purchase.event.PurchaseCompletedEvent;
 import com.smarterp.inventory.purchase.repository.PurchaseRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,13 +30,6 @@ public class PurchaseAccountingListener {
     @Transactional
     public void onPurchaseApproved(PurchaseApprovedEvent event) {
         log.info("Accounting listener reacting to PurchaseApprovedEvent for Purchase {}", event.getPurchaseId());
-        postLedgerJournals(event.getPurchaseId());
-    }
-
-    @EventListener
-    @Transactional
-    public void onPurchaseCompleted(PurchaseCompletedEvent event) {
-        log.info("Accounting listener reacting to PurchaseCompletedEvent for Purchase {}", event.getPurchaseId());
         postLedgerJournals(event.getPurchaseId());
     }
 

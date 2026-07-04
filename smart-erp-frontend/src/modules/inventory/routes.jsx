@@ -1,32 +1,32 @@
 import React, { lazy } from 'react';
 import { Route } from 'react-router-dom';
 
-const InventoryDashboardView = lazy(() => import('./views/InventoryDashboardView'));
-const CreateItemView = lazy(() => import('./views/CreateItemView'));
-const EditItemView = lazy(() => import('./views/EditItemView'));
-const ItemDetailsView = lazy(() => import('./views/ItemDetailsView'));
-const BrandListView = lazy(() => import('./views/BrandListView'));
-const ManufacturerListView = lazy(() => import('./views/ManufacturerListView'));
-const CategoryListView = lazy(() => import('./views/CategoryListView'));
-const UnitListView = lazy(() => import('./views/UnitListView'));
-const TaxListView = lazy(() => import('./views/TaxListView'));
-const WarehouseListView = lazy(() => import('./views/WarehouseListView'));
+const InventoryDashboardView = lazy(() => import('./pages/InventoryDashboardView'));
+const CreateItemView = lazy(() => import('./pages/CreateItemView'));
+const EditItemView = lazy(() => import('./pages/EditItemView'));
+const ItemDetailsView = lazy(() => import('./pages/ItemDetailsView'));
+const BrandListView = lazy(() => import('./pages/BrandListView'));
+const ManufacturerListView = lazy(() => import('./pages/ManufacturerListView'));
+const CategoryListView = lazy(() => import('./pages/CategoryListView'));
+const UnitListView = lazy(() => import('./pages/UnitListView'));
+const TaxListView = lazy(() => import('./pages/TaxListView'));
+const WarehouseListView = lazy(() => import('./pages/WarehouseListView'));
 
-const StockGroupsView = lazy(() => import('./stockgroups/views/StockGroupsView'));
-const StockItemsView = lazy(() => import('./items/views/StockItemsView'));
+const StockGroupsView = lazy(() => import('./pages/StockGroupsView'));
+const StockItemsView = lazy(() => import('./pages/StockItemsView'));
 
-const PartnerDashboardView = lazy(() => import('./partner/views/PartnerDashboardView'));
-const PartnerListView = lazy(() => import('./partner/views/PartnerListView'));
-const CreatePartnerView = lazy(() => import('./partner/views/CreatePartnerView'));
-const EditPartnerView = lazy(() => import('./partner/views/EditPartnerView'));
-const PartnerDetailsView = lazy(() => import('./partner/views/PartnerDetailsView'));
+const PartnerDashboardView = lazy(() => import('./pages/PartnerDashboardView'));
+const PartnerListView = lazy(() => import('./pages/PartnerListView'));
+const CreatePartnerView = lazy(() => import('./pages/CreatePartnerView'));
+const EditPartnerView = lazy(() => import('./pages/EditPartnerView'));
+const PartnerDetailsView = lazy(() => import('./pages/PartnerDetailsView'));
 
-const SalesView = lazy(() => import('./sales/views/SalesView'));
-const PurchaseDashboardView = lazy(() => import('./purchase/views/PurchaseDashboardView'));
-const PurchaseListView = lazy(() => import('./purchase/views/PurchaseListView'));
-const CreatePurchaseView = lazy(() => import('./purchase/views/CreatePurchaseView'));
-const EditPurchaseView = lazy(() => import('./purchase/views/EditPurchaseView'));
-const PurchaseDetailsView = lazy(() => import('./purchase/views/PurchaseDetailsView'));
+const SalesView = lazy(() => import('./pages/SalesView'));
+const PurchaseDashboardView = lazy(() => import('./pages/PurchaseDashboardView'));
+const PurchaseListView = lazy(() => import('./pages/PurchaseListView'));
+const CreatePurchaseView = lazy(() => import('./pages/CreatePurchaseView'));
+const EditPurchaseView = lazy(() => import('./pages/EditPurchaseView'));
+const PurchaseDetailsView = lazy(() => import('./pages/PurchaseDetailsView'));
 
 export const getInventoryRoutes = () => (
   <>

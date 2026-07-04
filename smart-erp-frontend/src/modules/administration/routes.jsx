@@ -2,16 +2,16 @@ import React, { lazy } from 'react';
 import { Route } from 'react-router-dom';
 import ProtectedRoute from '@shared/layouts/ProtectedRoute';
 
-const CompanySelectionView = lazy(() => import('./views/CompanySelectionView'));
-const CreateCompanyView = lazy(() => import('./views/CreateCompanyView'));
-const EditCompanyView = lazy(() => import('./views/EditCompanyView'));
+const CompanySelectionView = lazy(() => import('./pages/CompanySelectionView'));
+const CreateCompanyView = lazy(() => import('./pages/CreateCompanyView'));
+const EditCompanyView = lazy(() => import('./pages/EditCompanyView'));
 
-const AdminDashboardView = lazy(() => import('./views/AdminDashboardView'));
-const AdminUsersView = lazy(() => import('./views/AdminUsersView'));
-const AdminRolesView = lazy(() => import('./views/AdminRolesView'));
-const AdminPermissionsView = lazy(() => import('./views/AdminPermissionsView'));
-const AdminAuditLogsView = lazy(() => import('./views/AdminAuditLogsView'));
-const AdminSettingsView = lazy(() => import('./views/AdminSettingsView'));
+const AdminDashboardView = lazy(() => import('./pages/AdminDashboardView'));
+const AdminUsersView = lazy(() => import('./pages/AdminUsersView'));
+const AdminRolesView = lazy(() => import('./pages/AdminRolesView'));
+const AdminPermissionsView = lazy(() => import('./pages/AdminPermissionsView'));
+const AdminAuditLogsView = lazy(() => import('./pages/AdminAuditLogsView'));
+const AdminSettingsView = lazy(() => import('./pages/AdminSettingsView'));
 
 export const getAdministrationRoutes = (updateActiveCompany, activeCompany, mode = 'all') => (
   <>

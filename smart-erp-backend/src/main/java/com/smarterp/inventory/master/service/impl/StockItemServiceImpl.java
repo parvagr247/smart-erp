@@ -2,17 +2,14 @@ package com.smarterp.inventory.master.service.impl;
 
 import com.smarterp.administration.company.entity.Company;
 import com.smarterp.common.exception.ResourceNotFoundException;
+import com.smarterp.common.exception.BusinessValidationException;
 import com.smarterp.inventory.master.dto.InventorySummaryResponse;
 import com.smarterp.inventory.master.dto.StockItemRequest;
 import com.smarterp.inventory.master.dto.StockItemResponse;
-import com.smarterp.inventory.master.entity.StockItem;
-import com.smarterp.inventory.master.mapper.StockItemMapper;
-import com.smarterp.inventory.master.repository.BrandRepository;
-import com.smarterp.inventory.master.repository.StockItemRepository;
-import com.smarterp.inventory.master.repository.WarehouseRepository;
+import com.smarterp.inventory.master.entity.*;
+import com.smarterp.inventory.master.repository.*;
 import com.smarterp.inventory.master.service.StockItemService;
 import com.smarterp.inventory.master.specification.StockItemSpecification;
-import com.smarterp.inventory.master.validator.StockItemValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -32,22 +29,39 @@ public class StockItemServiceImpl implements StockItemService {
     private final StockItemRepository repository;
     private final WarehouseRepository warehouseRepository;
     private final BrandRepository brandRepository;
-    private final StockItemMapper mapper;
-    private final StockItemValidator validator;
-    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
+    private final ManufacturerRepository manufacturerRepository;
+    private final StockGroupRepository stockGroupRepository;
+    private final StockCategoryRepository stockCategoryRepository;
+    private final UnitRepository unitRepository;
+    private final TaxCategoryRepository taxCategoryRepository;
+    private final HsnRepository hsnRepository;
+    private final com.smarterp.common.audit.AuditLogService auditLogService;
 
     @Override
     public StockItemResponse createItem(StockItemRequest request, Company company) {
         log.info("Creating stock item {} under company {}", request.getName(), company.getId());
-        validator.validateCreate(company, request);
+        validateCreate(company, request);
 
-        StockItem item = mapper.toEntity(request, company);
+        Brand brand = request.getBrandId() != null ? brandRepository.findById(request.getBrandId()).orElse(null) : null;
+        Manufacturer manufacturer = request.getManufacturerId() != null ? manufacturerRepository.findById(request.getManufacturerId()).orElse(null) : null;
+        StockGroup stockGroup = request.getStockGroupId() != null ? stockGroupRepository.findById(request.getStockGroupId()).orElse(null) : null;
+        Unit primaryUnit = request.getPrimaryUnitId() != null ? unitRepository.findById(request.getPrimaryUnitId()).orElse(null) : null;
+        Unit secondaryUnit = request.getSecondaryUnitId() != null ? unitRepository.findById(request.getSecondaryUnitId()).orElse(null) : null;
+        Warehouse warehouse = request.getWarehouseId() != null ? warehouseRepository.findById(request.getWarehouseId()).orElse(null) : null;
+        TaxCategory taxCategory = request.getTaxCategoryId() != null ? taxCategoryRepository.findById(request.getTaxCategoryId()).orElse(null) : null;
+        Hsn hsn = request.getHsnId() != null ? hsnRepository.findById(request.getHsnId()).orElse(null) : null;
+        
+        java.util.Set<StockCategory> categories = new java.util.HashSet<>();
+        if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
+            categories.addAll(stockCategoryRepository.findAllById(request.getCategoryIds()));
+        }
+
+        StockItem item = request.toEntity(company, brand, manufacturer, stockGroup, primaryUnit, secondaryUnit, warehouse, taxCategory, hsn, categories);
         StockItem savedItem = repository.save(item);
 
-        eventPublisher.publishEvent(new com.smarterp.inventory.master.event.StockItemCreatedEvent(
-                this, savedItem.getId(), company.getId(), savedItem.getName()));
+        auditLogService.saveLog(company.getId(), "StockItem", savedItem.getId(), "CREATED", "Stock Item " + savedItem.getName() + " onboarded.");
 
-        return mapper.toResponse(savedItem);
+        return StockItemResponse.fromEntity(savedItem);
     }
 
     @Override
@@ -57,23 +71,36 @@ public class StockItemServiceImpl implements StockItemService {
                 .filter(i -> i.getCompany().getId().equals(company.getId()))
                 .orElseThrow(() -> new ResourceNotFoundException("Stock item not found."));
 
-        validator.validateUpdate(company, id, request);
+        validateUpdate(company, id, request);
         
         BigDecimal oldQty = item.getCurrentQuantity() != null ? item.getCurrentQuantity() : BigDecimal.ZERO;
         
-        mapper.updateEntity(item, request);
+        Brand brand = request.getBrandId() != null ? brandRepository.findById(request.getBrandId()).orElse(null) : null;
+        Manufacturer manufacturer = request.getManufacturerId() != null ? manufacturerRepository.findById(request.getManufacturerId()).orElse(null) : null;
+        StockGroup stockGroup = request.getStockGroupId() != null ? stockGroupRepository.findById(request.getStockGroupId()).orElse(null) : null;
+        Unit primaryUnit = request.getPrimaryUnitId() != null ? unitRepository.findById(request.getPrimaryUnitId()).orElse(null) : null;
+        Unit secondaryUnit = request.getSecondaryUnitId() != null ? unitRepository.findById(request.getSecondaryUnitId()).orElse(null) : null;
+        Warehouse warehouse = request.getWarehouseId() != null ? warehouseRepository.findById(request.getWarehouseId()).orElse(null) : null;
+        TaxCategory taxCategory = request.getTaxCategoryId() != null ? taxCategoryRepository.findById(request.getTaxCategoryId()).orElse(null) : null;
+        Hsn hsn = request.getHsnId() != null ? hsnRepository.findById(request.getHsnId()).orElse(null) : null;
+        
+        java.util.Set<StockCategory> categories = new java.util.HashSet<>();
+        if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
+            categories.addAll(stockCategoryRepository.findAllById(request.getCategoryIds()));
+        }
 
+        request.updateEntity(item, brand, manufacturer, stockGroup, primaryUnit, secondaryUnit, warehouse, taxCategory, hsn, categories);
         StockItem savedItem = repository.save(item);
         
         BigDecimal newQty = savedItem.getCurrentQuantity() != null ? savedItem.getCurrentQuantity() : BigDecimal.ZERO;
         
         if (oldQty.compareTo(newQty) != 0) {
-            eventPublisher.publishEvent(new com.smarterp.inventory.master.event.StockAdjustedEvent(
-                this, savedItem.getId(), company.getId(), savedItem.getName(), oldQty, newQty, "Manual Stock adjustment / edit"
-            ));
+            auditLogService.saveLog(company.getId(), "StockItem", savedItem.getId(), "ADJUSTED", 
+                "Stock quantity adjusted for " + savedItem.getName() + ". Old Qty: " + oldQty + ", New Qty: " + newQty + ". Reason: Manual Stock adjustment / edit"
+            );
         }
 
-        return mapper.toResponse(savedItem);
+        return StockItemResponse.fromEntity(savedItem);
     }
 
     @Override
@@ -84,7 +111,7 @@ public class StockItemServiceImpl implements StockItemService {
                 .filter(i -> i.getCompany().getId().equals(company.getId()))
                 .orElseThrow(() -> new ResourceNotFoundException("Stock item not found."));
 
-        return mapper.toResponse(item);
+        return StockItemResponse.fromEntity(item);
     }
 
     @Override
@@ -106,7 +133,7 @@ public class StockItemServiceImpl implements StockItemService {
         Specification<StockItem> spec = StockItemSpecification.searchAndFilter(
                 company, search, warehouseId, categoryId, groupId, brandId, manufacturerId, stockStatus
         );
-        return repository.findAll(spec, pageable).map(mapper::toResponse);
+        return repository.findAll(spec, pageable).map(StockItemResponse::fromEntity);
     }
 
     @Override
@@ -135,5 +162,46 @@ public class StockItemServiceImpl implements StockItemService {
                 .lowStockCount(lowStockCount)
                 .outOfStockCount(outOfStockCount)
                 .build();
+    }
+
+    /* ==========================================================================
+       Validation Rules
+       ========================================================================== */
+    private void validateCreate(Company company, StockItemRequest request) {
+        if (repository.existsByCompanyAndCode(company, request.getCode().trim())) {
+            throw new BusinessValidationException("Stock item code '" + request.getCode().trim() + "' already exists in this company.");
+        }
+        if (repository.existsByCompanyAndSku(company, request.getSku().trim())) {
+            throw new BusinessValidationException("SKU '" + request.getSku().trim() + "' already exists in this company.");
+        }
+        validateValues(request);
+    }
+
+    private void validateUpdate(Company company, UUID id, StockItemRequest request) {
+        if (repository.existsByCompanyAndCodeAndIdNot(company, request.getCode().trim(), id)) {
+            throw new BusinessValidationException("Another stock item with code '" + request.getCode().trim() + "' already exists in this company.");
+        }
+        if (repository.existsByCompanyAndSkuAndIdNot(company, request.getSku().trim(), id)) {
+            throw new BusinessValidationException("Another stock item with SKU '" + request.getSku().trim() + "' already exists in this company.");
+        }
+        validateValues(request);
+    }
+
+    private void validateValues(StockItemRequest request) {
+        if (request.getOpeningQuantity() != null && request.getOpeningQuantity().compareTo(BigDecimal.ZERO) < 0) {
+            throw new BusinessValidationException("Opening quantity cannot be negative.");
+        }
+        if (request.getOpeningValue() != null && request.getOpeningValue().compareTo(BigDecimal.ZERO) < 0) {
+            throw new BusinessValidationException("Opening value cannot be negative.");
+        }
+        if (request.getMinimumStock() != null && request.getMinimumStock().compareTo(BigDecimal.ZERO) < 0) {
+            throw new BusinessValidationException("Minimum stock cannot be negative.");
+        }
+        if (request.getMaximumStock() != null && request.getMaximumStock().compareTo(BigDecimal.ZERO) < 0) {
+            throw new BusinessValidationException("Maximum stock cannot be negative.");
+        }
+        if (request.getReorderLevel() != null && request.getReorderLevel().compareTo(BigDecimal.ZERO) < 0) {
+            throw new BusinessValidationException("Reorder level cannot be negative.");
+        }
     }
 }

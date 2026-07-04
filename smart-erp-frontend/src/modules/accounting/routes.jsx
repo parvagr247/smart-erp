@@ -1,16 +1,16 @@
 import React, { lazy } from 'react';
 import { Route } from 'react-router-dom';
 
-const AccountingDashboardView = lazy(() => import('./views/AccountingDashboardView'));
-const AccountGroupsView = lazy(() => import('./views/AccountGroupsView'));
-const LedgerListView = lazy(() => import('./views/LedgerListView'));
-const CreateLedgerView = lazy(() => import('./views/CreateLedgerView'));
-const EditLedgerView = lazy(() => import('./views/EditLedgerView'));
-const LedgerDetailsView = lazy(() => import('./views/LedgerDetailsView'));
+const AccountingDashboardView = lazy(() => import('./pages/AccountingDashboardView'));
+const AccountGroupsView = lazy(() => import('./pages/AccountGroupsView'));
+const LedgerListView = lazy(() => import('./pages/LedgerListView'));
+const CreateLedgerView = lazy(() => import('./pages/CreateLedgerView'));
+const EditLedgerView = lazy(() => import('./pages/EditLedgerView'));
+const LedgerDetailsView = lazy(() => import('./pages/LedgerDetailsView'));
 
-const GstView = lazy(() => import('./gst/views/GstView'));
-const BankingView = lazy(() => import('./banking/views/BankingView'));
-const ReportsView = lazy(() => import('./reports/views/ReportsView'));
+const GstView = lazy(() => import('./pages/GstView'));
+const BankingView = lazy(() => import('./pages/BankingView'));
+const ReportsView = lazy(() => import('./pages/ReportsView'));
 
 export const getAccountingRoutes = () => (
   <>

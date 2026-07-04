@@ -29,4 +29,31 @@ public class AccountGroupRequest {
     private String description;
 
     private Boolean isActive;
+
+    public com.smarterp.accounting.group.entity.AccountGroup toEntity(
+            com.smarterp.administration.company.entity.Company company, 
+            com.smarterp.accounting.group.entity.AccountGroup parentGroup) {
+        return com.smarterp.accounting.group.entity.AccountGroup.builder()
+                .name(this.name.trim())
+                .nature(this.nature)
+                .parentGroup(parentGroup)
+                .description(this.description)
+                .company(company)
+                .isSystemGenerated(false)
+                .isActive(this.isActive != null ? this.isActive : true)
+                .build();
+    }
+
+    public void updateEntity(
+            com.smarterp.accounting.group.entity.AccountGroup entity, 
+            com.smarterp.accounting.group.entity.AccountGroup parentGroup) {
+        if (entity == null) return;
+        entity.setName(this.name.trim());
+        entity.setNature(this.nature);
+        entity.setParentGroup(parentGroup);
+        entity.setDescription(this.description);
+        if (this.isActive != null) {
+            entity.setIsActive(this.isActive);
+        }
+    }
 }

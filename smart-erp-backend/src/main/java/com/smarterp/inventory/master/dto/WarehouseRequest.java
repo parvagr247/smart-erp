@@ -17,7 +17,4 @@ public class WarehouseRequest {
     private String name;
     
     private String address;
-    
-    @Builder.Default
-    private List<String> sections = new ArrayList<>();
 }

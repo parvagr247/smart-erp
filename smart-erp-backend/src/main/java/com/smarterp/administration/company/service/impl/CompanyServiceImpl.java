@@ -2,15 +2,13 @@ package com.smarterp.administration.company.service.impl;
 
 import com.smarterp.administration.company.dto.*;
 import com.smarterp.administration.company.entity.Company;
-import com.smarterp.administration.company.event.CompanySwitchedEvent;
-import com.smarterp.administration.company.mapper.CompanyMapper;
 import com.smarterp.administration.company.repository.CompanyRepository;
 import com.smarterp.administration.company.service.CompanyService;
-import com.smarterp.administration.company.validator.CompanyValidator;
 import com.smarterp.auth.entity.User;
 import com.smarterp.common.exception.BusinessValidationException;
 import com.smarterp.common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,23 +20,22 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class CompanyServiceImpl implements CompanyService {
 
     private final CompanyRepository repository;
-    private final CompanyMapper mapper;
-    private final CompanyValidator validator;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public CompanyResponse createCompany(CreateCompanyRequest request, User owner) {
-        validator.validateCreate(request.getGstNumber());
+        validateCreate(request.getGstNumber());
         
-        Company company = mapper.toEntity(request, owner);
+        Company company = request.toEntity(owner);
         Company savedCompany = repository.save(company);
         
         eventPublisher.publishEvent(new com.smarterp.administration.company.event.CompanyCreatedEvent(this, savedCompany.getId()));
         
-        return mapper.toResponse(savedCompany);
+        return CompanyResponse.fromEntity(savedCompany);
     }
 
     @Override
@@ -46,18 +43,18 @@ public class CompanyServiceImpl implements CompanyService {
         Company company = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Company not found with ID: " + id));
         
-        validator.validateOwnership(company, owner);
-        validator.validateUpdate(id, request.getGstNumber());
+        validateOwnership(company, owner);
+        validateUpdate(id, request.getGstNumber());
 
         // Optimistic Locking validation
         if (!company.getVersion().equals(request.getVersion())) {
             throw new BusinessValidationException("This company record was modified by another transaction. Please reload and try again.");
         }
 
-        mapper.updateEntityFromRequest(request, company);
+        request.updateEntity(company);
         Company updatedCompany = repository.save(company);
         
-        return mapper.toResponse(updatedCompany);
+        return CompanyResponse.fromEntity(updatedCompany);
     }
 
     @Override
@@ -65,7 +62,7 @@ public class CompanyServiceImpl implements CompanyService {
         Company company = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Company not found with ID: " + id));
         
-        validator.validateOwnership(company, owner);
+        validateOwnership(company, owner);
         
         repository.delete(company);
     }
@@ -76,16 +73,16 @@ public class CompanyServiceImpl implements CompanyService {
         Company company = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Company not found with ID: " + id));
         
-        validator.validateOwnership(company, owner);
+        validateOwnership(company, owner);
         
-        return mapper.toResponse(company);
+        return CompanyResponse.fromEntity(company);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<CompanySummaryResponse> getCompanies(User owner, Pageable pageable) {
         Page<Company> companiesPage = repository.findByOwner(owner, pageable);
-        return companiesPage.map(mapper::toSummaryResponse);
+        return companiesPage.map(CompanySummaryResponse::fromEntity);
     }
 
     @Override
@@ -93,11 +90,32 @@ public class CompanyServiceImpl implements CompanyService {
         Company company = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Company not found with ID: " + id));
         
-        validator.validateOwnership(company, owner);
+        validateOwnership(company, owner);
         
-        // Publish switch event
-        eventPublisher.publishEvent(new CompanySwitchedEvent(this, company.getId(), owner.getId()));
+        // Switched company successfully
+        log.info("User {} switched context to company {}", owner.getId(), company.getId());
         
-        return mapper.toResponse(company);
+        return CompanyResponse.fromEntity(company);
+    }
+
+    /* ==========================================================================
+       Validation Rules
+       ========================================================================== */
+    private void validateCreate(String gstNumber) {
+        if (repository.existsByGstNumber(gstNumber.trim())) {
+            throw new BusinessValidationException("GST number already registered under another company.");
+        }
+    }
+
+    private void validateUpdate(UUID id, String gstNumber) {
+        if (repository.existsByGstNumberAndIdNot(gstNumber.trim(), id)) {
+            throw new BusinessValidationException("GST number already registered under another company.");
+        }
+    }
+
+    private void validateOwnership(Company company, User owner) {
+        if (!company.getOwner().getId().equals(owner.getId())) {
+            throw new com.smarterp.common.exception.UnauthorizedAccessException("You do not have access to this company resource.");
+        }
     }
 }

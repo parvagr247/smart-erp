@@ -1,0 +1,5 @@
+@reference "../../../../shared/styles/global.css";
+
+.company-selector-select {
+  @apply px-3 py-1.5 text-xs font-semibold bg-[var(--bg-input)] border border-[var(--border-light)] rounded-md text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--border-focus)] cursor-pointer;
+}

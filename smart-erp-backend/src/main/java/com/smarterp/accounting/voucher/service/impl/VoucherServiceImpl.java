@@ -43,7 +43,6 @@ public class VoucherServiceImpl implements VoucherService {
     private final VoucherRepository repository;
     private final LedgerRepository ledgerRepository;
     private final ApplicationEventPublisher eventPublisher;
-    private final com.smarterp.common.workflow.WorkflowEngine workflowEngine;
 
     @Override
     public VoucherResponse createVoucher(VoucherRequest request, Company company, String userEmail) {
@@ -129,7 +128,7 @@ public class VoucherServiceImpl implements VoucherService {
             return mapToResponse(voucher);
         }
 
-        if (!workflowEngine.canTransition(oldStatus.name(), status.name())) {
+        if (!canTransition(oldStatus, status)) {
             throw new BusinessValidationException("Invalid status transition from " + oldStatus + " to " + status + ".");
         }
 
@@ -286,5 +285,15 @@ public class VoucherServiceImpl implements VoucherService {
                 .createdBy(v.getCreatedBy())
                 .createdAt(v.getCreatedAt())
                 .build();
+    }
+    private boolean canTransition(VoucherStatus current, VoucherStatus target) {
+        if (current == target) return true;
+        if (current == VoucherStatus.DRAFT) {
+            return target == VoucherStatus.APPROVED || target == VoucherStatus.CANCELLED;
+        }
+        if (current == VoucherStatus.APPROVED) {
+            return target == VoucherStatus.CANCELLED;
+        }
+        return false;
     }
 }

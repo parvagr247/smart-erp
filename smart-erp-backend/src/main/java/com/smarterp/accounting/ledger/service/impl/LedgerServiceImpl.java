@@ -2,21 +2,18 @@ package com.smarterp.accounting.ledger.service.impl;
 
 import com.smarterp.administration.company.entity.Company;
 import com.smarterp.common.exception.ResourceNotFoundException;
+import com.smarterp.common.exception.BusinessValidationException;
 import com.smarterp.accounting.group.entity.AccountGroup;
 import com.smarterp.accounting.group.repository.AccountGroupRepository;
 import com.smarterp.accounting.ledger.dto.LedgerRequest;
 import com.smarterp.accounting.ledger.dto.LedgerResponse;
-import com.smarterp.accounting.ledger.entity.BalanceType;
 import com.smarterp.accounting.ledger.entity.Ledger;
-import com.smarterp.accounting.ledger.event.LedgerCreatedEvent;
-import com.smarterp.accounting.ledger.event.LedgerUpdatedEvent;
-import com.smarterp.accounting.ledger.mapper.LedgerMapper;
+import com.smarterp.accounting.ledger.entity.BalanceType;
 import com.smarterp.accounting.ledger.repository.LedgerRepository;
 import com.smarterp.accounting.ledger.service.LedgerService;
-import com.smarterp.accounting.ledger.validator.LedgerValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
+import com.smarterp.common.audit.AuditLogService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -31,28 +28,21 @@ public class LedgerServiceImpl implements LedgerService {
 
     private final LedgerRepository repository;
     private final AccountGroupRepository groupRepository;
-    private final LedgerMapper mapper;
-    private final LedgerValidator validator;
-    private final ApplicationEventPublisher eventPublisher;
+    private final AuditLogService auditLogService;
 
     @Override
     public LedgerResponse createLedger(LedgerRequest request, Company company) {
         AccountGroup group = groupRepository.findById(request.getGroupId())
                 .orElseThrow(() -> new ResourceNotFoundException("Account group not found with ID: " + request.getGroupId()));
 
-        validator.validateCreate(company, request, group);
+        validateCreate(company, request, group);
 
-        Ledger ledger = mapper.toEntity(request, company, group);
+        Ledger ledger = request.toEntity(company, group);
         Ledger savedLedger = repository.save(ledger);
 
-        // Log Audit Event
-        log.info("System Audit Log [Ledger Created] - Ledger ID: {}, Name: '{}', Company ID: {}", 
-                 savedLedger.getId(), savedLedger.getName(), company.getId());
+        auditLogService.saveLog(company.getId(), "Ledger", savedLedger.getId(), "CREATED", "Ledger account created.");
 
-        // Publish Event
-        eventPublisher.publishEvent(new LedgerCreatedEvent(this, savedLedger.getId(), company.getId()));
-
-        return mapper.toResponse(savedLedger);
+        return LedgerResponse.fromEntity(savedLedger);
     }
 
     @Override
@@ -67,19 +57,14 @@ public class LedgerServiceImpl implements LedgerService {
         AccountGroup group = groupRepository.findById(request.getGroupId())
                 .orElseThrow(() -> new ResourceNotFoundException("Account group not found with ID: " + request.getGroupId()));
 
-        validator.validateUpdate(company, id, request, group);
-        mapper.updateEntityFromRequest(request, ledger, group);
+        validateUpdate(company, id, request, group);
+        request.updateEntity(ledger, group);
 
         Ledger updatedLedger = repository.save(ledger);
 
-        // Log Audit Event
-        log.info("System Audit Log [Ledger Updated] - Ledger ID: {}, Name: '{}', Company ID: {}", 
-                 updatedLedger.getId(), updatedLedger.getName(), company.getId());
+        auditLogService.saveLog(company.getId(), "Ledger", updatedLedger.getId(), "UPDATED", "Ledger account parameters updated.");
 
-        // Publish Event
-        eventPublisher.publishEvent(new LedgerUpdatedEvent(this, updatedLedger.getId(), company.getId()));
-
-        return mapper.toResponse(updatedLedger);
+        return LedgerResponse.fromEntity(updatedLedger);
     }
 
     @Override
@@ -92,10 +77,7 @@ public class LedgerServiceImpl implements LedgerService {
         }
 
         repository.delete(ledger);
-
-        // Log Audit Event
-        log.info("System Audit Log [Ledger Deleted] - Ledger ID: {}, Name: '{}', Company ID: {}", 
-                 id, ledger.getName(), company.getId());
+        auditLogService.saveLog(company.getId(), "Ledger", id, "DELETED", "Ledger account deleted.");
     }
 
     @Override
@@ -108,7 +90,7 @@ public class LedgerServiceImpl implements LedgerService {
             throw new ResourceNotFoundException("Ledger not found in this company scope.");
         }
 
-        return mapper.toResponse(ledger);
+        return LedgerResponse.fromEntity(ledger);
     }
 
     @Override
@@ -132,12 +114,49 @@ public class LedgerServiceImpl implements LedgerService {
             pageable
         );
         
-        return ledgersPage.map(mapper::toResponse);
+        return ledgersPage.map(LedgerResponse::fromEntity);
     }
 
     @Override
     @Transactional(readOnly = true)
     public long countLedgers(Company company) {
         return repository.countByCompany(company);
+    }
+
+    /* ==========================================================================
+       Validation Rules
+       ========================================================================== */
+    private void validateCreate(Company company, LedgerRequest request, AccountGroup group) {
+        if (repository.existsByCompanyAndName(company, request.getName().trim())) {
+            throw new BusinessValidationException("Ledger '" + request.getName().trim() + "' already exists in this company.");
+        }
+        validateGroup(company, group);
+        validateOpeningBalance(request);
+    }
+
+    private void validateUpdate(Company company, UUID ledgerId, LedgerRequest request, AccountGroup group) {
+        if (repository.existsByCompanyAndNameAndIdNot(company, request.getName().trim(), ledgerId)) {
+            throw new BusinessValidationException("Another ledger '" + request.getName().trim() + "' already exists in this company.");
+        }
+        validateGroup(company, group);
+        validateOpeningBalance(request);
+    }
+
+    private void validateGroup(Company company, AccountGroup group) {
+        if (!group.getCompany().getId().equals(company.getId())) {
+            throw new BusinessValidationException("The selected account group does not belong to this company.");
+        }
+        if (Boolean.FALSE.equals(group.getIsActive())) {
+            throw new BusinessValidationException("Selected group is currently inactive.");
+        }
+    }
+
+    private void validateOpeningBalance(LedgerRequest request) {
+        java.math.BigDecimal ob = request.getOpeningBalance();
+        if (ob != null && ob.compareTo(java.math.BigDecimal.ZERO) > 0) {
+            if (request.getBalanceType() == null) {
+                throw new BusinessValidationException("Balance type (DEBIT or CREDIT) is required when opening balance is greater than zero.");
+            }
+        }
     }
 }

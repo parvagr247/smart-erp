@@ -61,4 +61,21 @@ public class UpdateCompanyRequest {
 
     @NotNull(message = "Version is required for concurrency control")
     private Long version;
+
+    public void updateEntity(com.smarterp.administration.company.entity.Company company) {
+        if (company == null) return;
+        company.setName(this.name);
+        company.setGstNumber(this.gstNumber);
+        company.setPanNumber(this.panNumber);
+        company.setFinancialYear(this.financialYear);
+        company.setAddress(this.address);
+        company.setCity(this.city);
+        company.setState(this.state);
+        company.setCountry(this.country);
+        company.setPincode(this.pincode);
+        company.setPhone(this.phone);
+        company.setEmail(this.email);
+        company.setCurrency(this.currency);
+        company.setLogo(this.logo);
+    }
 }

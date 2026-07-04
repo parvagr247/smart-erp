@@ -1,0 +1,13 @@
+@reference "../../../../shared/styles/global.css";
+
+.stat-card-grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4;
+}
+
+.shortcut-grid-col {
+  @apply grid grid-cols-2 md:grid-cols-3 gap-3;
+}
+
+.audit-logs-column {
+  @apply text-xs text-[var(--text-secondary)] space-y-2 text-left font-mono;
+}

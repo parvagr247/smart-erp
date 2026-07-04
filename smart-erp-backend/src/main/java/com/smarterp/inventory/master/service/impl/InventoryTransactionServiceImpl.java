@@ -2,21 +2,19 @@ package com.smarterp.inventory.master.service.impl;
 
 import com.smarterp.administration.company.entity.Company;
 import com.smarterp.common.exception.ResourceNotFoundException;
+import com.smarterp.common.audit.AuditLogService;
 import com.smarterp.inventory.master.dto.InventoryTransactionRequest;
 import com.smarterp.inventory.master.dto.InventoryTransactionResponse;
 import com.smarterp.inventory.master.entity.InventoryTransaction;
 import com.smarterp.inventory.master.entity.InventoryTransactionType;
 import com.smarterp.inventory.master.entity.StockItem;
 import com.smarterp.inventory.master.entity.Warehouse;
-import com.smarterp.inventory.master.event.InventoryTransactionCreatedEvent;
-import com.smarterp.inventory.master.event.StockAdjustedEvent;
 import com.smarterp.inventory.master.repository.InventoryTransactionRepository;
 import com.smarterp.inventory.master.repository.StockItemRepository;
 import com.smarterp.inventory.master.repository.WarehouseRepository;
 import com.smarterp.inventory.master.service.InventoryTransactionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,7 +33,7 @@ public class InventoryTransactionServiceImpl implements InventoryTransactionServ
     private final InventoryTransactionRepository repository;
     private final StockItemRepository stockItemRepository;
     private final WarehouseRepository warehouseRepository;
-    private final ApplicationEventPublisher eventPublisher;
+    private final AuditLogService auditLogService;
 
     @Override
     public InventoryTransactionResponse recordTransaction(InventoryTransactionRequest request, Company company, String performedBy) {
@@ -92,15 +90,11 @@ public class InventoryTransactionServiceImpl implements InventoryTransactionServ
             item.setCurrentQuantity(oldQty.add(qtyDelta));
             stockItemRepository.save(item);
             
-            // Publish StockAdjustedEvent
-            eventPublisher.publishEvent(new StockAdjustedEvent(
-                    this, item.getId(), company.getId(), item.getName(), oldQty, item.getCurrentQuantity(),
-                    "Transaction: " + tx.getTransactionType()
-            ));
+            auditLogService.saveLog(company.getId(), "StockItem", item.getId(), "ADJUSTED", 
+                    "Stock quantity adjusted for " + item.getName() + ". Old Qty: " + oldQty + ", New Qty: " + item.getCurrentQuantity() + ". Reason: Transaction: " + tx.getTransactionType());
         }
 
-        // Publish InventoryTransactionCreatedEvent
-        eventPublisher.publishEvent(new InventoryTransactionCreatedEvent(this, savedTx.getId(), company.getId()));
+        auditLogService.saveLog(company.getId(), "InventoryTransaction", savedTx.getId(), "CREATED", "Inventory transaction of type " + tx.getTransactionType() + " recorded.");
 
         return mapToResponse(savedTx);
     }

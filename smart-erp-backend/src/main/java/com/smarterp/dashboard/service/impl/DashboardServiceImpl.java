@@ -40,20 +40,9 @@ public class DashboardServiceImpl implements DashboardService {
     private final com.smarterp.inventory.sales.repository.SalesRepository salesRepository;
     private final com.smarterp.accounting.voucher.repository.VoucherRepository voucherRepository;
 
-    private final java.util.concurrent.ConcurrentHashMap<java.util.UUID, DashboardSummaryResponse> summaryCache = new java.util.concurrent.ConcurrentHashMap<>();
-    private final java.util.concurrent.ConcurrentHashMap<java.util.UUID, RecentActivityResponse> activityCache = new java.util.concurrent.ConcurrentHashMap<>();
-
-    @Override
-    public void evictCache(java.util.UUID companyId) {
-        log.info("Evicting dashboard cache for company {}", companyId);
-        summaryCache.remove(companyId);
-        activityCache.remove(companyId);
-    }
-
     @Override
     public DashboardSummaryResponse getSummary(Company company) {
-        return summaryCache.computeIfAbsent(company.getId(), cid -> {
-            log.info("Dashboard summary cache miss for company {}. Loading from database.", cid);
+        log.info("Loading dashboard summary from database for company {}.", company.getId());
             long ledgerCount = ledgerRepository.countByCompany(company);
             long partnerCount = partnerRepository.countByCompany(company);
             long stockItemCount = stockItemRepository.countByCompany(company);
@@ -158,13 +147,11 @@ public class DashboardServiceImpl implements DashboardService {
                     .cashPosition(cashPosition)
                     .pendingApprovals(pendingApprovals)
                     .build();
-        });
     }
 
     @Override
     public RecentActivityResponse getRecentActivity(Company company) {
-        return activityCache.computeIfAbsent(company.getId(), cid -> {
-            log.info("Dashboard recent activity cache miss for company {}. Loading from database.", cid);
+        log.info("Loading dashboard recent activity from database for company {}.", company.getId());
             List<RecentActivityResponse.ActivityItem> list = new ArrayList<>();
 
             // Fetch latest 3 Ledgers
@@ -242,7 +229,6 @@ public class DashboardServiceImpl implements DashboardService {
                     .collect(Collectors.toList());
 
             return RecentActivityResponse.builder().activities(sorted).build();
-        });
     }
 
     @Override

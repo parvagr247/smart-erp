@@ -1,0 +1,17 @@
+@reference "../../../../shared/styles/global.css";
+
+.form-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-4 text-left;
+}
+
+.form-group {
+  @apply flex flex-col gap-1;
+}
+
+.form-full-width {
+  @apply col-span-1 md:col-span-2;
+}
+
+.form-actions {
+  @apply flex gap-3 justify-end pt-6 border-t border-[var(--border-light)] mt-6;
+}

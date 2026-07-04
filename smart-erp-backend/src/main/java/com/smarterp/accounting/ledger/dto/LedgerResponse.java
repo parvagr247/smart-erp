@@ -29,4 +29,25 @@ public class LedgerResponse {
     private Boolean isActive;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    public static LedgerResponse fromEntity(com.smarterp.accounting.ledger.entity.Ledger entity) {
+        if (entity == null) return null;
+        return LedgerResponse.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .groupId(entity.getGroup() != null ? entity.getGroup().getId() : null)
+                .groupName(entity.getGroup() != null ? entity.getGroup().getName() : null)
+                .openingBalance(entity.getOpeningBalance())
+                .balanceType(entity.getBalanceType())
+                .gstApplicable(entity.getGstApplicable())
+                .gstNumber(entity.getGstNumber())
+                .pan(entity.getPan())
+                .email(entity.getEmail())
+                .phone(entity.getPhone())
+                .address(entity.getAddress())
+                .isActive(entity.getIsActive())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
+                .build();
+    }
 }

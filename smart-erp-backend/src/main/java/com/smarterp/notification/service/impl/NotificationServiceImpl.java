@@ -5,7 +5,6 @@ import com.smarterp.common.exception.ResourceNotFoundException;
 import com.smarterp.notification.dto.NotificationResponse;
 import com.smarterp.notification.entity.Notification;
 import com.smarterp.notification.repository.NotificationRepository;
-import com.smarterp.notification.service.NotificationDispatcher;
 import com.smarterp.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +22,6 @@ import java.util.stream.Collectors;
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository repository;
-    private final List<NotificationDispatcher> dispatchers;
 
     @Override
     @Transactional(readOnly = true)
@@ -77,14 +75,9 @@ public class NotificationServiceImpl implements NotificationService {
 
         repository.save(notification);
 
-        // Dispatch notifications via all mapped channels (Email/SMS mock log hooks)
-        for (NotificationDispatcher dispatcher : dispatchers) {
-            try {
-                dispatcher.dispatch(company, title, message, userEmail);
-            } catch (Exception e) {
-                log.error("Failed to dispatch notification via channel: {}", dispatcher.getClass().getSimpleName(), e);
-            }
-        }
+        // Inline the mock dispatch logging for SMS and Email channels
+        log.info("[MOCK EMAIL OUTBOX] To: {}, Subject: {}, Body: {}", userEmail, title, message);
+        log.info("[MOCK SMS OUTBOX] To: {}, Message: {}", userEmail, message);
     }
 
     private NotificationResponse mapToResponse(Notification n) {

@@ -5,12 +5,13 @@ import com.smarterp.auth.dto.LoginRequest;
 import com.smarterp.auth.dto.RegisterRequest;
 import com.smarterp.auth.dto.UserDto;
 import com.smarterp.auth.entity.User;
-import com.smarterp.common.exception.EmailAlreadyExistsException;
+import com.smarterp.common.exception.BusinessValidationException;
 import com.smarterp.auth.repository.UserRepo;
 import com.smarterp.auth.service.AuthService;
 import com.smarterp.common.security.JwtService;
 import com.smarterp.common.security.AuthenticatedUser;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,19 +21,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepo userRepo;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
-    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (userRepo.existsByEmail(request.getEmail())) {
-            throw new EmailAlreadyExistsException("Email address is already registered: " + request.getEmail());
+            throw new BusinessValidationException("Email address is already registered: " + request.getEmail());
         }
 
         User user = User.builder()
@@ -45,9 +46,7 @@ public class AuthServiceImpl implements AuthService {
 
         User savedUser = userRepo.save(user);
         
-        // Publish UserCreatedEvent
-        eventPublisher.publishEvent(new com.smarterp.auth.event.UserCreatedEvent(
-                this, savedUser.getId(), savedUser.getEmail(), savedUser.getFullName(), savedUser.getRole().name()));
+        log.info("[AUDIT LOG] User registered: {} ({})", savedUser.getEmail(), savedUser.getId());
 
         String jwtToken = jwtService.generateToken(new AuthenticatedUser(savedUser));
 
@@ -70,8 +69,7 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepo.findByEmail(request.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + request.getEmail()));
 
-        // Publish LoginSucceededEvent
-        eventPublisher.publishEvent(new com.smarterp.auth.event.LoginSucceededEvent(this, user.getEmail()));
+        log.info("[AUDIT LOG] Login Succeeded for user: {}", user.getEmail());
 
         String jwtToken = jwtService.generateToken(new AuthenticatedUser(user));
 
@@ -89,8 +87,7 @@ public class AuthServiceImpl implements AuthService {
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepo.save(user);
         
-        // Publish PasswordChangedEvent
-        eventPublisher.publishEvent(new com.smarterp.auth.event.PasswordChangedEvent(this, email));
+        log.info("[AUDIT LOG] Password Changed for user: {}", email);
     }
 
     @Override
@@ -101,8 +98,7 @@ public class AuthServiceImpl implements AuthService {
         user.setRole(com.smarterp.auth.entity.enums.Role.valueOf(role.toUpperCase()));
         userRepo.save(user);
         
-        // Publish RoleAssignedEvent
-        eventPublisher.publishEvent(new com.smarterp.auth.event.RoleAssignedEvent(this, userId, role));
+        log.info("[AUDIT LOG] Role assigned to user {}: {}", userId, role);
     }
 
     private UserDto mapToUserDto(User user) {

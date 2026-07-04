@@ -6,7 +6,6 @@ import com.smarterp.common.dto.ApiResponse;
 import com.smarterp.common.exception.ResourceNotFoundException;
 import com.smarterp.inventory.master.dto.WarehouseRequest;
 import com.smarterp.inventory.master.entity.Warehouse;
-import com.smarterp.inventory.master.entity.WarehouseSection;
 import com.smarterp.inventory.master.repository.WarehouseRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +22,7 @@ public class WarehouseController {
 
     private final WarehouseRepository repository;
     private final CompanyRepository companyRepository;
-    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
+    private final com.smarterp.common.audit.AuditLogService auditLogService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<Warehouse>> createWarehouse(
@@ -41,19 +40,11 @@ public class WarehouseController {
                 .company(company)
                 .build();
 
-        if (request.getSections() != null) {
-            for (String sectionName : request.getSections()) {
-                if (sectionName != null && !sectionName.trim().isEmpty()) {
-                    WarehouseSection section = WarehouseSection.builder().name(sectionName.trim()).build();
-                    wh.addSection(section);
-                }
-            }
-        }
+
 
         Warehouse saved = repository.save(wh);
         
-        eventPublisher.publishEvent(new com.smarterp.inventory.master.event.WarehouseCreatedEvent(
-                this, saved.getId(), company.getId(), saved.getName()));
+        auditLogService.saveLog(company.getId(), "Warehouse", saved.getId(), "CREATED", "Warehouse " + saved.getName() + " registered.");
 
         return new ResponseEntity<>(ApiResponse.<Warehouse>builder().success(true).message("Warehouse created.").data(saved).build(), HttpStatus.CREATED);
     }

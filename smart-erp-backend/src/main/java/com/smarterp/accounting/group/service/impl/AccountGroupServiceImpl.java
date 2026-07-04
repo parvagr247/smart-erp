@@ -2,15 +2,14 @@ package com.smarterp.accounting.group.service.impl;
 
 import com.smarterp.administration.company.entity.Company;
 import com.smarterp.common.exception.ResourceNotFoundException;
+import com.smarterp.common.exception.BusinessValidationException;
 import com.smarterp.accounting.group.dto.AccountGroupRequest;
 import com.smarterp.accounting.group.dto.AccountGroupResponse;
 import com.smarterp.accounting.group.entity.AccountGroup;
 import com.smarterp.accounting.group.entity.GroupNature;
 import com.smarterp.accounting.group.event.GroupCreatedEvent;
-import com.smarterp.accounting.group.mapper.AccountGroupMapper;
 import com.smarterp.accounting.group.repository.AccountGroupRepository;
 import com.smarterp.accounting.group.service.AccountGroupService;
-import com.smarterp.accounting.group.validator.AccountGroupValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -27,13 +26,11 @@ import java.util.stream.Collectors;
 public class AccountGroupServiceImpl implements AccountGroupService {
 
     private final AccountGroupRepository repository;
-    private final AccountGroupMapper mapper;
-    private final AccountGroupValidator validator;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public AccountGroupResponse createGroup(AccountGroupRequest request, Company company) {
-        validator.validateCreate(company, request.getName());
+        validateCreate(company, request.getName());
         
         AccountGroup parentGroup = null;
         if (request.getParentGroupId() != null) {
@@ -41,8 +38,8 @@ public class AccountGroupServiceImpl implements AccountGroupService {
                     .orElseThrow(() -> new ResourceNotFoundException("Parent group not found with ID: " + request.getParentGroupId()));
         }
 
-        AccountGroup group = mapper.toEntity(request, company, parentGroup);
-        validator.validateParentGroup(group, parentGroup);
+        AccountGroup group = request.toEntity(company, parentGroup);
+        validateParentGroup(group, parentGroup);
         
         AccountGroup savedGroup = repository.save(group);
         
@@ -53,7 +50,7 @@ public class AccountGroupServiceImpl implements AccountGroupService {
         // Publish Event
         eventPublisher.publishEvent(new GroupCreatedEvent(this, savedGroup.getId(), company.getId()));
 
-        return mapper.toResponse(savedGroup);
+        return AccountGroupResponse.fromEntity(savedGroup);
     }
 
     @Override
@@ -65,7 +62,7 @@ public class AccountGroupServiceImpl implements AccountGroupService {
             throw new ResourceNotFoundException("Account group not found in this company scope.");
         }
 
-        validator.validateUpdate(company, id, request.getName());
+        validateUpdate(company, id, request.getName());
 
         AccountGroup parentGroup = null;
         if (request.getParentGroupId() != null) {
@@ -73,8 +70,8 @@ public class AccountGroupServiceImpl implements AccountGroupService {
                     .orElseThrow(() -> new ResourceNotFoundException("Parent group not found with ID: " + request.getParentGroupId()));
         }
 
-        validator.validateParentGroup(group, parentGroup);
-        mapper.updateEntityFromRequest(request, group, parentGroup);
+        validateParentGroup(group, parentGroup);
+        request.updateEntity(group, parentGroup);
 
         AccountGroup updatedGroup = repository.save(group);
 
@@ -82,7 +79,7 @@ public class AccountGroupServiceImpl implements AccountGroupService {
         log.info("System Audit Log [Group Updated] - Group ID: {}, Name: '{}', Company ID: {}", 
                  updatedGroup.getId(), updatedGroup.getName(), company.getId());
 
-        return mapper.toResponse(updatedGroup);
+        return AccountGroupResponse.fromEntity(updatedGroup);
     }
 
     @Override
@@ -94,7 +91,7 @@ public class AccountGroupServiceImpl implements AccountGroupService {
             throw new ResourceNotFoundException("Account group not found in this company scope.");
         }
 
-        validator.validateDelete(group);
+        validateDelete(group);
         repository.delete(group);
 
         // Log Audit Event
@@ -112,7 +109,7 @@ public class AccountGroupServiceImpl implements AccountGroupService {
             groups = repository.findByCompanyOrderByNameAsc(company);
         }
         return groups.stream()
-                .map(mapper::toResponse)
+                .map(AccountGroupResponse::fromEntity)
                 .collect(Collectors.toList());
     }
 
@@ -169,12 +166,53 @@ public class AccountGroupServiceImpl implements AccountGroupService {
             throw new ResourceNotFoundException("Account group not found in this company scope.");
         }
 
-        return mapper.toResponse(group);
+        return AccountGroupResponse.fromEntity(group);
     }
 
     @Override
     @Transactional(readOnly = true)
     public long countGroups(Company company) {
         return repository.countByCompany(company);
+    }
+
+    /* ==========================================================================
+       Validation Rules
+       ========================================================================== */
+    private void validateCreate(Company company, String name) {
+        if (repository.existsByCompanyAndName(company, name.trim())) {
+            throw new BusinessValidationException("Account group '" + name.trim() + "' already exists in this company.");
+        }
+    }
+
+    private void validateUpdate(Company company, UUID groupId, String name) {
+        if (repository.existsByCompanyAndNameAndIdNot(company, name.trim(), groupId)) {
+            throw new BusinessValidationException("Another account group '" + name.trim() + "' already exists in this company.");
+        }
+    }
+
+    private void validateDelete(AccountGroup group) {
+        if (Boolean.TRUE.equals(group.getIsSystemGenerated())) {
+            throw new BusinessValidationException("System-generated account groups cannot be deleted.");
+        }
+    }
+
+    private void validateParentGroup(AccountGroup group, AccountGroup parentGroup) {
+        if (parentGroup == null) return;
+
+        if (!parentGroup.getCompany().getId().equals(group.getCompany().getId())) {
+            throw new BusinessValidationException("Parent group must belong to the same company.");
+        }
+
+        if (parentGroup.getId().equals(group.getId())) {
+            throw new BusinessValidationException("A group cannot be its own parent.");
+        }
+
+        AccountGroup current = parentGroup;
+        while (current.getParentGroup() != null) {
+            if (current.getParentGroup().getId().equals(group.getId())) {
+                throw new BusinessValidationException("Circular parent-child relationship detected.");
+            }
+            current = current.getParentGroup();
+        }
     }
 }

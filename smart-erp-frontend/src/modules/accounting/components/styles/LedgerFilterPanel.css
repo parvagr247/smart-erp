@@ -1,0 +1,17 @@
+@reference "../../../../shared/styles/global.css";
+
+.filter-panel-container {
+  @apply flex flex-wrap gap-4 items-center bg-[var(--bg-surface)] p-4 rounded-lg border border-[var(--border-light)] w-full justify-between;
+}
+
+.filter-panel-search-wrap {
+  @apply flex items-center gap-2 flex-grow max-w-sm;
+}
+
+.filter-panel-controls-wrap {
+  @apply flex flex-wrap gap-2 text-sm;
+}
+
+.filter-panel-select {
+  @apply p-2 bg-[var(--bg-input)] rounded border border-[var(--border-light)] text-[var(--text-primary)] cursor-pointer focus:outline-none;
+}

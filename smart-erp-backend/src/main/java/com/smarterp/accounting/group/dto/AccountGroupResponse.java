@@ -23,4 +23,20 @@ public class AccountGroupResponse {
     private Boolean isActive;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    public static AccountGroupResponse fromEntity(com.smarterp.accounting.group.entity.AccountGroup entity) {
+        if (entity == null) return null;
+        return AccountGroupResponse.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .nature(entity.getNature())
+                .parentGroupId(entity.getParentGroup() != null ? entity.getParentGroup().getId() : null)
+                .parentGroupName(entity.getParentGroup() != null ? entity.getParentGroup().getName() : null)
+                .description(entity.getDescription())
+                .isSystemGenerated(entity.getIsSystemGenerated())
+                .isActive(entity.getIsActive())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
+                .build();
+    }
 }

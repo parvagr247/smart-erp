@@ -41,18 +41,4 @@ public class Warehouse extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id", nullable = false)
     private Company company;
-
-    @OneToMany(mappedBy = "warehouse", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @Builder.Default
-    private List<WarehouseSection> sections = new ArrayList<>();
-
-    public void addSection(WarehouseSection section) {
-        sections.add(section);
-        section.setWarehouse(this);
-    }
-
-    public void removeSection(WarehouseSection section) {
-        sections.remove(section);
-        section.setWarehouse(null);
-    }
 }

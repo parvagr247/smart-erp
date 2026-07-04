@@ -19,5 +19,7 @@ public interface CompanyRepository extends JpaRepository<Company, UUID> {
 
     boolean existsByGstNumber(String gstNumber);
 
+    boolean existsByGstNumberAndIdNot(String gstNumber, UUID id);
+
     Optional<Company> findByGstNumber(String gstNumber);
 }

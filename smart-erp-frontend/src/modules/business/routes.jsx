@@ -1,7 +1,7 @@
 import React, { lazy } from 'react';
 import { Route } from 'react-router-dom';
 
-const DashboardView = lazy(() => import('./dashboard/views/DashboardView'));
+const DashboardView = lazy(() => import('./pages/DashboardView'));
 
 export const getBusinessRoutes = () => (
   <>
