@@ -7,6 +7,8 @@ import OutstandingTable from './OutstandingTable';
 import InventoryValuationTable from './InventoryValuationTable';
 import StockRegisterTable from './StockRegisterTable';
 import GstSummaryTable from './GstSummaryTable';
+import DayBookTable from './DayBookTable';
+import CashFlowTable from './CashFlowTable';
 import './styles/ReportPane.css';
 
 export default function ReportPane({ selectedReport, loading, error, reportData, partnerType, navigate }) {
@@ -31,6 +33,8 @@ export default function ReportPane({ selectedReport, loading, error, reportData,
           {selectedReport === 'inventory-valuation' && <InventoryValuationTable reportData={reportData} />}
           {selectedReport === 'stock-register' && <StockRegisterTable reportData={reportData} />}
           {selectedReport === 'gst-summary' && <GstSummaryTable reportData={reportData} />}
+          {selectedReport === 'day-book' && <DayBookTable reportData={reportData} />}
+          {selectedReport === 'cash-flow' && <CashFlowTable reportData={reportData} />}
         </div>
       )}
     </div>

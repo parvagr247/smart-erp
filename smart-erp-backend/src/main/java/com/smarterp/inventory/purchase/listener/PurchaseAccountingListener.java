@@ -7,15 +7,24 @@ import com.smarterp.accounting.ledger.repository.LedgerRepository;
 import com.smarterp.accounting.group.entity.AccountGroup;
 import com.smarterp.accounting.group.entity.GroupNature;
 import com.smarterp.accounting.group.repository.AccountGroupRepository;
+import com.smarterp.accounting.voucher.entity.Voucher;
+import com.smarterp.accounting.voucher.entity.VoucherLine;
+import com.smarterp.accounting.voucher.entity.VoucherStatus;
+import com.smarterp.accounting.voucher.entity.VoucherType;
+import com.smarterp.accounting.voucher.event.VoucherApprovedEvent;
+import com.smarterp.accounting.voucher.repository.VoucherRepository;
+import com.smarterp.accounting.voucher.service.VoucherService;
 import com.smarterp.inventory.purchase.entity.Purchase;
 import com.smarterp.inventory.purchase.event.PurchaseApprovedEvent;
 import com.smarterp.inventory.purchase.repository.PurchaseRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 
 @Component
 @RequiredArgsConstructor
@@ -25,6 +34,9 @@ public class PurchaseAccountingListener {
     private final PurchaseRepository purchaseRepository;
     private final LedgerRepository ledgerRepository;
     private final AccountGroupRepository groupRepository;
+    private final VoucherRepository voucherRepository;
+    private final VoucherService voucherService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @EventListener
     @Transactional
@@ -38,39 +50,76 @@ public class PurchaseAccountingListener {
         if (purchase == null) return;
         Company company = purchase.getCompany();
 
-        // 1. Debit Purchase Account (tax-exclusive taxable gross amount)
+        // 1. Build Voucher Header
+        Voucher voucher = Voucher.builder()
+                .voucherNumber(voucherService.generateVoucherNo(company, VoucherType.JOURNAL))
+                .voucherDate(purchase.getPurchaseDate())
+                .voucherType(VoucherType.JOURNAL)
+                .status(VoucherStatus.APPROVED)
+                .narration("Auto-posted from Purchase Invoice: " + purchase.getPurchaseNumber() + " | Supplier: " + purchase.getSupplier().getName())
+                .company(company)
+                .createdBy(purchase.getCreatedBy())
+                .lineItems(new ArrayList<>())
+                .build();
+
+        // 2. Debit Purchase Account (tax-exclusive taxable gross amount)
         BigDecimal taxableTotal = purchase.getGrossAmount().subtract(purchase.getDiscountAmount());
         Ledger purchaseLedger = getOrCreateLedger(company, "Purchase Account", "Purchase", GroupNature.EXPENSE);
-        purchaseLedger.setOpeningBalance(purchaseLedger.getOpeningBalance().add(taxableTotal));
-        ledgerRepository.save(purchaseLedger);
+        VoucherLine purchaseLine = VoucherLine.builder()
+                .voucher(voucher)
+                .ledger(purchaseLedger)
+                .amount(taxableTotal)
+                .entryType("DEBIT")
+                .build();
+        voucher.getLineItems().add(purchaseLine);
 
-        // 2. Credit Supplier Account (grandTotal)
+        // 3. Credit Supplier Account (grandTotal)
         Ledger supplierLedger = getOrCreateLedger(company, purchase.getSupplier().getName() + " Ledger", "Current Liabilities", GroupNature.LIABILITY);
-        supplierLedger.setOpeningBalance(supplierLedger.getOpeningBalance().add(purchase.getGrandTotal()));
-        ledgerRepository.save(supplierLedger);
+        VoucherLine supplierLine = VoucherLine.builder()
+                .voucher(voucher)
+                .ledger(supplierLedger)
+                .amount(purchase.getGrandTotal())
+                .entryType("CREDIT")
+                .build();
+        voucher.getLineItems().add(supplierLine);
 
-        // 3. Debit Taxes (Duties & Taxes under Liabilities)
+        // 4. Debit Taxes (Duties & Taxes under Liabilities)
         if (purchase.getCgst().compareTo(BigDecimal.ZERO) > 0) {
             Ledger cgstLedger = getOrCreateLedger(company, "CGST Input Tax Account", "Duties & Taxes", GroupNature.LIABILITY);
-            cgstLedger.setOpeningBalance(cgstLedger.getOpeningBalance().subtract(purchase.getCgst()));
-            ledgerRepository.save(cgstLedger);
+            voucher.getLineItems().add(VoucherLine.builder().voucher(voucher).ledger(cgstLedger).amount(purchase.getCgst()).entryType("DEBIT").build());
         }
         if (purchase.getSgst().compareTo(BigDecimal.ZERO) > 0) {
             Ledger sgstLedger = getOrCreateLedger(company, "SGST Input Tax Account", "Duties & Taxes", GroupNature.LIABILITY);
-            sgstLedger.setOpeningBalance(sgstLedger.getOpeningBalance().subtract(purchase.getSgst()));
-            ledgerRepository.save(sgstLedger);
+            voucher.getLineItems().add(VoucherLine.builder().voucher(voucher).ledger(sgstLedger).amount(purchase.getSgst()).entryType("DEBIT").build());
         }
         if (purchase.getIgst().compareTo(BigDecimal.ZERO) > 0) {
             Ledger igstLedger = getOrCreateLedger(company, "IGST Input Tax Account", "Duties & Taxes", GroupNature.LIABILITY);
-            igstLedger.setOpeningBalance(igstLedger.getOpeningBalance().subtract(purchase.getIgst()));
-            ledgerRepository.save(igstLedger);
+            voucher.getLineItems().add(VoucherLine.builder().voucher(voucher).ledger(igstLedger).amount(purchase.getIgst()).entryType("DEBIT").build());
         }
         if (purchase.getCess().compareTo(BigDecimal.ZERO) > 0) {
             Ledger cessLedger = getOrCreateLedger(company, "CESS Input Tax Account", "Duties & Taxes", GroupNature.LIABILITY);
-            cessLedger.setOpeningBalance(cessLedger.getOpeningBalance().subtract(purchase.getCess()));
-            ledgerRepository.save(cessLedger);
+            voucher.getLineItems().add(VoucherLine.builder().voucher(voucher).ledger(cessLedger).amount(purchase.getCess()).entryType("DEBIT").build());
         }
-        log.info("Ledger balances updated for Purchase: {}", purchase.getPurchaseNumber());
+
+        // 5. Debit/Credit Round Off Account
+        BigDecimal roundOff = purchase.getRoundOff();
+        if (roundOff != null && roundOff.compareTo(BigDecimal.ZERO) != 0) {
+            Ledger roundOffLedger = getOrCreateLedger(company, "Round Off Account", "Indirect Expenses", GroupNature.EXPENSE);
+            boolean isDebit = roundOff.compareTo(BigDecimal.ZERO) > 0;
+            VoucherLine roundLine = VoucherLine.builder()
+                    .voucher(voucher)
+                    .ledger(roundOffLedger)
+                    .amount(roundOff.abs())
+                    .entryType(isDebit ? "DEBIT" : "CREDIT")
+                    .build();
+            voucher.getLineItems().add(roundLine);
+        }
+
+        Voucher savedVoucher = voucherRepository.save(voucher);
+        log.info("Voucher {} created & posted for Purchase Invoice: {}", savedVoucher.getVoucherNumber(), purchase.getPurchaseNumber());
+
+        // Publish event to trigger VoucherAccountingListener for ledger balance updates
+        eventPublisher.publishEvent(new VoucherApprovedEvent(this, savedVoucher.getId(), company.getId()));
     }
 
     private Ledger getOrCreateLedger(Company company, String name, String groupName, GroupNature nature) {
@@ -85,6 +134,8 @@ public class PurchaseAccountingListener {
                                     parent = groupRepository.findByCompanyAndName(company, "Expense").orElse(null);
                                 } else if (groupName.equals("Current Assets")) {
                                     parent = groupRepository.findByCompanyAndName(company, "Assets").orElse(null);
+                                } else if (groupName.equals("Indirect Expenses")) {
+                                    parent = groupRepository.findByCompanyAndName(company, "Expense").orElse(null);
                                 }
                                 return groupRepository.save(AccountGroup.builder()
                                         .name(groupName)

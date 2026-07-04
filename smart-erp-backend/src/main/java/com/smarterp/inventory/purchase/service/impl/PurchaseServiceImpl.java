@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.cache.annotation.CacheEvict;
 
 @Service
 @RequiredArgsConstructor
@@ -52,6 +53,7 @@ public class PurchaseServiceImpl implements PurchaseService {
     private final com.smarterp.common.audit.AuditLogService auditLogService;
 
     @Override
+    @CacheEvict(value = "dashboard", key = "#company.id")
     public PurchaseResponse createPurchase(PurchaseRequest request, Company company, String userEmail) {
         log.info("Creating purchase transaction for company {}", company.getId());
         validateRequest(request, company);
@@ -94,6 +96,7 @@ public class PurchaseServiceImpl implements PurchaseService {
     }
 
     @Override
+    @CacheEvict(value = "dashboard", key = "#company.id")
     public PurchaseResponse updatePurchase(UUID id, PurchaseRequest request, Company company, String userEmail) {
         log.info("Updating purchase transaction {} for company {}", id, company.getId());
         Purchase purchase = purchaseRepository.findById(id)
@@ -146,6 +149,7 @@ public class PurchaseServiceImpl implements PurchaseService {
     }
 
     @Override
+    @CacheEvict(value = "dashboard", key = "#company.id")
     public PurchaseResponse updatePurchaseStatus(UUID id, PurchaseStatus status, Company company, String userEmail) {
         log.info("Updating status of purchase {} to {} in company {}", id, status, company.getId());
         Purchase purchase = purchaseRepository.findById(id)
@@ -222,6 +226,7 @@ public class PurchaseServiceImpl implements PurchaseService {
     }
 
     @Override
+    @CacheEvict(value = "dashboard", key = "#company.id")
     public void deletePurchase(UUID id, Company company) {
         log.info("Deleting purchase {} for company {}", id, company.getId());
         Purchase purchase = purchaseRepository.findById(id)

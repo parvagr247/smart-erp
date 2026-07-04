@@ -51,7 +51,7 @@ public class DashboardServiceImpl implements DashboardService {
             long stockItemCount = stockItemRepository.countByCompany(company);
             long warehouseCount = warehouseRepository.countByCompany(company);
 
-            BigDecimal totalInventoryValue = stockItemRepository.sumOpeningValueByCompany(company);
+            BigDecimal totalInventoryValue = stockItemRepository.sumInventoryValueByCompany(company);
 
             long lowStockCount = stockItemRepository.countLowStockByCompany(company);
 

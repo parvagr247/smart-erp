@@ -17,4 +17,5 @@ public interface VoucherService {
     VoucherResponse updateVoucherStatus(UUID id, VoucherStatus status, Company company, String userEmail);
     Page<VoucherResponse> searchAndFilterVouchers(Company company, String search, VoucherType type, VoucherStatus status, LocalDate startDate, LocalDate endDate, Pageable pageable);
     void deleteVoucher(UUID id, Company company);
+    String generateVoucherNo(Company company, VoucherType type);
 }

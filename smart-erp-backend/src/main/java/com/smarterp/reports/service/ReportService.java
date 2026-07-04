@@ -365,4 +365,137 @@ public class ReportService {
                 .map(l -> l.getOpeningBalance() != null ? l.getOpeningBalance().abs() : BigDecimal.ZERO)
                 .orElse(BigDecimal.ZERO);
     }
+
+    public DayBookResponse getDayBook(Company company, LocalDate date) {
+        log.info("Generating Day Book for company: {} on date: {}", company.getId(), date);
+        LocalDate targetDate = date != null ? date : LocalDate.now();
+
+        List<Voucher> vouchers = voucherRepository.findAll((root, query, cb) -> cb.and(
+                cb.equal(root.get("company"), company),
+                cb.equal(root.get("status"), VoucherStatus.APPROVED),
+                cb.equal(root.get("voucherDate"), targetDate)
+        ));
+
+        List<DayBookResponse.DayBookRow> rows = new ArrayList<>();
+        BigDecimal totalDebit = BigDecimal.ZERO;
+        BigDecimal totalCredit = BigDecimal.ZERO;
+
+        for (Voucher v : vouchers) {
+            for (VoucherLine line : v.getLineItems()) {
+                BigDecimal debit = BigDecimal.ZERO;
+                BigDecimal credit = BigDecimal.ZERO;
+
+                if ("DEBIT".equalsIgnoreCase(line.getEntryType())) {
+                    debit = line.getAmount();
+                    totalDebit = totalDebit.add(debit);
+                } else {
+                    credit = line.getAmount();
+                    totalCredit = totalCredit.add(credit);
+                }
+
+                rows.add(DayBookResponse.DayBookRow.builder()
+                        .voucherId(v.getId())
+                        .voucherNumber(v.getVoucherNumber())
+                        .voucherType(v.getVoucherType().name())
+                        .date(v.getVoucherDate())
+                        .ledgerName(line.getLedger().getName())
+                        .debitAmount(debit)
+                        .creditAmount(credit)
+                        .narration(v.getNarration())
+                        .build());
+            }
+        }
+
+        return DayBookResponse.builder()
+                .rows(rows)
+                .totalDebit(totalDebit)
+                .totalCredit(totalCredit)
+                .build();
+    }
+
+    public CashFlowResponse getCashFlowStatement(Company company, LocalDate startDate, LocalDate endDate) {
+        log.info("Generating Cash Flow Statement for company: {}", company.getId());
+
+        List<Ledger> cashBankLedgers = ledgerRepository.findByCompany(company).stream()
+                .filter(l -> l.getGroup() != null && 
+                        ("Bank Accounts".equalsIgnoreCase(l.getGroup().getName()) || 
+                         "Cash-in-hand".equalsIgnoreCase(l.getGroup().getName())))
+                .collect(Collectors.toList());
+
+        List<UUID> cashLedgerIds = cashBankLedgers.stream().map(Ledger::getId).collect(Collectors.toList());
+
+        BigDecimal openingCash = BigDecimal.ZERO;
+        for (Ledger l : cashBankLedgers) {
+            openingCash = openingCash.add(l.getOpeningBalance() != null ? l.getOpeningBalance() : BigDecimal.ZERO);
+        }
+
+        List<Voucher> vouchers = voucherRepository.findAll((root, query, cb) -> cb.and(
+                cb.equal(root.get("company"), company),
+                cb.equal(root.get("status"), VoucherStatus.APPROVED)
+        ));
+
+        List<CashFlowResponse.CashFlowRow> operating = new ArrayList<>();
+        List<CashFlowResponse.CashFlowRow> investing = new ArrayList<>();
+        List<CashFlowResponse.CashFlowRow> financing = new ArrayList<>();
+
+        BigDecimal totalOperating = BigDecimal.ZERO;
+        BigDecimal totalInvesting = BigDecimal.ZERO;
+        BigDecimal totalFinancing = BigDecimal.ZERO;
+
+        for (Voucher v : vouchers) {
+            if (startDate != null && v.getVoucherDate().isBefore(startDate)) continue;
+            if (endDate != null && v.getVoucherDate().isAfter(endDate)) continue;
+
+            List<VoucherLine> cashLines = v.getLineItems().stream()
+                    .filter(line -> cashLedgerIds.contains(line.getLedger().getId()))
+                    .collect(Collectors.toList());
+
+            if (cashLines.isEmpty()) continue;
+
+            List<VoucherLine> nonCashLines = v.getLineItems().stream()
+                    .filter(line -> !cashLedgerIds.contains(line.getLedger().getId()))
+                    .collect(Collectors.toList());
+
+            for (VoucherLine cashLine : cashLines) {
+                boolean isReceipt = "DEBIT".equalsIgnoreCase(cashLine.getEntryType());
+                BigDecimal amount = cashLine.getAmount();
+                if (!isReceipt) {
+                    amount = amount.negate();
+                }
+
+                if (!nonCashLines.isEmpty()) {
+                    VoucherLine opposite = nonCashLines.get(0);
+                    GroupNature nature = opposite.getLedger().getGroup() != null ? opposite.getLedger().getGroup().getNature() : GroupNature.ASSET;
+                    String oppGroupName = opposite.getLedger().getGroup() != null ? opposite.getLedger().getGroup().getName() : "";
+                    String name = opposite.getLedger().getName();
+
+                    if (nature == GroupNature.INCOME || nature == GroupNature.EXPENSE || "Current Assets".equalsIgnoreCase(oppGroupName) || "Current Liabilities".equalsIgnoreCase(oppGroupName)) {
+                        operating.add(new CashFlowResponse.CashFlowRow("Operating: " + name, amount));
+                        totalOperating = totalOperating.add(amount);
+                    } else if (nature == GroupNature.ASSET) {
+                        investing.add(new CashFlowResponse.CashFlowRow("Investing: " + name, amount));
+                        totalInvesting = totalInvesting.add(amount);
+                    } else {
+                        financing.add(new CashFlowResponse.CashFlowRow("Financing: " + name, amount));
+                        totalFinancing = totalFinancing.add(amount);
+                    }
+                }
+            }
+        }
+
+        BigDecimal netIncrease = totalOperating.add(totalInvesting).add(totalFinancing);
+        BigDecimal closingCash = openingCash.add(netIncrease);
+
+        return CashFlowResponse.builder()
+                .operatingRows(operating)
+                .investingRows(investing)
+                .financingRows(financing)
+                .totalOperating(totalOperating)
+                .totalInvesting(totalInvesting)
+                .totalFinancing(totalFinancing)
+                .netIncrease(netIncrease)
+                .openingCash(openingCash)
+                .closingCash(closingCash)
+                .build();
+    }
 }

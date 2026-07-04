@@ -309,3 +309,45 @@ export async function updateCompanyUserAccess(companyId, userId, grant) {
   const response = await axiosClient.post(`/companies/${companyId}/users/${userId}/access?grant=${grant}`);
   return response.data;
 }
+
+export async function switchFinancialYearApi(companyId, nextFy) {
+  const response = await axiosClient.post(`/companies/${companyId}/financial-year/switch?nextFy=${nextFy}`);
+  return response.data;
+}
+
+export async function closeFinancialYearApi(companyId, currentFy, nextFy) {
+  const response = await axiosClient.post(`/companies/${companyId}/financial-year/close?currentFy=${currentFy}&nextFy=${nextFy}`);
+  return response.data;
+}
+
+export async function downloadSystemBackupApi() {
+  const response = await axiosClient.get('/system/backup', { responseType: 'blob' });
+  return response.data;
+}
+
+export async function restoreSystemBackupApi(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  const response = await axiosClient.post('/system/restore', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  return response.data;
+}
+
+export async function importLedgersApi(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  const response = await axiosClient.post('/import/ledgers', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  return response.data;
+}
+
+export async function importStockItemsApi(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  const response = await axiosClient.post('/import/stock-items', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  return response.data;
+}

@@ -4,7 +4,7 @@ import axiosClient from '@shared/api/axios-client';
 import { 
   fetchTrialBalance, fetchProfitLoss, fetchBalanceSheet, fetchCashBankBook,
   fetchOutstanding, fetchInventoryValuation, fetchStockRegister, fetchGstSummary,
-  fetchLedgersList
+  fetchLedgersList, fetchDayBook, fetchCashFlow
 } from '@modules/accounting/accounting.service';
 
 export const reportsList = [
@@ -16,6 +16,8 @@ export const reportsList = [
   { key: 'inventory-valuation', title: 'Inventory Valuation', desc: 'Value of current inventory holding based on average cost.', iconType: 'inventory-valuation' },
   { key: 'stock-register', title: 'Stock Register', desc: 'Detailed inwards, outwards, and closing stock logs.', iconType: 'stock-register' },
   { key: 'gst-summary', title: 'GST Summary Statement', desc: 'Summary of input tax credit offsets and output tax payables.', iconType: 'gst-summary' },
+  { key: 'day-book', title: 'Day Book', desc: 'Daily transaction log of all journals and inventory records.', iconType: 'day-book' },
+  { key: 'cash-flow', title: 'Cash Flow Statement', desc: 'Operating, investing, and financing cash flows.', iconType: 'cash-flow' },
 ];
 
 export function useReportsViewData() {
@@ -86,6 +88,12 @@ export function useReportsViewData() {
           break;
         case 'gst-summary':
           res = await fetchGstSummary(params);
+          break;
+        case 'day-book':
+          res = await fetchDayBook({ date: startDate });
+          break;
+        case 'cash-flow':
+          res = await fetchCashFlow(params);
           break;
         default:
           break;

@@ -23,6 +23,8 @@ import java.util.UUID;
 public class CompanyController {
 
     private final CompanyService companyService;
+    private final com.smarterp.administration.company.service.FinancialYearService financialYearService;
+    private final com.smarterp.administration.company.repository.CompanyRepository companyRepository;
 
     @PostMapping
     @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('Company.Create')")
@@ -102,5 +104,30 @@ public class CompanyController {
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         companyService.updateAccess(id, userId, grant, authenticatedUser.getUser());
         return ResponseEntity.ok(ApiResponse.success("Access updated successfully", null));
+    }
+
+    @PostMapping("/{id}/financial-year/switch")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('Company.Update')")
+    public ResponseEntity<ApiResponse<Void>> switchFinancialYear(
+            @PathVariable UUID id,
+            @RequestParam String nextFy,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        com.smarterp.administration.company.entity.Company company = companyRepository.findById(id)
+                .orElseThrow(() -> new com.smarterp.common.exception.ResourceNotFoundException("Company not found."));
+        financialYearService.switchFinancialYear(company, nextFy);
+        return ResponseEntity.ok(ApiResponse.success("Financial year switched successfully", null));
+    }
+
+    @PostMapping("/{id}/financial-year/close")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('Company.Update')")
+    public ResponseEntity<ApiResponse<Void>> closeFinancialYear(
+            @PathVariable UUID id,
+            @RequestParam String currentFy,
+            @RequestParam String nextFy,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        com.smarterp.administration.company.entity.Company company = companyRepository.findById(id)
+                .orElseThrow(() -> new com.smarterp.common.exception.ResourceNotFoundException("Company not found."));
+        financialYearService.closeYearAndTransferBalances(company, currentFy, nextFy);
+        return ResponseEntity.ok(ApiResponse.success("Financial year closed and balances transferred successfully", null));
     }
 }

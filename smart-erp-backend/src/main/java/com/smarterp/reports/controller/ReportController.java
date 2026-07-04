@@ -106,6 +106,25 @@ public class ReportController {
         return ResponseEntity.ok(ApiResponse.<GstSummaryResponse>builder().success(true).data(response).build());
     }
 
+    @GetMapping("/day-book")
+    public ResponseEntity<ApiResponse<DayBookResponse>> getDayBook(
+            @RequestHeader("X-Company-ID") UUID companyId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        Company company = getCompany(companyId);
+        DayBookResponse response = service.getDayBook(company, date);
+        return ResponseEntity.ok(ApiResponse.<DayBookResponse>builder().success(true).data(response).build());
+    }
+
+    @GetMapping("/cash-flow")
+    public ResponseEntity<ApiResponse<CashFlowResponse>> getCashFlow(
+            @RequestHeader("X-Company-ID") UUID companyId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        Company company = getCompany(companyId);
+        CashFlowResponse response = service.getCashFlowStatement(company, startDate, endDate);
+        return ResponseEntity.ok(ApiResponse.<CashFlowResponse>builder().success(true).data(response).build());
+    }
+
     // --- CSV exports ---
     @GetMapping("/trial-balance/csv")
     public ResponseEntity<String> exportTrialBalanceCsv(@RequestHeader("X-Company-ID") UUID companyId) {
@@ -155,6 +174,48 @@ public class ReportController {
         csv.append(String.format("\"Net Profit (Retained Earnings)\",\"Equity\",%s\n", data.getNetProfit()));
         return ResponseEntity.ok()
                 .header("Content-Disposition", "attachment; filename=balance_sheet.csv")
+                .contentType(MediaType.TEXT_PLAIN)
+                .body(csv.toString());
+    }
+
+    @GetMapping("/day-book/csv")
+    public ResponseEntity<String> exportDayBookCsv(
+            @RequestHeader("X-Company-ID") UUID companyId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        Company company = getCompany(companyId);
+        DayBookResponse data = service.getDayBook(company, date);
+        StringBuilder csv = new StringBuilder("Voucher No,Voucher Type,Date,Ledger Name,Debit,Credit,Narration\n");
+        for (var row : data.getRows()) {
+            csv.append(String.format("\"%s\",\"%s\",\"%s\",\"%s\",%s,%s,\"%s\"\n", 
+                    row.getVoucherNumber(), row.getVoucherType(), row.getDate(), row.getLedgerName(), 
+                    row.getDebitAmount(), row.getCreditAmount(), row.getNarration() != null ? row.getNarration() : ""));
+        }
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=day_book.csv")
+                .contentType(MediaType.TEXT_PLAIN)
+                .body(csv.toString());
+    }
+
+    @GetMapping("/cash-flow/csv")
+    public ResponseEntity<String> exportCashFlowCsv(
+            @RequestHeader("X-Company-ID") UUID companyId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        Company company = getCompany(companyId);
+        CashFlowResponse data = service.getCashFlowStatement(company, startDate, endDate);
+        StringBuilder csv = new StringBuilder("Activity Name,Amount\n");
+        for (var row : data.getOperatingRows()) {
+            csv.append(String.format("\"%s\",%s\n", row.getName(), row.getAmount()));
+        }
+        for (var row : data.getInvestingRows()) {
+            csv.append(String.format("\"%s\",%s\n", row.getName(), row.getAmount()));
+        }
+        for (var row : data.getFinancingRows()) {
+            csv.append(String.format("\"%s\",%s\n", row.getName(), row.getAmount()));
+        }
+        csv.append(String.format("\"Net Cash Flow Change\",\"%s\"\n", data.getNetIncrease()));
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=cash_flow.csv")
                 .contentType(MediaType.TEXT_PLAIN)
                 .body(csv.toString());
     }

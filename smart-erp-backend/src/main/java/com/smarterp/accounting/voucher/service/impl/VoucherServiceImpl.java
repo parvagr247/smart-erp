@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.cache.annotation.CacheEvict;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +46,7 @@ public class VoucherServiceImpl implements VoucherService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
+    @CacheEvict(value = "dashboard", key = "#company.id")
     public VoucherResponse createVoucher(VoucherRequest request, Company company, String userEmail) {
         log.info("Creating accounting voucher type {} for company {}", request.getVoucherType(), company.getId());
         validateRequest(request, company);
@@ -75,6 +77,7 @@ public class VoucherServiceImpl implements VoucherService {
     }
 
     @Override
+    @CacheEvict(value = "dashboard", key = "#company.id")
     public VoucherResponse updateVoucher(UUID id, VoucherRequest request, Company company, String userEmail) {
         log.info("Updating accounting voucher {} for company {}", id, company.getId());
         Voucher voucher = repository.findById(id)
@@ -117,6 +120,7 @@ public class VoucherServiceImpl implements VoucherService {
     }
 
     @Override
+    @CacheEvict(value = "dashboard", key = "#company.id")
     public VoucherResponse updateVoucherStatus(UUID id, VoucherStatus status, Company company, String userEmail) {
         log.info("Updating status of voucher {} to {} in company {}", id, status, company.getId());
         Voucher voucher = repository.findById(id)
@@ -178,6 +182,7 @@ public class VoucherServiceImpl implements VoucherService {
     }
 
     @Override
+    @CacheEvict(value = "dashboard", key = "#company.id")
     public void deleteVoucher(UUID id, Company company) {
         Voucher voucher = repository.findById(id)
                 .filter(v -> v.getCompany().getId().equals(company.getId()))
@@ -300,6 +305,11 @@ public class VoucherServiceImpl implements VoucherService {
                 .createdAt(v.getCreatedAt())
                 .build();
     }
+    @Override
+    public String generateVoucherNo(Company company, VoucherType type) {
+        return generateVoucherNumber(company, type);
+    }
+
     private boolean canTransition(VoucherStatus current, VoucherStatus target) {
         if (current == target) return true;
         if (current == VoucherStatus.DRAFT) {

@@ -98,3 +98,13 @@ export const fetchKpis = async () => {
   const response = await axiosClient.get('/reports/kpis');
   return response.data;
 };
+
+export const fetchDayBook = async (params) => {
+  const response = await axiosClient.get('/reports/day-book', { params });
+  return response.data;
+};
+
+export const fetchCashFlow = async (params) => {
+  const response = await axiosClient.get('/reports/cash-flow', { params });
+  return response.data;
+};

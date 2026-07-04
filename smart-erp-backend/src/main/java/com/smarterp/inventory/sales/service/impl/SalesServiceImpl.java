@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.cache.annotation.CacheEvict;
 
 @Service
 @RequiredArgsConstructor
@@ -56,6 +57,7 @@ public class SalesServiceImpl implements SalesService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
+    @CacheEvict(value = "dashboard", key = "#company.id")
     public SalesResponse createSales(SalesRequest request, Company company, String userEmail) {
         log.info("Creating sales transaction for company {}", company.getId());
         validateRequest(request, company);
@@ -105,6 +107,7 @@ public class SalesServiceImpl implements SalesService {
     }
 
     @Override
+    @CacheEvict(value = "dashboard", key = "#company.id")
     public SalesResponse updateSales(UUID id, SalesRequest request, Company company, String userEmail) {
         log.info("Updating sales transaction {} for company {}", id, company.getId());
         Sales sales = salesRepository.findById(id)
@@ -165,6 +168,7 @@ public class SalesServiceImpl implements SalesService {
     }
 
     @Override
+    @CacheEvict(value = "dashboard", key = "#company.id")
     public SalesResponse updateSalesStatus(UUID id, SalesStatus status, Company company, String userEmail) {
         log.info("Updating status of sales invoice {} to {} in company {}", id, status, company.getId());
         Sales sales = salesRepository.findById(id)
@@ -238,6 +242,7 @@ public class SalesServiceImpl implements SalesService {
     }
 
     @Override
+    @CacheEvict(value = "dashboard", key = "#company.id")
     public void deleteSales(UUID id, Company company) {
         Sales sales = salesRepository.findById(id)
                 .filter(s -> s.getCompany().getId().equals(company.getId()))

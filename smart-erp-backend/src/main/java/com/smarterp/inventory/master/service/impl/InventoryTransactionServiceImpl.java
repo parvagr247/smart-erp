@@ -34,6 +34,7 @@ public class InventoryTransactionServiceImpl implements InventoryTransactionServ
     private final StockItemRepository stockItemRepository;
     private final WarehouseRepository warehouseRepository;
     private final AuditLogService auditLogService;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @Override
     public InventoryTransactionResponse recordTransaction(InventoryTransactionRequest request, Company company, String performedBy) {
@@ -87,11 +88,18 @@ public class InventoryTransactionServiceImpl implements InventoryTransactionServ
         boolean isLocalWarehouseTransfer = (request.getTransactionType() == InventoryTransactionType.TRANSFER_OUT && targetWh != null);
         
         if (!isLocalWarehouseTransfer) {
-            item.setCurrentQuantity(oldQty.add(qtyDelta));
+            BigDecimal newQty = oldQty.add(qtyDelta);
+            item.setCurrentQuantity(newQty);
             stockItemRepository.save(item);
             
             auditLogService.saveLog(company.getId(), "StockItem", item.getId(), "ADJUSTED", 
                     "Stock quantity adjusted for " + item.getName() + ". Old Qty: " + oldQty + ", New Qty: " + item.getCurrentQuantity() + ". Reason: Transaction: " + tx.getTransactionType());
+
+            if (item.getReorderLevel() != null && newQty.compareTo(item.getReorderLevel()) <= 0) {
+                log.warn("Stock level for item {} has fallen below reorder level. Current Qty: {}, Reorder Level: {}", item.getName(), newQty, item.getReorderLevel());
+                eventPublisher.publishEvent(new com.smarterp.inventory.master.event.StockBelowReorderLevelEvent(
+                        this, item.getId(), company.getId(), item.getName(), newQty, item.getReorderLevel(), performedBy));
+            }
         }
 
         auditLogService.saveLog(company.getId(), "InventoryTransaction", savedTx.getId(), "CREATED", "Inventory transaction of type " + tx.getTransactionType() + " recorded.");

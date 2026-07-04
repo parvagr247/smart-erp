@@ -70,4 +70,15 @@ public class NotificationListener {
             notificationService.createNotification(company, "Voucher Approved", msg, v.getCreatedBy());
         });
     }
+
+    @EventListener
+    public void onStockBelowReorderLevel(com.smarterp.inventory.master.event.StockBelowReorderLevelEvent event) {
+        log.info("Reacting to StockBelowReorderLevelEvent for Stock Item ID: {}", event.getStockItemId());
+        Company company = companyRepository.findById(event.getCompanyId()).orElse(null);
+        if (company == null) return;
+
+        String msg = String.format("Stock level for item %s has fallen below the reorder level of %s. Current stock: %s.",
+                event.getItemName(), event.getReorderLevel(), event.getCurrentQuantity());
+        notificationService.createNotification(company, "Low Stock Warning", msg, event.getPerformedBy());
+    }
 }
