@@ -6,7 +6,7 @@ import com.smarterp.common.dto.ApiResponse;
 import com.smarterp.common.exception.ResourceNotFoundException;
 import com.smarterp.inventory.master.dto.GenericLookupRequest;
 import com.smarterp.inventory.master.entity.StockGroup;
-import com.smarterp.inventory.master.repository.StockGroupRepository;
+import com.smarterp.inventory.master.service.InventoryLookupService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,7 +20,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class StockGroupController {
 
-    private final StockGroupRepository repository;
+    private final InventoryLookupService lookupService;
     private final CompanyRepository companyRepository;
 
     @PostMapping
@@ -28,32 +28,14 @@ public class StockGroupController {
             @RequestHeader("X-Company-ID") UUID companyId,
             @Valid @RequestBody GenericLookupRequest request) {
         Company company = getCompany(companyId);
-        if (repository.existsByCompanyAndName(company, request.getName().trim())) {
-            return ResponseEntity.badRequest().body(ApiResponse.<StockGroup>builder().success(false).message("Group name already exists.").build());
-        }
-
-        StockGroup group = StockGroup.builder()
-                .name(request.getName().trim())
-                .description(request.getDescription())
-                .company(company)
-                .build();
-
-        if (request.getCode() != null && !request.getCode().isEmpty()) {
-            try {
-                group.setParentGroup(repository.findById(UUID.fromString(request.getCode())).orElse(null));
-            } catch (IllegalArgumentException e) {
-                // Ignore invalid UUID
-            }
-        }
-
-        StockGroup saved = repository.save(group);
+        StockGroup saved = lookupService.createGroup(request, company);
         return new ResponseEntity<>(ApiResponse.<StockGroup>builder().success(true).message("Group created.").data(saved).build(), HttpStatus.CREATED);
     }
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<StockGroup>>> getGroups(@RequestHeader("X-Company-ID") UUID companyId) {
         Company company = getCompany(companyId);
-        List<StockGroup> list = repository.findAllByCompany(company);
+        List<StockGroup> list = lookupService.getGroups(company);
         return ResponseEntity.ok(ApiResponse.<List<StockGroup>>builder().success(true).data(list).build());
     }
 
@@ -62,7 +44,7 @@ public class StockGroupController {
             @RequestHeader("X-Company-ID") UUID companyId,
             @PathVariable UUID id) {
         Company company = getCompany(companyId);
-        repository.deleteById(id);
+        lookupService.deleteGroup(id, company);
         return ResponseEntity.ok(ApiResponse.<Void>builder().success(true).message("Group deleted.").build());
     }
 

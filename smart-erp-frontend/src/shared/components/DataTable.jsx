@@ -1,5 +1,6 @@
 import React from 'react';
 import { useDataTableData } from './services/DataTableService';
+import { NavigationManager } from '@shared/keyboard/NavigationManager';
 import './styles/DataTable.css';
 
 export default function DataTable(props) {
@@ -59,7 +60,12 @@ export default function DataTable(props) {
               </tr>
             ) : (
               data.map((row, idx) => (
-                <tr key={getRowKey(row, idx)}>
+                <tr 
+                  key={getRowKey(row, idx)}
+                  tabIndex={0}
+                  onKeyDown={(e) => NavigationManager.handleTableNavigation(e, e.currentTarget)}
+                  className="cursor-pointer focus:bg-[var(--bg-input)] focus:outline-none"
+                >
                   {columns.map((col) => (
                     <td key={col.key} className={col.cellClassName || ''}>
                       {col.render ? col.render(row) : row[col.key] ?? '—'}

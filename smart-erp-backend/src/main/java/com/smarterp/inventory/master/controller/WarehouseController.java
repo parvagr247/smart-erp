@@ -6,7 +6,7 @@ import com.smarterp.common.dto.ApiResponse;
 import com.smarterp.common.exception.ResourceNotFoundException;
 import com.smarterp.inventory.master.dto.WarehouseRequest;
 import com.smarterp.inventory.master.entity.Warehouse;
-import com.smarterp.inventory.master.repository.WarehouseRepository;
+import com.smarterp.inventory.master.service.InventoryLookupService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,39 +20,22 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class WarehouseController {
 
-    private final WarehouseRepository repository;
+    private final InventoryLookupService lookupService;
     private final CompanyRepository companyRepository;
-    private final com.smarterp.common.audit.AuditLogService auditLogService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<Warehouse>> createWarehouse(
             @RequestHeader("X-Company-ID") UUID companyId,
             @Valid @RequestBody WarehouseRequest request) {
         Company company = getCompany(companyId);
-        if (repository.existsByCompanyAndCode(company, request.getCode().trim().toUpperCase())) {
-            return ResponseEntity.badRequest().body(ApiResponse.<Warehouse>builder().success(false).message("Warehouse code already exists.").build());
-        }
-
-        Warehouse wh = Warehouse.builder()
-                .code(request.getCode().trim().toUpperCase())
-                .name(request.getName().trim())
-                .address(request.getAddress())
-                .company(company)
-                .build();
-
-
-
-        Warehouse saved = repository.save(wh);
-        
-        auditLogService.saveLog(company.getId(), "Warehouse", saved.getId(), "CREATED", "Warehouse " + saved.getName() + " registered.");
-
+        Warehouse saved = lookupService.createWarehouse(request, company);
         return new ResponseEntity<>(ApiResponse.<Warehouse>builder().success(true).message("Warehouse created.").data(saved).build(), HttpStatus.CREATED);
     }
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<Warehouse>>> getWarehouses(@RequestHeader("X-Company-ID") UUID companyId) {
         Company company = getCompany(companyId);
-        List<Warehouse> list = repository.findAllByCompany(company);
+        List<Warehouse> list = lookupService.getWarehouses(company);
         return ResponseEntity.ok(ApiResponse.<List<Warehouse>>builder().success(true).data(list).build());
     }
 
@@ -61,7 +44,7 @@ public class WarehouseController {
             @RequestHeader("X-Company-ID") UUID companyId,
             @PathVariable UUID id) {
         Company company = getCompany(companyId);
-        repository.deleteById(id);
+        lookupService.deleteWarehouse(id, company);
         return ResponseEntity.ok(ApiResponse.<Void>builder().success(true).message("Warehouse deleted.").build());
     }
 

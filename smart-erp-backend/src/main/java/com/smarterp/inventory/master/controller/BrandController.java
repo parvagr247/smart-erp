@@ -6,7 +6,7 @@ import com.smarterp.common.dto.ApiResponse;
 import com.smarterp.common.exception.ResourceNotFoundException;
 import com.smarterp.inventory.master.dto.GenericLookupRequest;
 import com.smarterp.inventory.master.entity.Brand;
-import com.smarterp.inventory.master.repository.BrandRepository;
+import com.smarterp.inventory.master.service.InventoryLookupService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,7 +20,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BrandController {
 
-    private final BrandRepository repository;
+    private final InventoryLookupService lookupService;
     private final CompanyRepository companyRepository;
 
     @PostMapping
@@ -28,18 +28,14 @@ public class BrandController {
             @RequestHeader("X-Company-ID") UUID companyId,
             @Valid @RequestBody GenericLookupRequest request) {
         Company company = getCompany(companyId);
-        if (repository.existsByCompanyAndName(company, request.getName().trim())) {
-            return ResponseEntity.badRequest().body(ApiResponse.<Brand>builder().success(false).message("Brand name already exists.").build());
-        }
-        Brand brand = Brand.builder().name(request.getName().trim()).company(company).build();
-        Brand saved = repository.save(brand);
+        Brand saved = lookupService.createBrand(request, company);
         return new ResponseEntity<>(ApiResponse.<Brand>builder().success(true).message("Brand created.").data(saved).build(), HttpStatus.CREATED);
     }
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<Brand>>> getBrands(@RequestHeader("X-Company-ID") UUID companyId) {
         Company company = getCompany(companyId);
-        List<Brand> list = repository.findAllByCompany(company);
+        List<Brand> list = lookupService.getBrands(company);
         return ResponseEntity.ok(ApiResponse.<List<Brand>>builder().success(true).data(list).build());
     }
 
@@ -48,7 +44,7 @@ public class BrandController {
             @RequestHeader("X-Company-ID") UUID companyId,
             @PathVariable UUID id) {
         Company company = getCompany(companyId);
-        repository.deleteById(id);
+        lookupService.deleteBrand(id, company);
         return ResponseEntity.ok(ApiResponse.<Void>builder().success(true).message("Brand deleted.").build());
     }
 

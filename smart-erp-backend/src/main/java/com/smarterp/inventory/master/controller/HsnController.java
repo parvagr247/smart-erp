@@ -6,9 +6,7 @@ import com.smarterp.common.dto.ApiResponse;
 import com.smarterp.common.exception.ResourceNotFoundException;
 import com.smarterp.inventory.master.dto.HsnRequest;
 import com.smarterp.inventory.master.entity.Hsn;
-import com.smarterp.inventory.master.entity.TaxCategory;
-import com.smarterp.inventory.master.repository.HsnRepository;
-import com.smarterp.inventory.master.repository.TaxCategoryRepository;
+import com.smarterp.inventory.master.service.InventoryLookupService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,8 +20,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class HsnController {
 
-    private final HsnRepository repository;
-    private final TaxCategoryRepository taxCategoryRepository;
+    private final InventoryLookupService lookupService;
     private final CompanyRepository companyRepository;
 
     @PostMapping
@@ -31,29 +28,14 @@ public class HsnController {
             @RequestHeader("X-Company-ID") UUID companyId,
             @Valid @RequestBody HsnRequest request) {
         Company company = getCompany(companyId);
-        if (repository.existsByCompanyAndHsnCode(company, request.getHsnCode().trim())) {
-            return ResponseEntity.badRequest().body(ApiResponse.<Hsn>builder().success(false).message("HSN code already exists.").build());
-        }
-
-        TaxCategory tc = null;
-        if (request.getTaxCategoryId() != null) {
-            tc = taxCategoryRepository.findById(request.getTaxCategoryId()).orElse(null);
-        }
-
-        Hsn hsn = Hsn.builder()
-                .hsnCode(request.getHsnCode().trim())
-                .description(request.getDescription())
-                .taxCategory(tc)
-                .company(company)
-                .build();
-        Hsn saved = repository.save(hsn);
+        Hsn saved = lookupService.createHsn(request, company);
         return new ResponseEntity<>(ApiResponse.<Hsn>builder().success(true).message("HSN created.").data(saved).build(), HttpStatus.CREATED);
     }
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<Hsn>>> getHsns(@RequestHeader("X-Company-ID") UUID companyId) {
         Company company = getCompany(companyId);
-        List<Hsn> list = repository.findAllByCompany(company);
+        List<Hsn> list = lookupService.getHsns(company);
         return ResponseEntity.ok(ApiResponse.<List<Hsn>>builder().success(true).data(list).build());
     }
 
@@ -62,7 +44,7 @@ public class HsnController {
             @RequestHeader("X-Company-ID") UUID companyId,
             @PathVariable UUID id) {
         Company company = getCompany(companyId);
-        repository.deleteById(id);
+        lookupService.deleteHsn(id, company);
         return ResponseEntity.ok(ApiResponse.<Void>builder().success(true).message("HSN deleted.").build());
     }
 

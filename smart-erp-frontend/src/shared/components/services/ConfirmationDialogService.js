@@ -1,6 +1,24 @@
-export function useConfirmationDialogData({ variant, confirmText = 'Confirm', loading = false }) {
+import { useEffect } from 'react';
+import { shortcutRegistry } from '../ShortcutRegistry';
+
+export function useConfirmationDialogData({ isOpen, variant, confirmText = 'Confirm', loading = false, onConfirm }) {
   const isDestructive = variant === 'destructive' || variant === 'danger';
   const displayConfirmText = loading ? 'Processing...' : confirmText;
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Register Enter shortcut to trigger confirm action
+    shortcutRegistry.register('enter', (e) => {
+      if (!loading && onConfirm) {
+        onConfirm();
+      }
+    }, 'Confirm dialog action');
+
+    return () => {
+      shortcutRegistry.unregister('enter');
+    };
+  }, [isOpen, loading, onConfirm]);
 
   const modalContentClass = `modal-content ${isDestructive ? 'modal-content-destructive' : ''}`;
   const modalHeaderClass = `modal-header ${isDestructive ? 'modal-header-destructive' : ''}`;

@@ -6,7 +6,7 @@ import com.smarterp.common.dto.ApiResponse;
 import com.smarterp.common.exception.ResourceNotFoundException;
 import com.smarterp.inventory.master.dto.GenericLookupRequest;
 import com.smarterp.inventory.master.entity.Manufacturer;
-import com.smarterp.inventory.master.repository.ManufacturerRepository;
+import com.smarterp.inventory.master.service.InventoryLookupService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,7 +20,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ManufacturerController {
 
-    private final ManufacturerRepository repository;
+    private final InventoryLookupService lookupService;
     private final CompanyRepository companyRepository;
 
     @PostMapping
@@ -28,18 +28,14 @@ public class ManufacturerController {
             @RequestHeader("X-Company-ID") UUID companyId,
             @Valid @RequestBody GenericLookupRequest request) {
         Company company = getCompany(companyId);
-        if (repository.existsByCompanyAndName(company, request.getName().trim())) {
-            return ResponseEntity.badRequest().body(ApiResponse.<Manufacturer>builder().success(false).message("Manufacturer already exists.").build());
-        }
-        Manufacturer mfg = Manufacturer.builder().name(request.getName().trim()).company(company).build();
-        Manufacturer saved = repository.save(mfg);
+        Manufacturer saved = lookupService.createManufacturer(request, company);
         return new ResponseEntity<>(ApiResponse.<Manufacturer>builder().success(true).message("Manufacturer created.").data(saved).build(), HttpStatus.CREATED);
     }
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<Manufacturer>>> getManufacturers(@RequestHeader("X-Company-ID") UUID companyId) {
         Company company = getCompany(companyId);
-        List<Manufacturer> list = repository.findAllByCompany(company);
+        List<Manufacturer> list = lookupService.getManufacturers(company);
         return ResponseEntity.ok(ApiResponse.<List<Manufacturer>>builder().success(true).data(list).build());
     }
 
@@ -48,7 +44,7 @@ public class ManufacturerController {
             @RequestHeader("X-Company-ID") UUID companyId,
             @PathVariable UUID id) {
         Company company = getCompany(companyId);
-        repository.deleteById(id);
+        lookupService.deleteManufacturer(id, company);
         return ResponseEntity.ok(ApiResponse.<Void>builder().success(true).message("Manufacturer deleted.").build());
     }
 

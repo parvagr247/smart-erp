@@ -17,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +43,7 @@ public class DashboardServiceImpl implements DashboardService {
     private final com.smarterp.accounting.voucher.repository.VoucherRepository voucherRepository;
 
     @Override
+    @Cacheable(value = "dashboard", key = "#company.id")
     public DashboardSummaryResponse getSummary(Company company) {
         log.info("Loading dashboard summary from database for company {}.", company.getId());
             long ledgerCount = ledgerRepository.countByCompany(company);

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { inventoryService } from '@modules/inventory/inventory.service';
+import { useKeyboard } from '@shared/keyboard/KeyboardContext';
 
 const SEARCHABLE_ITEMS = [
   { id: 'dash', category: 'Modules', title: 'Dashboard', path: '/dashboard', subtitle: 'View stats and quick overview' },
@@ -25,22 +26,10 @@ const SEARCHABLE_ITEMS = [
 ];
 
 export default function useCommandPalette(onNavigate) {
-  const [isOpen, setIsOpen] = useState(false);
+  const { isCommandPaletteOpen: isOpen, setIsCommandPaletteOpen: setIsOpen } = useKeyboard();
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
   const [dynamicHits, setDynamicHits] = useState([]);
-
-  // Monitor global shortcut Ctrl+K / Cmd+K
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
-        setIsOpen((prev) => !prev);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
 
   // Debounced backend query trigger
   useEffect(() => {
@@ -65,7 +54,7 @@ export default function useCommandPalette(onNavigate) {
       } catch (e) {
         console.error("Global search fetch error", e);
       }
-    }, 250); // 250ms debounce
+    }, 250);
 
     return () => clearTimeout(delayDebounce);
   }, [query]);

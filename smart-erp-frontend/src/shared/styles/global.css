@@ -214,3 +214,56 @@
 .auth-toggle span {
   @apply text-[var(--primary)] hover:underline font-semibold cursor-pointer;
 }
+
+/* Centralized Keyboard Navigation Accessibility Classes */
+body.mouse-nav-disabled a,
+body.mouse-nav-disabled button,
+body.mouse-nav-disabled select,
+body.mouse-nav-disabled input[type="submit"],
+body.mouse-nav-disabled tr[tabindex] {
+  cursor: not-allowed !important;
+}
+
+body.mouse-nav-disabled .sidebar-panel,
+body.mouse-nav-disabled .navbar-top {
+  pointer-events: none;
+}
+
+body.mouse-nav-disabled .sidebar-panel *,
+body.mouse-nav-disabled .navbar-top * {
+  pointer-events: auto;
+}
+
+body.high-vis-focus *:focus {
+  outline: 3px solid var(--primary) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px var(--primary-glow) !important;
+  transition: outline 0.15s ease-in-out !important;
+}
+
+/* Mouse Warning Toast Alert */
+.mouse-warning-toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background-color: #dc2626;
+  color: white;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  font-size: 0.75rem;
+  font-weight: 700;
+  z-index: 99999;
+  animation: slide-up-fade 0.2s ease-out;
+}
+
+@keyframes slide-up-fade {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

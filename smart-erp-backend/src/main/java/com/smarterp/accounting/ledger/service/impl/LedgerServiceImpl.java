@@ -16,6 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 import com.smarterp.common.audit.AuditLogService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
@@ -31,6 +34,7 @@ public class LedgerServiceImpl implements LedgerService {
     private final AuditLogService auditLogService;
 
     @Override
+    @CacheEvict(value = "dashboard", key = "#company.id")
     public LedgerResponse createLedger(LedgerRequest request, Company company) {
         AccountGroup group = groupRepository.findById(request.getGroupId())
                 .orElseThrow(() -> new ResourceNotFoundException("Account group not found with ID: " + request.getGroupId()));
@@ -46,6 +50,10 @@ public class LedgerServiceImpl implements LedgerService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "ledgers", key = "#company.id + '-' + #id"),
+        @CacheEvict(value = "dashboard", key = "#company.id")
+    })
     public LedgerResponse updateLedger(UUID id, LedgerRequest request, Company company) {
         Ledger ledger = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ledger not found with ID: " + id));
@@ -68,6 +76,10 @@ public class LedgerServiceImpl implements LedgerService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "ledgers", key = "#company.id + '-' + #id"),
+        @CacheEvict(value = "dashboard", key = "#company.id")
+    })
     public void deleteLedger(UUID id, Company company) {
         Ledger ledger = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ledger not found with ID: " + id));
@@ -82,6 +94,7 @@ public class LedgerServiceImpl implements LedgerService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "ledgers", key = "#company.id + '-' + #id")
     public LedgerResponse getLedger(UUID id, Company company) {
         Ledger ledger = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ledger not found with ID: " + id));

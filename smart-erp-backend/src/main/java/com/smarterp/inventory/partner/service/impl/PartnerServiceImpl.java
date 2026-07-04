@@ -18,6 +18,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
@@ -38,6 +41,7 @@ public class PartnerServiceImpl implements PartnerService {
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
 
     @Override
+    @CacheEvict(value = "dashboard", key = "#company.id")
     public PartnerResponse createPartner(PartnerRequest request, Company company) {
         log.info("Creating business partner {} for company {}", request.getName(), company.getId());
         validateCreate(company, request);
@@ -50,6 +54,10 @@ public class PartnerServiceImpl implements PartnerService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "partners", key = "#company.id + '-' + #id"),
+        @CacheEvict(value = "dashboard", key = "#company.id")
+    })
     public PartnerResponse updatePartner(UUID id, PartnerRequest request, Company company) {
         log.info("Updating business partner {} in company {}", id, company.getId());
         BusinessPartner partner = repository.findById(id)
@@ -66,6 +74,7 @@ public class PartnerServiceImpl implements PartnerService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "partners", key = "#company.id + '-' + #id")
     public PartnerResponse getPartnerById(UUID id, Company company) {
         log.info("Fetching business partner {} in company {}", id, company.getId());
         BusinessPartner partner = repository.findById(id)
@@ -76,6 +85,10 @@ public class PartnerServiceImpl implements PartnerService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "partners", key = "#company.id + '-' + #id"),
+        @CacheEvict(value = "dashboard", key = "#company.id")
+    })
     public void deletePartner(UUID id, Company company) {
         log.info("Deleting business partner {} in company {}", id, company.getId());
         BusinessPartner partner = repository.findById(id)
@@ -87,6 +100,10 @@ public class PartnerServiceImpl implements PartnerService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "partners", key = "#company.id + '-' + #id"),
+        @CacheEvict(value = "dashboard", key = "#company.id")
+    })
     public PartnerResponse updatePartnerStatus(UUID id, PartnerStatus status, Company company) {
         log.info("Transitioning business partner {} status to {} in company {}", id, status, company.getId());
         BusinessPartner partner = repository.findById(id)

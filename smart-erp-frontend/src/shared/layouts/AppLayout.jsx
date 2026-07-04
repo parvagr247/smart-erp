@@ -5,11 +5,14 @@ import TopNavbar from './TopNavbar';
 import CommandPalette from './CommandPalette';
 import Breadcrumbs from '@shared/components/Breadcrumbs';
 import useSidebar from '@shared/hooks/useSidebar';
+import { useActiveCompany } from '@shared/context/ActiveCompanyContext';
+import { useKeyboard } from '@shared/keyboard/KeyboardContext';
 import '@shared/styles/Layout.css';
 
 export default function AppLayout() {
   const { collapsed, toggleSidebar, openSubmenus, toggleSubmenu } = useSidebar();
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const { activeCompany } = useActiveCompany();
+  const { isCommandPaletteOpen, setIsCommandPaletteOpen } = useKeyboard();
   const navigate = useNavigate();
 
   return (
@@ -25,14 +28,14 @@ export default function AppLayout() {
       {/* Main Panel Content */}
       <div className="layout-main">
         {/* Top Navbar */}
-        <TopNavbar onSearchClick={() => setIsSearchOpen(true)} />
+        <TopNavbar onSearchClick={() => setIsCommandPaletteOpen(true)} />
 
         {/* Content View Body */}
         <main className="layout-content-scroll bg-[var(--bg-base)]">
           <div className="space-y-4 mb-4">
             <Breadcrumbs />
           </div>
-          <Outlet />
+          <Outlet key={activeCompany?.id || 'no-active-company'} />
         </main>
 
         {/* Footer */}
@@ -43,8 +46,8 @@ export default function AppLayout() {
 
       {/* Global search command modal palette */}
       <CommandPalette
-        isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
         onNavigate={(path) => navigate(path)}
       />
     </div>

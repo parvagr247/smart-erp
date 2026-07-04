@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import TopNavbar from './TopNavbar';
 import CommandPalette from './CommandPalette';
 import Breadcrumbs from '@shared/components/Breadcrumbs';
 import useSidebar from '@shared/hooks/useSidebar';
+import { useActiveCompany } from '@shared/context/ActiveCompanyContext';
+import { useKeyboard } from '@shared/keyboard/KeyboardContext';
 import { 
   ChevronLeft, ChevronRight, LayoutDashboard, Users, 
   Key, ShieldAlert, FileText, Settings, ArrowLeft 
@@ -22,7 +24,8 @@ const ADMIN_MENU_ITEMS = [
 
 export default function AdminLayout() {
   const { collapsed, toggleSidebar } = useSidebar();
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const { activeCompany } = useActiveCompany();
+  const { isCommandPaletteOpen, setIsCommandPaletteOpen } = useKeyboard();
   const navigate = useNavigate();
 
   return (
@@ -61,14 +64,14 @@ export default function AdminLayout() {
       {/* Main Panel Content */}
       <div className="layout-main">
         {/* Top Navbar */}
-        <TopNavbar onSearchClick={() => setIsSearchOpen(true)} />
+        <TopNavbar onSearchClick={() => setIsCommandPaletteOpen(true)} />
 
         {/* Content View Body */}
         <main className="layout-content-scroll bg-[var(--bg-base)]">
           <div className="space-y-4 mb-4">
             <Breadcrumbs />
           </div>
-          <Outlet />
+          <Outlet key={activeCompany?.id || 'no-active-company'} />
         </main>
 
         {/* Footer */}
@@ -79,8 +82,8 @@ export default function AdminLayout() {
 
       {/* Command palette search dialog */}
       <CommandPalette
-        isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
         onNavigate={(path) => navigate(path)}
       />
     </div>

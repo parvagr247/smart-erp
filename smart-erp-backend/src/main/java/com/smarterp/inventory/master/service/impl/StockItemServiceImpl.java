@@ -15,6 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
@@ -38,6 +41,7 @@ public class StockItemServiceImpl implements StockItemService {
     private final com.smarterp.common.audit.AuditLogService auditLogService;
 
     @Override
+    @CacheEvict(value = "dashboard", key = "#company.id")
     public StockItemResponse createItem(StockItemRequest request, Company company) {
         log.info("Creating stock item {} under company {}", request.getName(), company.getId());
         validateCreate(company, request);
@@ -65,6 +69,10 @@ public class StockItemServiceImpl implements StockItemService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "stock-items", key = "#company.id + '-' + #id"),
+        @CacheEvict(value = "dashboard", key = "#company.id")
+    })
     public StockItemResponse updateItem(UUID id, StockItemRequest request, Company company) {
         log.info("Updating stock item {} under company {}", id, company.getId());
         StockItem item = repository.findById(id)
@@ -105,6 +113,7 @@ public class StockItemServiceImpl implements StockItemService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "stock-items", key = "#company.id + '-' + #id")
     public StockItemResponse getItemById(UUID id, Company company) {
         log.info("Fetching stock item {} under company {}", id, company.getId());
         StockItem item = repository.findById(id)
@@ -115,6 +124,10 @@ public class StockItemServiceImpl implements StockItemService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "stock-items", key = "#company.id + '-' + #id"),
+        @CacheEvict(value = "dashboard", key = "#company.id")
+    })
     public void deleteItem(UUID id, Company company) {
         log.info("Deleting stock item {} under company {}", id, company.getId());
         StockItem item = repository.findById(id)

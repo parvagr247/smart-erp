@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +42,7 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
+    @CacheEvict(value = "companies", key = "#id")
     public CompanyResponse updateCompany(UUID id, UpdateCompanyRequest request, User owner) {
         Company company = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Company not found with ID: " + id));
@@ -59,6 +62,7 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
+    @CacheEvict(value = "companies", key = "#id")
     public void deleteCompany(UUID id, User owner) {
         Company company = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Company not found with ID: " + id));
@@ -70,6 +74,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "companies", key = "#id")
     public CompanyResponse getCompany(UUID id, User owner) {
         Company company = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Company not found with ID: " + id));

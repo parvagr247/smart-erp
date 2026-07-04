@@ -13,6 +13,8 @@ import com.smarterp.accounting.group.service.AccountGroupService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -29,6 +31,7 @@ public class AccountGroupServiceImpl implements AccountGroupService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
+    @CacheEvict(value = "ledger-groups", key = "#company.id")
     public AccountGroupResponse createGroup(AccountGroupRequest request, Company company) {
         validateCreate(company, request.getName());
         
@@ -54,6 +57,7 @@ public class AccountGroupServiceImpl implements AccountGroupService {
     }
 
     @Override
+    @CacheEvict(value = "ledger-groups", key = "#company.id")
     public AccountGroupResponse updateGroup(UUID id, AccountGroupRequest request, Company company) {
         AccountGroup group = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Account group not found with ID: " + id));
@@ -83,6 +87,7 @@ public class AccountGroupServiceImpl implements AccountGroupService {
     }
 
     @Override
+    @CacheEvict(value = "ledger-groups", key = "#company.id")
     public void deleteGroup(UUID id, Company company) {
         AccountGroup group = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Account group not found with ID: " + id));
@@ -101,6 +106,7 @@ public class AccountGroupServiceImpl implements AccountGroupService {
 
     @Override
     @Transactional
+    @Cacheable(value = "ledger-groups", key = "#company.id")
     public List<AccountGroupResponse> getGroups(Company company) {
         List<AccountGroup> groups = repository.findByCompanyOrderByNameAsc(company);
         if (groups.isEmpty()) {
