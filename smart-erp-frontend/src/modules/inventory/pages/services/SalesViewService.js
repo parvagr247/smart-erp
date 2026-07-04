@@ -30,10 +30,24 @@ export function useSalesViewData() {
 
   const [stats, setStats] = useState({ salesCount: 0, totalSalesValue: 0 });
 
+  // Filters
+  const [filterSearch, setFilterSearch] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterStartDate, setFilterStartDate] = useState('');
+  const [filterEndDate, setFilterEndDate] = useState('');
+  const [selectedCustomerFilter, setSelectedCustomerFilter] = useState('');
+
   const loadSales = async () => {
     setLoading(true);
     try {
-      const res = await inventoryService.getSales();
+      const params = {};
+      if (filterSearch) params.search = filterSearch;
+      if (filterStatus) params.status = filterStatus;
+      if (filterStartDate) params.startDate = filterStartDate;
+      if (filterEndDate) params.endDate = filterEndDate;
+      if (selectedCustomerFilter) params.customerId = selectedCustomerFilter;
+
+      const res = await inventoryService.getSales(params);
       if (res.success && res.data) {
         setSales(res.data.content || []);
       }
@@ -51,6 +65,25 @@ export function useSalesViewData() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const resetFilters = () => {
+    setFilterSearch('');
+    setFilterStatus('');
+    setFilterStartDate('');
+    setFilterEndDate('');
+    setSelectedCustomerFilter('');
+    setLoading(true);
+    inventoryService.getSales({}).then(res => {
+      if (res.success && res.data) {
+        setSales(res.data.content || []);
+      }
+      setLoading(false);
+    });
+  };
+
+  const applyFilters = () => {
+    loadSales();
   };
 
   const loadMasterData = async () => {
@@ -321,6 +354,18 @@ export function useSalesViewData() {
     handleDetails,
     handleStatusChange,
     handleDelete,
-    submitForm
+    submitForm,
+    filterSearch,
+    setFilterSearch,
+    filterStatus,
+    setFilterStatus,
+    filterStartDate,
+    setFilterStartDate,
+    filterEndDate,
+    setFilterEndDate,
+    resetFilters,
+    applyFilters,
+    selectedCustomerFilter,
+    setSelectedCustomerFilter
   };
 }

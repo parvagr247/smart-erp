@@ -13,5 +13,7 @@ public class NotificationResponse {
     private String title;
     private String message;
     private boolean read;
+    private String priority;
+    private String iconType;
     private LocalDateTime createdAt;
 }

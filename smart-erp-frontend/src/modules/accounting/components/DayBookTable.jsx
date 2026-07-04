@@ -1,12 +1,11 @@
 import React from 'react';
-import './styles/DayBookTable.css';
 
 export default function DayBookTable({ reportData }) {
   return (
-    <div className="daybook-table-container">
-      <div className="daybook-header">
-        <h2 className="daybook-title">Day Book Journal</h2>
-        <span className="daybook-subtitle">Daily Double Entry Voucher Log</span>
+    <div className="bg-[var(--bg-card)] p-6 rounded-xl border border-[var(--border-light)] shadow-xs text-left max-w-4xl mx-auto">
+      <div className="mb-6">
+        <h2 className="text-base font-bold text-[var(--text-primary)] tracking-wide">Day Book Journal</h2>
+        <span className="text-xs text-[var(--text-muted)]">Daily Double Entry Voucher Log</span>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse text-xs">

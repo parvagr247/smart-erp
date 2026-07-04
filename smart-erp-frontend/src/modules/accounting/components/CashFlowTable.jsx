@@ -1,5 +1,4 @@
 import React from 'react';
-import './styles/CashFlowTable.css';
 
 export default function CashFlowTable({ reportData }) {
   const renderRows = (title, rows, total) => (
@@ -33,17 +32,17 @@ export default function CashFlowTable({ reportData }) {
   );
 
   return (
-    <div className="cashflow-table-container">
-      <div className="cashflow-header">
-        <h2 className="cashflow-title">Cash Flow Statement</h2>
-        <span className="cashflow-subtitle">Operating, Investing, and Financing Cash Logs</span>
+    <div className="bg-[var(--bg-card)] p-6 rounded-xl border border-[var(--border-light)] shadow-xs text-left max-w-4xl mx-auto">
+      <div className="mb-6">
+        <h2 className="text-base font-bold text-[var(--text-primary)] tracking-wide">Cash Flow Statement</h2>
+        <span className="text-xs text-[var(--text-muted)]">Operating, Investing, and Financing Cash Logs</span>
       </div>
       
       {renderRows('Operating Activities', reportData.operatingRows, reportData.totalOperating)}
       {renderRows('Investing Activities', reportData.investingRows, reportData.totalInvesting)}
       {renderRows('Financing Activities', reportData.financingRows, reportData.totalFinancing)}
 
-      <div className="cashflow-summary bg-neutral-50 dark:bg-neutral-900 p-4 rounded-lg mt-6 space-y-2 border border-[var(--border-color)] text-xs">
+      <div className="bg-neutral-50 dark:bg-neutral-900 p-4 rounded-lg mt-6 space-y-2 border border-[var(--border-color)] text-xs">
         <div className="flex justify-between font-semibold">
           <span>Net Increase/Decrease in Cash & Cash Equivalents:</span>
           <span className={reportData.netIncrease >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}>

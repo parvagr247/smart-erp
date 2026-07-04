@@ -11,5 +11,7 @@ public interface NotificationService {
     long getUnreadCount(Company company, String userEmail);
     void markAsRead(UUID notificationId, Company company, String userEmail);
     void markAllAsRead(Company company, String userEmail);
+    void deleteNotification(UUID notificationId, Company company, String userEmail);
     void createNotification(Company company, String title, String message, String userEmail);
+    void createNotification(Company company, String title, String message, String userEmail, String priority, String iconType);
 }

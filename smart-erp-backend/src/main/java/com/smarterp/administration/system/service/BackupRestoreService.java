@@ -20,7 +20,7 @@ public class BackupRestoreService {
     private final LedgerRepository ledgerRepository;
     private final VoucherRepository voucherRepository;
     private final StockItemRepository stockItemRepository;
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public byte[] generateBackup(Company company) {
         log.info("Generating system data backup for company: {}", company.getId());

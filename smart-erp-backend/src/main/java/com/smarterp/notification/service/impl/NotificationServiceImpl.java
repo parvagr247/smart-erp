@@ -63,14 +63,29 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    public void deleteNotification(UUID notificationId, Company company, String userEmail) {
+        Notification notification = repository.findById(notificationId)
+                .filter(n -> n.getCompany().getId().equals(company.getId()) && n.getUserEmail().equals(userEmail))
+                .orElseThrow(() -> new ResourceNotFoundException("Notification not found."));
+        repository.delete(notification);
+    }
+
+    @Override
     public void createNotification(Company company, String title, String message, String userEmail) {
-        log.info("Creating notification: '{}' for user: {}", title, userEmail);
+        createNotification(company, title, message, userEmail, "MEDIUM", "info");
+    }
+
+    @Override
+    public void createNotification(Company company, String title, String message, String userEmail, String priority, String iconType) {
+        log.info("Creating notification: '{}' for user: {} with priority: {}, icon: {}", title, userEmail, priority, iconType);
         Notification notification = Notification.builder()
                 .company(company)
                 .title(title)
                 .message(message)
                 .userEmail(userEmail)
                 .read(false)
+                .priority(priority != null ? priority : "MEDIUM")
+                .iconType(iconType != null ? iconType : "info")
                 .build();
 
         repository.save(notification);
@@ -86,6 +101,8 @@ public class NotificationServiceImpl implements NotificationService {
                 .title(n.getTitle())
                 .message(n.getMessage())
                 .read(n.getRead())
+                .priority(n.getPriority())
+                .iconType(n.getIconType())
                 .createdAt(n.getCreatedAt())
                 .build();
     }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import axiosClient from '@shared/api/axios-client';
 import { useActiveCompany } from '@shared/context/ActiveCompanyContext';
 
@@ -6,6 +6,8 @@ export default function useNotifications() {
   const { activeCompany } = useActiveCompany();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [filterType, setFilterType] = useState('ALL'); // ALL, UNREAD, HIGH
+  const [pageSize, setPageSize] = useState(5);
 
   const fetchNotifications = useCallback(async () => {
     if (!activeCompany?.id) return;
@@ -17,7 +19,9 @@ export default function useNotifications() {
           title: n.title,
           desc: n.message,
           time: new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          isRead: n.read
+          isRead: n.read,
+          priority: n.priority || 'MEDIUM',
+          iconType: n.iconType || 'info'
         })));
       }
       
@@ -54,10 +58,40 @@ export default function useNotifications() {
     }
   };
 
+  const deleteNotification = async (id) => {
+    try {
+      await axiosClient.delete(`/notifications/${id}`);
+      fetchNotifications();
+    } catch (err) {
+      console.error('Failed to delete notification', err);
+    }
+  };
+
+  const filteredNotifications = useMemo(() => {
+    return notifications.filter(n => {
+      if (filterType === 'UNREAD') return !n.isRead;
+      if (filterType === 'HIGH') return n.priority === 'HIGH';
+      return true;
+    });
+  }, [notifications, filterType]);
+
+  const paginatedNotifications = useMemo(() => {
+    return filteredNotifications.slice(0, pageSize);
+  }, [filteredNotifications, pageSize]);
+
+  const hasMore = filteredNotifications.length > pageSize;
+
   return {
-    notifications,
+    notifications: paginatedNotifications,
+    totalCount: filteredNotifications.length,
     unreadCount,
+    filterType,
+    setFilterType,
+    pageSize,
+    setPageSize,
+    hasMore,
     markAsRead,
-    markAllAsRead
+    markAllAsRead,
+    deleteNotification
   };
 }

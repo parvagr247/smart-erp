@@ -60,6 +60,16 @@ public class NotificationController {
         return ResponseEntity.ok(ApiResponse.<Void>builder().success(true).message("All notifications marked as read.").build());
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteNotification(
+            @PathVariable UUID id,
+            @RequestHeader("X-Company-ID") UUID companyId,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        Company company = getCompany(companyId);
+        service.deleteNotification(id, company, authenticatedUser.getUsername());
+        return ResponseEntity.ok(ApiResponse.<Void>builder().success(true).message("Notification deleted.").build());
+    }
+
     private Company getCompany(UUID companyId) {
         return companyRepository.findById(companyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Active company context not found."));

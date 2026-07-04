@@ -329,4 +329,19 @@ textarea:focus-visible,
     max-width: 100% !important;
     position: relative !important;
   }
+
+  /* 4. Display print-only elements */
+  .print-only-header {
+    display: block !important;
+  }
+  .print-only-footer {
+    display: block !important;
+  }
+}
+
+.print-only-header {
+  display: none;
+}
+.print-only-footer {
+  display: none;
 }

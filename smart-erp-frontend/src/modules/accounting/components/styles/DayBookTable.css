@@ -1,15 +1,1 @@
-.daybook-table-container {
-  @apply bg-[var(--bg-card)] p-6 rounded-xl border border-[var(--border-light)] shadow-xs text-left max-w-4xl mx-auto;
-}
-
-.daybook-header {
-  @apply mb-6;
-}
-
-.daybook-title {
-  @apply text-base font-bold text-[var(--text-primary)] tracking-wide;
-}
-
-.daybook-subtitle {
-  @apply text-xs text-[var(--text-muted)];
-}
+/* Unused - styles inlined in JSX */

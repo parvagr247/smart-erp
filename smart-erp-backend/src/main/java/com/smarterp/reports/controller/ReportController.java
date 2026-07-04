@@ -19,7 +19,6 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/reports")
 @RequiredArgsConstructor
-@org.springframework.security.access.prepost.PreAuthorize("hasAuthority('Accounting.ViewReports')")
 public class ReportController {
 
     private final ReportService service;
@@ -27,6 +26,7 @@ public class ReportController {
     private final CompanyRepository companyRepository;
 
     @GetMapping("/kpis")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyAuthority('REPORT_TRIAL_BALANCE_VIEW', 'REPORT_BALANCE_SHEET_VIEW', 'REPORT_PROFIT_LOSS_VIEW', 'REPORT_INVENTORY_VALUATION_VIEW', 'REPORT_STOCK_REGISTER_VIEW', 'REPORT_CASH_BOOK_VIEW', 'REPORT_DAY_BOOK_VIEW', 'REPORT_GST_SUMMARY_VIEW', 'REPORT_OUTSTANDING_VIEW', 'REPORT_CASH_FLOW_VIEW')")
     public ResponseEntity<ApiResponse<KpiResponse>> getKpis(@RequestHeader("X-Company-ID") UUID companyId) {
         Company company = getCompany(companyId);
         KpiResponse response = kpiService.calculateKpis(company);
@@ -34,6 +34,7 @@ public class ReportController {
     }
 
     @GetMapping("/trial-balance")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('REPORT_TRIAL_BALANCE_VIEW')")
     public ResponseEntity<ApiResponse<TrialBalanceResponse>> getTrialBalance(@RequestHeader("X-Company-ID") UUID companyId) {
         Company company = getCompany(companyId);
         TrialBalanceResponse response = service.getTrialBalance(company);
@@ -41,6 +42,7 @@ public class ReportController {
     }
 
     @GetMapping("/profit-loss")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('REPORT_PROFIT_LOSS_VIEW')")
     public ResponseEntity<ApiResponse<ProfitLossResponse>> getProfitLoss(
             @RequestHeader("X-Company-ID") UUID companyId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -51,6 +53,7 @@ public class ReportController {
     }
 
     @GetMapping("/balance-sheet")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('REPORT_BALANCE_SHEET_VIEW')")
     public ResponseEntity<ApiResponse<BalanceSheetResponse>> getBalanceSheet(
             @RequestHeader("X-Company-ID") UUID companyId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -60,6 +63,7 @@ public class ReportController {
     }
 
     @GetMapping("/cash-bank-book")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('REPORT_CASH_BOOK_VIEW')")
     public ResponseEntity<ApiResponse<CashBankBookResponse>> getCashBankBook(
             @RequestHeader("X-Company-ID") UUID companyId,
             @RequestParam UUID ledgerId,
@@ -71,6 +75,7 @@ public class ReportController {
     }
 
     @GetMapping("/outstanding")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('REPORT_OUTSTANDING_VIEW')")
     public ResponseEntity<ApiResponse<OutstandingResponse>> getOutstanding(
             @RequestHeader("X-Company-ID") UUID companyId,
             @RequestParam String partnerType) {
@@ -80,6 +85,7 @@ public class ReportController {
     }
 
     @GetMapping("/inventory-valuation")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('REPORT_INVENTORY_VALUATION_VIEW')")
     public ResponseEntity<ApiResponse<InventoryValuationResponse>> getInventoryValuation(@RequestHeader("X-Company-ID") UUID companyId) {
         Company company = getCompany(companyId);
         InventoryValuationResponse response = service.getInventoryValuation(company);
@@ -87,6 +93,7 @@ public class ReportController {
     }
 
     @GetMapping("/stock-register")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('REPORT_STOCK_REGISTER_VIEW')")
     public ResponseEntity<ApiResponse<StockRegisterResponse>> getStockRegister(
             @RequestHeader("X-Company-ID") UUID companyId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -97,6 +104,7 @@ public class ReportController {
     }
 
     @GetMapping("/gst-summary")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('REPORT_GST_SUMMARY_VIEW')")
     public ResponseEntity<ApiResponse<GstSummaryResponse>> getGstSummary(
             @RequestHeader("X-Company-ID") UUID companyId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -107,6 +115,7 @@ public class ReportController {
     }
 
     @GetMapping("/day-book")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('REPORT_DAY_BOOK_VIEW')")
     public ResponseEntity<ApiResponse<DayBookResponse>> getDayBook(
             @RequestHeader("X-Company-ID") UUID companyId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -116,6 +125,7 @@ public class ReportController {
     }
 
     @GetMapping("/cash-flow")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('REPORT_CASH_FLOW_VIEW')")
     public ResponseEntity<ApiResponse<CashFlowResponse>> getCashFlow(
             @RequestHeader("X-Company-ID") UUID companyId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -127,6 +137,7 @@ public class ReportController {
 
     // --- CSV exports ---
     @GetMapping("/trial-balance/csv")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('REPORT_TRIAL_BALANCE_VIEW')")
     public ResponseEntity<String> exportTrialBalanceCsv(@RequestHeader("X-Company-ID") UUID companyId) {
         Company company = getCompany(companyId);
         TrialBalanceResponse data = service.getTrialBalance(company);
@@ -142,6 +153,7 @@ public class ReportController {
     }
 
     @GetMapping("/profit-loss/csv")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('REPORT_PROFIT_LOSS_VIEW')")
     public ResponseEntity<String> exportProfitLossCsv(@RequestHeader("X-Company-ID") UUID companyId) {
         Company company = getCompany(companyId);
         ProfitLossResponse data = service.getProfitLoss(company, null, null);
@@ -161,6 +173,7 @@ public class ReportController {
     }
 
     @GetMapping("/balance-sheet/csv")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('REPORT_BALANCE_SHEET_VIEW')")
     public ResponseEntity<String> exportBalanceSheetCsv(@RequestHeader("X-Company-ID") UUID companyId) {
         Company company = getCompany(companyId);
         BalanceSheetResponse data = service.getBalanceSheet(company, null);
@@ -179,6 +192,7 @@ public class ReportController {
     }
 
     @GetMapping("/day-book/csv")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('REPORT_DAY_BOOK_VIEW')")
     public ResponseEntity<String> exportDayBookCsv(
             @RequestHeader("X-Company-ID") UUID companyId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -197,6 +211,7 @@ public class ReportController {
     }
 
     @GetMapping("/cash-flow/csv")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('REPORT_CASH_FLOW_VIEW')")
     public ResponseEntity<String> exportCashFlowCsv(
             @RequestHeader("X-Company-ID") UUID companyId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -216,6 +231,103 @@ public class ReportController {
         csv.append(String.format("\"Net Cash Flow Change\",\"%s\"\n", data.getNetIncrease()));
         return ResponseEntity.ok()
                 .header("Content-Disposition", "attachment; filename=cash_flow.csv")
+                .contentType(MediaType.TEXT_PLAIN)
+                .body(csv.toString());
+    }
+
+    @GetMapping("/cash-bank-book/csv")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('REPORT_CASH_BOOK_VIEW')")
+    public ResponseEntity<String> exportCashBankBookCsv(
+            @RequestHeader("X-Company-ID") UUID companyId,
+            @RequestParam UUID ledgerId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        Company company = getCompany(companyId);
+        CashBankBookResponse data = service.getCashBankBook(company, ledgerId, startDate, endDate);
+        StringBuilder csv = new StringBuilder("Date,Voucher No,Transaction Type,Particulars,Debit,Credit\n");
+        for (var row : data.getLines()) {
+            csv.append(String.format("\"%s\",\"%s\",\"%s\",\"%s\",%s,%s\n", 
+                    row.getDate(), row.getVoucherNumber(), row.getTransactionType(), row.getOppositeLedgerName(), 
+                    row.getDebitAmount(), row.getCreditAmount()));
+        }
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=cash_bank_book.csv")
+                .contentType(MediaType.TEXT_PLAIN)
+                .body(csv.toString());
+    }
+
+    @GetMapping("/outstanding/csv")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('REPORT_OUTSTANDING_VIEW')")
+    public ResponseEntity<String> exportOutstandingCsv(
+            @RequestHeader("X-Company-ID") UUID companyId,
+            @RequestParam String partnerType) {
+        Company company = getCompany(companyId);
+        OutstandingResponse data = service.getOutstanding(company, partnerType);
+        StringBuilder csv = new StringBuilder("Partner Name,Phone,Email,Partner Type,Outstanding Amount\n");
+        for (var row : data.getRows()) {
+            csv.append(String.format("\"%s\",\"%s\",\"%s\",\"%s\",%s\n", 
+                    row.getPartnerName(), row.getPhone() != null ? row.getPhone() : "", 
+                    row.getEmail() != null ? row.getEmail() : "", row.getPartnerType(), row.getOutstandingAmount()));
+        }
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=outstanding_statement.csv")
+                .contentType(MediaType.TEXT_PLAIN)
+                .body(csv.toString());
+    }
+
+    @GetMapping("/inventory-valuation/csv")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('REPORT_INVENTORY_VALUATION_VIEW')")
+    public ResponseEntity<String> exportInventoryValuationCsv(@RequestHeader("X-Company-ID") UUID companyId) {
+        Company company = getCompany(companyId);
+        InventoryValuationResponse data = service.getInventoryValuation(company);
+        StringBuilder csv = new StringBuilder("Item Name,SKU,Current Stock,Average Cost,Valuation\n");
+        for (var row : data.getRows()) {
+            csv.append(String.format("\"%s\",\"%s\",%s,%s,%s\n", 
+                    row.getName(), row.getSku(), row.getCurrentStock(), row.getAverageCost(), row.getValuation()));
+        }
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=inventory_valuation.csv")
+                .contentType(MediaType.TEXT_PLAIN)
+                .body(csv.toString());
+    }
+
+    @GetMapping("/stock-register/csv")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('REPORT_STOCK_REGISTER_VIEW')")
+    public ResponseEntity<String> exportStockRegisterCsv(
+            @RequestHeader("X-Company-ID") UUID companyId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        Company company = getCompany(companyId);
+        StockRegisterResponse data = service.getStockRegister(company, startDate, endDate);
+        StringBuilder csv = new StringBuilder("Item Name,SKU,Opening Qty,Inward Qty,Outward Qty,Closing Qty\n");
+        for (var row : data.getRows()) {
+            csv.append(String.format("\"%s\",\"%s\",%s,%s,%s,%s\n", 
+                    row.getName(), row.getSku(), row.getOpeningQuantity(), row.getInwardQuantity(),
+                    row.getOutwardQuantity(), row.getClosingQuantity()));
+        }
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=stock_register.csv")
+                .contentType(MediaType.TEXT_PLAIN)
+                .body(csv.toString());
+    }
+
+    @GetMapping("/gst-summary/csv")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('REPORT_GST_SUMMARY_VIEW')")
+    public ResponseEntity<String> exportGstSummaryCsv(
+            @RequestHeader("X-Company-ID") UUID companyId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        Company company = getCompany(companyId);
+        GstSummaryResponse data = service.getGstSummary(company, startDate, endDate);
+        StringBuilder csv = new StringBuilder("Metric,CGST,SGST,IGST,Total\n");
+        csv.append(String.format("\"Input Tax (ITC)\",%s,%s,%s,%s\n", 
+                data.getInputCgst(), data.getInputSgst(), data.getInputIgst(), data.getTotalInputTax()));
+        csv.append(String.format("\"Output Tax (Liability)\",%s,%s,%s,%s\n", 
+                data.getOutputCgst(), data.getOutputSgst(), data.getOutputIgst(), data.getTotalOutputTax()));
+        csv.append(String.format("\"Net Payable/Refund\",%s,%s,%s,%s\n", 
+                data.getNetCgstPayable(), data.getNetSgstPayable(), data.getNetIgstPayable(), data.getNetTotalPayable()));
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=gst_summary.csv")
                 .contentType(MediaType.TEXT_PLAIN)
                 .body(csv.toString());
     }

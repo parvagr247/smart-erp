@@ -46,6 +46,18 @@ public class AuthenticatedUser implements UserDetails {
                 authorities.add(new SimpleGrantedAuthority("Administration.Users"));
                 authorities.add(new SimpleGrantedAuthority("Administration.Roles"));
                 authorities.add(new SimpleGrantedAuthority("Administration.Settings"));
+                
+                // Report permissions
+                authorities.add(new SimpleGrantedAuthority("REPORT_TRIAL_BALANCE_VIEW"));
+                authorities.add(new SimpleGrantedAuthority("REPORT_BALANCE_SHEET_VIEW"));
+                authorities.add(new SimpleGrantedAuthority("REPORT_PROFIT_LOSS_VIEW"));
+                authorities.add(new SimpleGrantedAuthority("REPORT_INVENTORY_VALUATION_VIEW"));
+                authorities.add(new SimpleGrantedAuthority("REPORT_STOCK_REGISTER_VIEW"));
+                authorities.add(new SimpleGrantedAuthority("REPORT_CASH_BOOK_VIEW"));
+                authorities.add(new SimpleGrantedAuthority("REPORT_DAY_BOOK_VIEW"));
+                authorities.add(new SimpleGrantedAuthority("REPORT_GST_SUMMARY_VIEW"));
+                authorities.add(new SimpleGrantedAuthority("REPORT_OUTSTANDING_VIEW"));
+                authorities.add(new SimpleGrantedAuthority("REPORT_CASH_FLOW_VIEW"));
             }
             case ACCOUNTANT -> {
                 authorities.add(new SimpleGrantedAuthority("Company.View"));
@@ -57,6 +69,15 @@ public class AuthenticatedUser implements UserDetails {
                 authorities.add(new SimpleGrantedAuthority("Accounting.CreateVoucher"));
                 authorities.add(new SimpleGrantedAuthority("Accounting.ApproveVoucher"));
                 authorities.add(new SimpleGrantedAuthority("Accounting.ViewReports"));
+                
+                // Report permissions
+                authorities.add(new SimpleGrantedAuthority("REPORT_TRIAL_BALANCE_VIEW"));
+                authorities.add(new SimpleGrantedAuthority("REPORT_BALANCE_SHEET_VIEW"));
+                authorities.add(new SimpleGrantedAuthority("REPORT_PROFIT_LOSS_VIEW"));
+                authorities.add(new SimpleGrantedAuthority("REPORT_CASH_BOOK_VIEW"));
+                authorities.add(new SimpleGrantedAuthority("REPORT_DAY_BOOK_VIEW"));
+                authorities.add(new SimpleGrantedAuthority("REPORT_GST_SUMMARY_VIEW"));
+                authorities.add(new SimpleGrantedAuthority("REPORT_CASH_FLOW_VIEW"));
             }
             case INVENTORY_MANAGER -> {
                 authorities.add(new SimpleGrantedAuthority("Company.View"));
@@ -71,6 +92,10 @@ public class AuthenticatedUser implements UserDetails {
                 authorities.add(new SimpleGrantedAuthority("Inventory.Update"));
                 authorities.add(new SimpleGrantedAuthority("Inventory.Transfer"));
                 authorities.add(new SimpleGrantedAuthority("Inventory.Adjust"));
+                
+                // Report permissions
+                authorities.add(new SimpleGrantedAuthority("REPORT_INVENTORY_VALUATION_VIEW"));
+                authorities.add(new SimpleGrantedAuthority("REPORT_STOCK_REGISTER_VIEW"));
             }
         }
         return authorities;

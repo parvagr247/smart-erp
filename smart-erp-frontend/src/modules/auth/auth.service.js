@@ -83,6 +83,46 @@ export function useAuth() {
     setView('login');
   };
 
+  const ROLE_PERMISSIONS = {
+    ADMIN: [
+      'REPORT_TRIAL_BALANCE_VIEW',
+      'REPORT_BALANCE_SHEET_VIEW',
+      'REPORT_PROFIT_LOSS_VIEW',
+      'REPORT_INVENTORY_VALUATION_VIEW',
+      'REPORT_STOCK_REGISTER_VIEW',
+      'REPORT_CASH_BOOK_VIEW',
+      'REPORT_DAY_BOOK_VIEW',
+      'REPORT_GST_SUMMARY_VIEW',
+      'REPORT_OUTSTANDING_VIEW',
+      'REPORT_CASH_FLOW_VIEW'
+    ],
+    ACCOUNTANT: [
+      'REPORT_TRIAL_BALANCE_VIEW',
+      'REPORT_BALANCE_SHEET_VIEW',
+      'REPORT_PROFIT_LOSS_VIEW',
+      'REPORT_CASH_BOOK_VIEW',
+      'REPORT_DAY_BOOK_VIEW',
+      'REPORT_GST_SUMMARY_VIEW',
+      'REPORT_CASH_FLOW_VIEW'
+    ],
+    INVENTORY_MANAGER: [
+      'REPORT_INVENTORY_VALUATION_VIEW',
+      'REPORT_STOCK_REGISTER_VIEW'
+    ],
+    SALES_MANAGER: [
+      'REPORT_OUTSTANDING_VIEW'
+    ],
+    PURCHASE_MANAGER: [
+      'REPORT_STOCK_REGISTER_VIEW'
+    ]
+  };
+
+  const hasPermission = (permission) => {
+    if (!user || !user.role) return false;
+    const perms = ROLE_PERMISSIONS[user.role] || [];
+    return perms.includes(permission);
+  };
+
   return {
     view,
     setView,
@@ -92,6 +132,7 @@ export function useAuth() {
     toggleTheme,
     handleLoginSuccess,
     handleLogout,
+    hasPermission,
   };
 }
 

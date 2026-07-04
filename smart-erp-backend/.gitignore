@@ -29,5 +29,14 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-### VS Code ###
 .vscode/
+
+# Environment Files
+.env
+.env.local
+.env.production
+service-account.json
+
+# Uploads & logs
+/uploads/
+/logs/

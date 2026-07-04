@@ -8,16 +8,16 @@ import {
 } from '@modules/accounting/accounting.service';
 
 export const reportsList = [
-  { key: 'trial-balance', title: 'Trial Balance', desc: 'Summary of all debit & credit ledger accounts.', iconType: 'trial-balance' },
-  { key: 'profit-loss', title: 'Profit & Loss Statement', desc: 'Income, operating expense, and net profit statement.', iconType: 'profit-loss' },
-  { key: 'balance-sheet', title: 'Balance Sheet', desc: 'Statement of assets, liabilities, and equity capital.', iconType: 'balance-sheet' },
-  { key: 'cash-bank', title: 'Cash & Bank Book', desc: 'Ledger transactions affecting cash and bank accounts.', iconType: 'cash-bank' },
-  { key: 'outstanding', title: 'Outstanding Statement', desc: 'Outstanding balances from customers or suppliers.', iconType: 'outstanding' },
-  { key: 'inventory-valuation', title: 'Inventory Valuation', desc: 'Value of current inventory holding based on average cost.', iconType: 'inventory-valuation' },
-  { key: 'stock-register', title: 'Stock Register', desc: 'Detailed inwards, outwards, and closing stock logs.', iconType: 'stock-register' },
-  { key: 'gst-summary', title: 'GST Summary Statement', desc: 'Summary of input tax credit offsets and output tax payables.', iconType: 'gst-summary' },
-  { key: 'day-book', title: 'Day Book', desc: 'Daily transaction log of all journals and inventory records.', iconType: 'day-book' },
-  { key: 'cash-flow', title: 'Cash Flow Statement', desc: 'Operating, investing, and financing cash flows.', iconType: 'cash-flow' },
+  { key: 'trial-balance', title: 'Trial Balance', desc: 'Summary of all debit & credit ledger accounts.', iconType: 'trial-balance', requiredPermission: 'REPORT_TRIAL_BALANCE_VIEW' },
+  { key: 'profit-loss', title: 'Profit & Loss Statement', desc: 'Income, operating expense, and net profit statement.', iconType: 'profit-loss', requiredPermission: 'REPORT_PROFIT_LOSS_VIEW' },
+  { key: 'balance-sheet', title: 'Balance Sheet', desc: 'Statement of assets, liabilities, and equity capital.', iconType: 'balance-sheet', requiredPermission: 'REPORT_BALANCE_SHEET_VIEW' },
+  { key: 'cash-bank', title: 'Cash & Bank Book', desc: 'Ledger transactions affecting cash and bank accounts.', iconType: 'cash-bank', requiredPermission: 'REPORT_CASH_BOOK_VIEW' },
+  { key: 'outstanding', title: 'Outstanding Statement', desc: 'Outstanding balances from customers or suppliers.', iconType: 'outstanding', requiredPermission: 'REPORT_OUTSTANDING_VIEW' },
+  { key: 'inventory-valuation', title: 'Inventory Valuation', desc: 'Value of current inventory holding based on average cost.', iconType: 'inventory-valuation', requiredPermission: 'REPORT_INVENTORY_VALUATION_VIEW' },
+  { key: 'stock-register', title: 'Stock Register', desc: 'Detailed inwards, outwards, and closing stock logs.', iconType: 'stock-register', requiredPermission: 'REPORT_STOCK_REGISTER_VIEW' },
+  { key: 'gst-summary', title: 'GST Summary Statement', desc: 'Summary of input tax credit offsets and output tax payables.', iconType: 'gst-summary', requiredPermission: 'REPORT_GST_SUMMARY_VIEW' },
+  { key: 'day-book', title: 'Day Book', desc: 'Daily transaction log of all journals and inventory records.', iconType: 'day-book', requiredPermission: 'REPORT_DAY_BOOK_VIEW' },
+  { key: 'cash-flow', title: 'Cash Flow Statement', desc: 'Operating, investing, and financing cash flows.', iconType: 'cash-flow', requiredPermission: 'REPORT_CASH_FLOW_VIEW' },
 ];
 
 export function useReportsViewData() {
@@ -120,7 +120,20 @@ export function useReportsViewData() {
     if (!selectedReport) return;
     try {
       const reportKey = selectedReport === 'cash-bank' ? 'cash-bank-book' : selectedReport;
-      const response = await axiosClient.get(`/reports/${reportKey}/csv`, { responseType: 'blob' });
+      const params = {};
+      if (selectedReport === 'cash-bank' && selectedLedgerId) {
+        params.ledgerId = selectedLedgerId;
+      }
+      if (selectedReport === 'outstanding' && partnerType) {
+        params.partnerType = partnerType;
+      }
+      if (startDate) params.startDate = startDate;
+      if (endDate) params.endDate = endDate;
+
+      const response = await axiosClient.get(`/reports/${reportKey}/csv`, { 
+        params,
+        responseType: 'blob' 
+      });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;

@@ -180,6 +180,7 @@ export const NavigationEngine = {
     }
 
     const candidatesLog = [];
+    let bestCandidate = null;
 
     regionElements.forEach(candidate => {
       if (candidate === currentElement) return;

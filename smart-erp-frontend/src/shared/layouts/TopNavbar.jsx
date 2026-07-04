@@ -11,7 +11,17 @@ export default function TopNavbar({ onSearchClick }) {
   const navigate = useNavigate();
   const { activeCompany } = useActiveCompany();
   const { user, theme, toggleTheme, handleLogout } = useAuth();
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const { 
+    notifications, 
+    unreadCount, 
+    filterType, 
+    setFilterType, 
+    hasMore, 
+    setPageSize, 
+    markAsRead, 
+    markAllAsRead, 
+    deleteNotification 
+  } = useNotifications();
   const { setIsShortcutOverlayOpen } = useInteraction();
 
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -111,52 +121,107 @@ export default function TopNavbar({ onSearchClick }) {
           >
             <Bell size={16} />
             {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+              <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-red-500 border-2 border-[var(--bg-surface)] animate-pulse" />
             )}
           </button>
 
           {isNotifOpen && (
             <div className="notification-menu">
               <div className="notification-header">
-                <span className="notification-title">Notifications</span>
-                {unreadCount > 0 && (
+                <div className="flex justify-between items-center w-full mb-2">
+                  <span className="notification-title">Notifications</span>
+                  {unreadCount > 0 && (
+                    <button 
+                      onClick={markAllAsRead}
+                      className="text-[10px] font-bold text-[var(--primary)] hover:underline cursor-pointer"
+                    >
+                      Mark all read
+                    </button>
+                  )}
+                </div>
+                {/* Filter Tabs */}
+                <div className="flex gap-1.5 border-b border-[var(--border-light)] pb-2.5 w-full">
                   <button 
-                    onClick={markAllAsRead}
-                    className="text-[10px] font-bold text-[var(--primary)] hover:underline cursor-pointer"
+                    onClick={() => setFilterType('ALL')}
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-colors ${filterType === 'ALL' ? 'bg-[var(--primary)] text-white' : 'bg-neutral-100 dark:bg-neutral-900 text-[var(--text-secondary)] hover:bg-neutral-200'}`}
                   >
-                    Mark all read
+                    All
                   </button>
-                )}
+                  <button 
+                    onClick={() => setFilterType('UNREAD')}
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-colors ${filterType === 'UNREAD' ? 'bg-[var(--primary)] text-white' : 'bg-neutral-100 dark:bg-neutral-900 text-[var(--text-secondary)] hover:bg-neutral-200'}`}
+                  >
+                    Unread ({unreadCount})
+                  </button>
+                  <button 
+                    onClick={() => setFilterType('HIGH')}
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-colors ${filterType === 'HIGH' ? 'bg-[var(--primary)] text-white' : 'bg-neutral-100 dark:bg-neutral-900 text-[var(--text-secondary)] hover:bg-neutral-200'}`}
+                  >
+                    High Priority
+                  </button>
+                </div>
               </div>
-              <div className="notification-list">
+              <div className="notification-list max-h-[300px] overflow-y-auto">
                 {notifications.length === 0 ? (
-                  <div className="p-6 text-center text-xs text-[var(--text-muted)]">
-                    No new alerts.
+                  <div className="py-12 flex flex-col items-center justify-center text-center px-4">
+                    <Bell size={24} className="text-neutral-300 mb-2" />
+                    <span className="text-xs font-bold text-[var(--text-primary)]">No alerts available</span>
+                    <span className="text-[10px] text-[var(--text-muted)] mt-0.5">Nothing matches your active filter.</span>
                   </div>
                 ) : (
-                  notifications.map((n) => (
-                    <div
-                      key={n.id}
-                      onClick={() => markAsRead(n.id)}
-                      className={`notification-item ${!n.isRead ? 'notification-item-unread' : ''}`}
-                    >
-                      <div className="notification-item-icon">
-                        <Bell size={14} />
+                  notifications.map((n) => {
+                    let priorityColor = "bg-neutral-100 text-neutral-600";
+                    if (n.priority === "HIGH") priorityColor = "bg-rose-50 dark:bg-rose-950/20 text-rose-600";
+                    else if (n.priority === "MEDIUM") priorityColor = "bg-amber-50 dark:bg-amber-950/20 text-amber-600";
+
+                    return (
+                      <div
+                        key={n.id}
+                        className={`notification-item flex items-start gap-2.5 p-3 hover:bg-[var(--bg-hover)] border-b border-[var(--border-light)] relative ${!n.isRead ? 'notification-item-unread bg-neutral-50/50 dark:bg-neutral-900/30' : ''}`}
+                      >
+                        {/* Priority/Icon Circle */}
+                        <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${priorityColor}`}>
+                          <Bell size={12} />
+                        </div>
+                        {/* Content */}
+                        <div className="flex-1 min-w-0 text-left">
+                          <div className="flex justify-between items-start">
+                            <span className="text-xs font-bold text-[var(--text-primary)] truncate pr-4">{n.title}</span>
+                            <span className="text-[9px] text-[var(--text-muted)] shrink-0 font-mono">{n.time}</span>
+                          </div>
+                          <p className="text-[11px] text-[var(--text-secondary)] mt-0.5 leading-relaxed">{n.desc}</p>
+                          <div className="flex gap-3 mt-2">
+                            {!n.isRead && (
+                              <button 
+                                onClick={() => markAsRead(n.id)}
+                                className="text-[10px] font-bold text-[var(--primary)] hover:underline cursor-pointer flex items-center gap-0.5"
+                              >
+                                Mark Read
+                              </button>
+                            )}
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); deleteNotification(n.id); }}
+                              className="text-[10px] font-bold text-rose-600 hover:underline cursor-pointer"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                      <div className="notification-item-content">
-                        <div className="notification-item-title">{n.title}</div>
-                        <div className="notification-item-desc">{n.desc}</div>
-                        <div className="notification-item-time">{n.time}</div>
-                      </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
-              <div className="notification-footer">
-                <span className="text-[10px] text-[var(--text-muted)] font-semibold">
-                  System Alerts
-                </span>
-              </div>
+              {hasMore && (
+                <div className="p-2 border-t border-[var(--border-light)] text-center">
+                  <button 
+                    onClick={() => setPageSize(prev => prev + 5)}
+                    className="text-[10px] font-bold text-[var(--primary)] hover:underline cursor-pointer"
+                  >
+                    Load More
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

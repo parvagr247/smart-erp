@@ -41,4 +41,12 @@ public class Notification extends BaseEntity {
 
     @Column(name = "user_email")
     private String userEmail;
+
+    @Column(nullable = true)
+    @Builder.Default
+    private String priority = "MEDIUM";
+
+    @Column(nullable = true)
+    @Builder.Default
+    private String iconType = "info";
 }
