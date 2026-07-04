@@ -9,6 +9,8 @@ import com.smarterp.inventory.master.entity.Unit;
 import com.smarterp.inventory.master.repository.UnitRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +26,7 @@ public class UnitController {
     private final CompanyRepository companyRepository;
 
     @PostMapping
+    @CacheEvict(value = "units", key = "#companyId")
     public ResponseEntity<ApiResponse<Unit>> createUnit(
             @RequestHeader("X-Company-ID") UUID companyId,
             @Valid @RequestBody UnitRequest request) {
@@ -43,6 +46,7 @@ public class UnitController {
     }
 
     @GetMapping
+    @Cacheable(value = "units", key = "#companyId")
     public ResponseEntity<ApiResponse<List<Unit>>> getUnits(@RequestHeader("X-Company-ID") UUID companyId) {
         Company company = getCompany(companyId);
         List<Unit> list = repository.findAllByCompany(company);
@@ -50,6 +54,7 @@ public class UnitController {
     }
 
     @DeleteMapping("/{id}")
+    @CacheEvict(value = "units", key = "#companyId")
     public ResponseEntity<ApiResponse<Void>> deleteUnit(
             @RequestHeader("X-Company-ID") UUID companyId,
             @PathVariable UUID id) {

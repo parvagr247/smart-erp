@@ -46,4 +46,10 @@ public interface LedgerRepository extends JpaRepository<Ledger, UUID>, JpaSpecif
         @Param("gstApplicable") Boolean gstApplicable,
         Pageable pageable
     );
+
+    @Query("SELECT COALESCE(SUM(l.openingBalance), 0) FROM Ledger l WHERE l.company = :company AND l.group.name = :groupName")
+    java.math.BigDecimal sumOpeningBalanceByCompanyAndGroupName(@Param("company") Company company, @Param("groupName") String groupName);
+
+    @Query("SELECT COALESCE(SUM(l.openingBalance), 0) FROM Ledger l WHERE l.company = :company AND l.group.name IN :groupNames")
+    java.math.BigDecimal sumOpeningBalanceByCompanyAndGroupNames(@Param("company") Company company, @Param("groupNames") java.util.List<String> groupNames);
 }

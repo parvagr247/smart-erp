@@ -234,7 +234,7 @@ public class SalesServiceImpl implements SalesService {
             return cb.and(predicates.toArray(new Predicate[0]));
         };
 
-        return salesRepository.findAll(spec, pageable).map(this::mapToResponse);
+        return salesRepository.findAll(spec, pageable).map(this::mapToSummaryResponse);
     }
 
     @Override
@@ -413,6 +413,34 @@ public class SalesServiceImpl implements SalesService {
                 throw new BusinessValidationException("Rate must be greater than zero.");
             }
         }
+    }
+
+    private SalesResponse mapToSummaryResponse(Sales s) {
+        return SalesResponse.builder()
+                .id(s.getId())
+                .salesNumber(s.getSalesNumber())
+                .salesDate(s.getSalesDate())
+                .dueDate(s.getDueDate())
+                .paymentTerms(s.getPaymentTerms())
+                .customerId(s.getCustomer().getId())
+                .customerName(s.getCustomer().getName())
+                .warehouseId(s.getWarehouse().getId())
+                .warehouseName(s.getWarehouse().getName())
+                .status(s.getStatus())
+                .grossAmount(s.getGrossAmount())
+                .discountAmount(s.getDiscountAmount())
+                .taxAmount(s.getTaxAmount())
+                .cgst(s.getCgst())
+                .sgst(s.getSgst())
+                .igst(s.getIgst())
+                .cess(s.getCess())
+                .roundOff(s.getRoundOff())
+                .grandTotal(s.getGrandTotal())
+                .notes(s.getNotes())
+                .attachments(s.getAttachments())
+                .createdBy(s.getCreatedBy())
+                .lineItems(null)
+                .build();
     }
 
     private SalesResponse mapToResponse(Sales s) {

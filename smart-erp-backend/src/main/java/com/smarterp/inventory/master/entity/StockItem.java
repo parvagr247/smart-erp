@@ -26,7 +26,14 @@ import org.hibernate.annotations.SQLRestriction;
         @Index(name = "idx_item_company_code", columnList = "company_id, code"),
         @Index(name = "idx_item_company_name", columnList = "company_id, name"),
         @Index(name = "idx_item_sku", columnList = "company_id, sku"),
-        @Index(name = "idx_item_barcode", columnList = "company_id, barcode")
+        @Index(name = "idx_item_barcode", columnList = "company_id, barcode"),
+        @Index(name = "idx_item_brand", columnList = "brand_id"),
+        @Index(name = "idx_item_manufacturer", columnList = "manufacturer_id"),
+        @Index(name = "idx_item_group", columnList = "stock_group_id"),
+        @Index(name = "idx_item_primary_unit", columnList = "primary_unit_id"),
+        @Index(name = "idx_item_warehouse", columnList = "warehouse_id"),
+        @Index(name = "idx_item_tax", columnList = "tax_category_id"),
+        @Index(name = "idx_item_hsn", columnList = "hsn_id")
     }
 )
 @SQLDelete(sql = "UPDATE stock_items SET deleted_at = NOW() WHERE id = ?")

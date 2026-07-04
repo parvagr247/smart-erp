@@ -20,8 +20,8 @@ const getSidebarItems = (role) => {
       icon: <Landmark size={18} />,
       children: [
         { title: 'Dashboard', path: '/accounting' },
-        { title: 'Groups Tree', path: '/accounting/groups' },
-        { title: 'Ledgers Registry', path: '/accounting/ledgers' }
+        { title: 'Chart of Accounts', path: '/accounting/groups' },
+        { title: 'Ledger Registry', path: '/accounting/ledgers' }
       ]
     });
   }

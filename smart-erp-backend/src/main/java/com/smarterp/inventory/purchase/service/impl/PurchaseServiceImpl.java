@@ -215,7 +215,7 @@ public class PurchaseServiceImpl implements PurchaseService {
 
         Page<Purchase> page = purchaseRepository.findAll(spec, pageable);
         List<PurchaseResponse> dtoList = page.getContent().stream()
-                .map(this::mapToResponse)
+                .map(this::mapToSummaryResponse)
                 .collect(Collectors.toList());
 
         return new PageImpl<>(dtoList, pageable, page.getTotalElements());
@@ -373,6 +373,34 @@ public class PurchaseServiceImpl implements PurchaseService {
                 eventPublisher.publishEvent(new PurchaseApprovedEvent(this, purchase.getId(), companyId, performedBy));
             }
         }
+    }
+
+    private PurchaseResponse mapToSummaryResponse(Purchase purchase) {
+        return PurchaseResponse.builder()
+                .id(purchase.getId())
+                .purchaseNumber(purchase.getPurchaseNumber())
+                .purchaseDate(purchase.getPurchaseDate())
+                .dueDate(purchase.getDueDate())
+                .paymentTerms(purchase.getPaymentTerms())
+                .supplierId(purchase.getSupplier().getId())
+                .supplierName(purchase.getSupplier().getName())
+                .warehouseId(purchase.getWarehouse().getId())
+                .warehouseName(purchase.getWarehouse().getName())
+                .status(purchase.getStatus())
+                .grossAmount(purchase.getGrossAmount())
+                .discountAmount(purchase.getDiscountAmount())
+                .taxAmount(purchase.getTaxAmount())
+                .cgst(purchase.getCgst())
+                .sgst(purchase.getSgst())
+                .igst(purchase.getIgst())
+                .cess(purchase.getCess())
+                .roundOff(purchase.getRoundOff())
+                .grandTotal(purchase.getGrandTotal())
+                .notes(purchase.getNotes())
+                .attachments(purchase.getAttachments())
+                .createdBy(purchase.getCreatedBy())
+                .lineItems(null)
+                .build();
     }
 
     private PurchaseResponse mapToResponse(Purchase purchase) {

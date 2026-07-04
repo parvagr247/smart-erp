@@ -23,6 +23,7 @@ export default function InventoryDashboardView() {
         <div className="kpi-card"><span>Total Items</span><span className="text-3xl font-bold mt-2">{summary.totalItems}</span></div>
         <div className="kpi-card"><span>Warehouses</span><span className="text-3xl font-bold mt-2">{summary.totalWarehouses}</span></div>
         <div className="kpi-card"><span>Brands</span><span className="text-3xl font-bold mt-2">{summary.totalBrands}</span></div>
+        <div className="kpi-card"><span>Inventory Value</span><span className="text-3xl font-bold mt-2">₹{summary.totalInventoryValue.toLocaleString()}</span></div>
         <div className="kpi-card-low-stock"><span>Low Stock</span><span className="text-3xl font-bold mt-2">{summary.lowStockCount}</span></div>
         <div className="kpi-card-out-of-stock"><span>Out Of Stock</span><span className="text-3xl font-bold mt-2">{summary.outOfStockCount}</span></div>
       </div>

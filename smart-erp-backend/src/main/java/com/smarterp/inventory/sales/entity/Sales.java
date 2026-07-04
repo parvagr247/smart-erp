@@ -14,7 +14,16 @@ import java.util.List;
 @Entity
 @Table(
     name = "sales",
-    schema = "purchase"
+    schema = "purchase",
+    uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"company_id", "salesNumber"})
+    },
+    indexes = {
+        @Index(name = "idx_sales_company_num", columnList = "company_id, salesNumber"),
+        @Index(name = "idx_sales_date", columnList = "salesDate"),
+        @Index(name = "idx_sales_customer", columnList = "customer_id"),
+        @Index(name = "idx_sales_warehouse", columnList = "warehouse_id")
+    }
 )
 @Getter
 @Setter

@@ -174,7 +174,7 @@ public class VoucherServiceImpl implements VoucherService {
             return cb.and(predicates.toArray(new Predicate[0]));
         };
 
-        return repository.findAll(spec, pageable).map(this::mapToResponse);
+        return repository.findAll(spec, pageable).map(this::mapToSummaryResponse);
     }
 
     @Override
@@ -260,6 +260,20 @@ public class VoucherServiceImpl implements VoucherService {
         }
 
         return String.format("%s-%d-%06d", typePrefix, currentYear, nextVal);
+    }
+
+    private VoucherResponse mapToSummaryResponse(Voucher v) {
+        return VoucherResponse.builder()
+                .id(v.getId())
+                .voucherNumber(v.getVoucherNumber())
+                .voucherDate(v.getVoucherDate())
+                .voucherType(v.getVoucherType())
+                .status(v.getStatus())
+                .narration(v.getNarration())
+                .lineItems(null)
+                .createdBy(v.getCreatedBy())
+                .createdAt(v.getCreatedAt())
+                .build();
     }
 
     private VoucherResponse mapToResponse(Voucher v) {

@@ -16,4 +16,10 @@ public interface SalesRepository extends JpaRepository<Sales, UUID>, JpaSpecific
     String findMaxSalesNumberByCompanyAndPrefix(@Param("company") Company company, @Param("prefix") String prefix);
 
     long countByCompany(Company company);
+
+    @Query("SELECT COALESCE(SUM(s.grandTotal), 0) FROM Sales s WHERE s.company = :company")
+    java.math.BigDecimal sumGrandTotalByCompany(@Param("company") Company company);
+
+    @Query("SELECT COALESCE(SUM(s.grandTotal), 0) FROM Sales s WHERE s.company = :company AND s.salesDate = :date")
+    java.math.BigDecimal sumGrandTotalByCompanyAndDate(@Param("company") Company company, @Param("date") java.time.LocalDate date);
 }

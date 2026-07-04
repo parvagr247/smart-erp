@@ -11,7 +11,14 @@ import java.util.List;
 @Entity
 @Table(
     name = "vouchers",
-    schema = "accounting"
+    schema = "accounting",
+    indexes = {
+        @Index(name = "idx_voucher_company_id", columnList = "company_id"),
+        @Index(name = "idx_voucher_number", columnList = "voucherNumber"),
+        @Index(name = "idx_voucher_date", columnList = "voucherDate"),
+        @Index(name = "idx_voucher_type", columnList = "voucherType"),
+        @Index(name = "idx_voucher_status", columnList = "status")
+    }
 )
 @Getter
 @Setter

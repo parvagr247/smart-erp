@@ -23,7 +23,8 @@ import org.hibernate.annotations.SQLRestriction;
         @Index(name = "idx_ledger_email", columnList = "email"),
         @Index(name = "idx_ledger_phone", columnList = "phone"),
         @Index(name = "idx_ledger_gst_number", columnList = "gstNumber"),
-        @Index(name = "idx_ledger_pan", columnList = "pan")
+        @Index(name = "idx_ledger_pan", columnList = "pan"),
+        @Index(name = "idx_ledger_group_id", columnList = "ledger_group_id")
     }
 )
 @SQLDelete(sql = "UPDATE ledgers SET deleted_at = NOW() WHERE id = ?")

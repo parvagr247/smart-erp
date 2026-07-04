@@ -10,16 +10,16 @@ export function useAccountGroupsViewData() {
   const [name, setName] = useState('');
   const [nature, setNature] = useState('ASSET');
   const [parentId, setParentId] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [search, setSearch] = useState('');
 
   const loadData = async () => {
     try {
       const [groupsRes, ledgersRes] = await Promise.all([
         fetchGroupsList(),
-        fetchLedgersList({ page: 0, size: 1000 })
+        fetchLedgersList({ size: 1000 })
       ]);
       setGroups(groupsRes.data || []);
-      setLedgers(ledgersRes.data?.content || []);
+      setLedgers(ledgersRes.data?.content || ledgersRes.data || []);
     } catch (err) {
       console.error(err);
     }
@@ -52,24 +52,20 @@ export function useAccountGroupsViewData() {
     }
   };
 
-  const toggleActive = async (g) => {
-    try {
-      const payload = {
-        name: g.name,
-        nature: g.nature,
-        parentGroupId: g.parentGroupId,
-        isActive: !g.isActive
-      };
-      await updateGroupApi(g.id, payload);
-      loadData();
-    } catch (err) {
-      console.error(err);
-    }
+  const handleToggleActive = async (g) => {
+    const payload = {
+      name: g.name,
+      nature: g.nature,
+      parentGroupId: g.parentGroupId,
+      isActive: !g.isActive
+    };
+    await updateGroupApi(g.id, payload);
+    loadData();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const payload = { name, nature, parentGroupId: parentId || null, isActive: true };
+    const payload = { name, nature, parentGroupId: parentId || null, isActive: editGroup ? editGroup.isActive : true };
     if (editGroup) await updateGroupApi(editGroup.id, payload);
     else await createGroupApi(payload);
     setShowForm(false);
@@ -82,22 +78,36 @@ export function useAccountGroupsViewData() {
     setExpanded(p => ({ ...p, [id]: !p[id] }));
   };
 
-  const ledgerCountMap = {};
-  const groupLedgersMap = {};
-  
+  const handleExpandAll = () => {
+    const nextExpanded = {};
+    groups.forEach(g => {
+      nextExpanded[g.id] = true;
+    });
+    setExpanded(nextExpanded);
+  };
+
+  const handleCollapseAll = () => {
+    setExpanded({});
+  };
+
+  // Compute ledger counts per group
+  const ledgerCounts = {};
   ledgers.forEach(l => {
     if (l.groupId) {
-      ledgerCountMap[l.groupId] = (ledgerCountMap[l.groupId] || 0) + 1;
-      if (!groupLedgersMap[l.groupId]) groupLedgersMap[l.groupId] = [];
-      groupLedgersMap[l.groupId].push(l);
+      ledgerCounts[l.groupId] = (ledgerCounts[l.groupId] || 0) + 1;
     }
   });
 
+  // Filter groups tree based on search string
+  const filteredGroups = groups.filter(g => {
+    if (!search.trim()) return true;
+    return g.name.toLowerCase().includes(search.toLowerCase()) || 
+           g.nature.toLowerCase().includes(search.toLowerCase());
+  });
+
   return {
-    groups,
-    filteredGroups: searchQuery.trim()
-      ? groups.filter(g => g.name.toLowerCase().includes(searchQuery.toLowerCase()))
-      : groups,
+    groups: filteredGroups,
+    allGroups: groups,
     expanded,
     editGroup,
     showForm,
@@ -108,15 +118,16 @@ export function useAccountGroupsViewData() {
     setNature,
     parentId,
     setParentId,
-    searchQuery,
-    setSearchQuery,
-    ledgerCountMap,
-    groupLedgersMap,
+    search,
+    setSearch,
     handleEdit,
     handleCreateChild,
     handleDelete,
-    toggleActive,
+    handleToggleActive,
     handleSubmit,
-    toggleExpand
+    toggleExpand,
+    handleExpandAll,
+    handleCollapseAll,
+    ledgerCounts
   };
 }

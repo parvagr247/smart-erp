@@ -9,6 +9,8 @@ import com.smarterp.inventory.master.entity.TaxCategory;
 import com.smarterp.inventory.master.repository.TaxCategoryRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +27,7 @@ public class TaxCategoryController {
     private final CompanyRepository companyRepository;
 
     @PostMapping
+    @CacheEvict(value = "taxes", key = "#companyId")
     public ResponseEntity<ApiResponse<TaxCategory>> createTaxCategory(
             @RequestHeader("X-Company-ID") UUID companyId,
             @Valid @RequestBody TaxCategoryRequest request) {
@@ -52,6 +55,7 @@ public class TaxCategoryController {
     }
 
     @GetMapping
+    @Cacheable(value = "taxes", key = "#companyId")
     public ResponseEntity<ApiResponse<List<TaxCategory>>> getTaxCategories(@RequestHeader("X-Company-ID") UUID companyId) {
         Company company = getCompany(companyId);
         List<TaxCategory> list = repository.findAllByCompany(company);
@@ -59,6 +63,7 @@ public class TaxCategoryController {
     }
 
     @DeleteMapping("/{id}")
+    @CacheEvict(value = "taxes", key = "#companyId")
     public ResponseEntity<ApiResponse<Void>> deleteTaxCategory(
             @RequestHeader("X-Company-ID") UUID companyId,
             @PathVariable UUID id) {

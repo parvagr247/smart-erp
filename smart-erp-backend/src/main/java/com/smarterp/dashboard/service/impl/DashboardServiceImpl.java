@@ -48,69 +48,25 @@ public class DashboardServiceImpl implements DashboardService {
             long stockItemCount = stockItemRepository.countByCompany(company);
             long warehouseCount = warehouseRepository.countByCompany(company);
 
-            // Sum of all stock item opening values
-            BigDecimal totalInventoryValue = stockItemRepository.findAll((root, query, cb) -> cb.equal(root.get("company"), company))
-                    .stream()
-                    .map(item -> item.getOpeningValue() != null ? item.getOpeningValue() : BigDecimal.ZERO)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal totalInventoryValue = stockItemRepository.sumOpeningValueByCompany(company);
 
-            // Count low stock items (openingQuantity <= reorderLevel)
-            long lowStockCount = stockItemRepository.findAll((root, query, cb) -> cb.and(
-                    cb.equal(root.get("company"), company),
-                    cb.lessThanOrEqualTo(root.get("openingQuantity"), root.get("reorderLevel"))
-            )).size();
+            long lowStockCount = stockItemRepository.countLowStockByCompany(company);
 
             long purchaseCount = purchaseRepository.countByCompany(company);
-            BigDecimal totalPurchaseValue = purchaseRepository.findAll((root, query, cb) -> cb.equal(root.get("company"), company))
-                    .stream()
-                    .map(p -> p.getGrandTotal() != null ? p.getGrandTotal() : BigDecimal.ZERO)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal totalPurchaseValue = purchaseRepository.sumGrandTotalByCompany(company);
 
             long salesCount = salesRepository.countByCompany(company);
-            BigDecimal totalSalesValue = salesRepository.findAll((root, query, cb) -> cb.equal(root.get("company"), company))
-                    .stream()
-                    .map(s -> s.getGrandTotal() != null ? s.getGrandTotal() : BigDecimal.ZERO)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal totalSalesValue = salesRepository.sumGrandTotalByCompany(company);
 
-            BigDecimal revenueToday = salesRepository.findAll((root, query, cb) -> cb.and(
-                            cb.equal(root.get("company"), company),
-                            cb.equal(root.get("salesDate"), java.time.LocalDate.now())
-                    ))
-                    .stream()
-                    .map(s -> s.getGrandTotal() != null ? s.getGrandTotal() : BigDecimal.ZERO)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal revenueToday = salesRepository.sumGrandTotalByCompanyAndDate(company, java.time.LocalDate.now());
 
-            BigDecimal purchaseToday = purchaseRepository.findAll((root, query, cb) -> cb.and(
-                            cb.equal(root.get("company"), company),
-                            cb.equal(root.get("purchaseDate"), java.time.LocalDate.now())
-                    ))
-                    .stream()
-                    .map(p -> p.getGrandTotal() != null ? p.getGrandTotal() : BigDecimal.ZERO)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal purchaseToday = purchaseRepository.sumGrandTotalByCompanyAndDate(company, java.time.LocalDate.now());
 
-            BigDecimal receivables = ledgerRepository.findAll((root, query, cb) -> cb.and(
-                            cb.equal(root.get("company"), company),
-                            cb.equal(root.get("group").get("name"), "Current Assets")
-                    ))
-                    .stream()
-                    .map(l -> l.getOpeningBalance() != null ? l.getOpeningBalance() : BigDecimal.ZERO)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal receivables = ledgerRepository.sumOpeningBalanceByCompanyAndGroupName(company, "Current Assets");
 
-            BigDecimal payables = ledgerRepository.findAll((root, query, cb) -> cb.and(
-                            cb.equal(root.get("company"), company),
-                            cb.equal(root.get("group").get("name"), "Current Liabilities")
-                    ))
-                    .stream()
-                    .map(l -> l.getOpeningBalance() != null ? l.getOpeningBalance() : BigDecimal.ZERO)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal payables = ledgerRepository.sumOpeningBalanceByCompanyAndGroupName(company, "Current Liabilities");
 
-            BigDecimal cashPosition = ledgerRepository.findAll((root, query, cb) -> cb.and(
-                            cb.equal(root.get("company"), company),
-                            root.get("group").get("name").in("Bank Accounts", "Cash-in-Hand")
-                    ))
-                    .stream()
-                    .map(l -> l.getOpeningBalance() != null ? l.getOpeningBalance() : BigDecimal.ZERO)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal cashPosition = ledgerRepository.sumOpeningBalanceByCompanyAndGroupNames(company, java.util.Arrays.asList("Bank Accounts", "Cash-in-Hand"));
 
             long draftPurchases = purchaseRepository.count((root, query, cb) -> cb.and(
                     cb.equal(root.get("company"), company),

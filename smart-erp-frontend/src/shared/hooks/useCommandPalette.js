@@ -3,19 +3,17 @@ import { inventoryService } from '@modules/inventory/inventory.service';
 
 const SEARCHABLE_ITEMS = [
   { id: 'dash', category: 'Modules', title: 'Dashboard', path: '/dashboard', subtitle: 'View stats and quick overview' },
-  { id: 'acct', category: 'Modules', title: 'Accounting', path: '/masters/ledgers', subtitle: 'Ledgers, groups and journals' },
+  { id: 'acct', category: 'Modules', title: 'Accounting', path: '/accounting/ledgers', subtitle: 'Ledgers, groups and journals' },
   { id: 'inv', category: 'Modules', title: 'Inventory', path: '/inventory/stock-items', subtitle: 'Stock balance and items' },
   { id: 'sales', category: 'Modules', title: 'Sales', path: '/sales', subtitle: 'Tax invoices and sales journals' },
   { id: 'pur', category: 'Modules', title: 'Purchase', path: '/purchase', subtitle: 'Vendor bills and vouchers' },
-  { id: 'gst', category: 'Modules', title: 'GST', path: '/gst', subtitle: 'Tax filings and GSTR logs' },
-  { id: 'bank', category: 'Modules', title: 'Banking', path: '/banking', subtitle: 'Bank book reconciliation' },
+  { id: 'reports', category: 'Modules', title: 'Reports & Statements', path: '/reports', subtitle: 'Financial reports, trial balance, GST summaries' },
   
-  { id: 'ledg_page', category: 'Pages', title: 'Ledger Masters', path: '/accounting/ledgers', subtitle: 'Create and manage ledger accounts' },
-  { id: 'group_page', category: 'Pages', title: 'Account Groups', path: '/accounting/groups', subtitle: 'Configure Tally-style account groups' },
-  { id: 'cust_page', category: 'Pages', title: 'Customers', path: '/inventory/partners', subtitle: 'Manage customer accounts' },
-  { id: 'supp_page', category: 'Pages', title: 'Suppliers', path: '/inventory/partners', subtitle: 'Manage supplier accounts' },
-  { id: 'sg_page', category: 'Pages', title: 'Stock Groups', path: '/inventory/stock-groups', subtitle: 'Configure stock classifications' },
-  { id: 'si_page', category: 'Pages', title: 'Stock Items', path: '/inventory/stock-items', subtitle: 'Configure catalog stock items' },
+  { id: 'ledg_page', category: 'Pages', title: 'Ledger Registry', path: '/accounting/ledgers', subtitle: 'Create and manage ledger accounts' },
+  { id: 'group_page', category: 'Pages', title: 'Chart of Accounts', path: '/accounting/groups', subtitle: 'Configure account classifications and hierarchy' },
+  { id: 'cust_page', category: 'Pages', title: 'Business Partners', path: '/inventory/partners', subtitle: 'Manage customers and suppliers registry' },
+  { id: 'sg_page', category: 'Pages', title: 'Stock Classifications', path: '/inventory/stock-groups', subtitle: 'Configure stock groups hierarchy' },
+  { id: 'si_page', category: 'Pages', title: 'Stock Catalog', path: '/inventory/stock-items', subtitle: 'Configure stock items' },
   
   { id: 'act_ledger', category: 'Actions', title: 'Create Ledger', path: '/accounting/ledgers/create', subtitle: 'Quick add accounting ledger' },
   { id: 'act_invoice', category: 'Actions', title: 'Create Sales Invoice', path: '/sales', subtitle: 'Billing voucher creation' },

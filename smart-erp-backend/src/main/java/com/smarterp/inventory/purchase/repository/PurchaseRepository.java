@@ -21,4 +21,10 @@ public interface PurchaseRepository extends JpaRepository<Purchase, UUID>, JpaSp
 
     @Query("SELECT MAX(p.purchaseNumber) FROM Purchase p WHERE p.company = :company AND p.purchaseNumber LIKE :prefix")
     String findMaxPurchaseNumberByCompanyAndPrefix(@Param("company") Company company, @Param("prefix") String prefix);
+
+    @Query("SELECT COALESCE(SUM(p.grandTotal), 0) FROM Purchase p WHERE p.company = :company")
+    java.math.BigDecimal sumGrandTotalByCompany(@Param("company") Company company);
+
+    @Query("SELECT COALESCE(SUM(p.grandTotal), 0) FROM Purchase p WHERE p.company = :company AND p.purchaseDate = :date")
+    java.math.BigDecimal sumGrandTotalByCompanyAndDate(@Param("company") Company company, @Param("date") java.time.LocalDate date);
 }

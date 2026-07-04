@@ -13,6 +13,7 @@ import { getAdministrationRoutes } from '@modules/administration';
 import { getAccountingRoutes } from '@modules/accounting';
 import { getInventoryRoutes } from '@modules/inventory';
 
+const SettingsView = React.lazy(() => import('@shared/components/SettingsView'));
 const NotFoundView = React.lazy(() => import('@shared/components/NotFoundView'));
 
 const Loading = () => (
@@ -65,7 +66,7 @@ export default function App() {
           {getAccountingRoutes()}
 
           {getInventoryRoutes()}
-          <Route path="settings" element={<div className="p-6 font-bold text-left">Personal Settings (Coming Soon)</div>} />
+          <Route path="settings" element={<SettingsView />} />
         </Route>
 
         {/* Administration console layout routes */}
