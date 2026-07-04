@@ -153,6 +153,14 @@ public class StockItem extends BaseEntity {
     private String status = "ACTIVE"; // ACTIVE, INACTIVE, BLOCKED
 
     @Builder.Default
+    private String productType = "PHYSICAL";
+
+    @Builder.Default
+    private Boolean trackInventory = true;
+
+    private String binLocation;
+
+    @Builder.Default
     private Boolean isBatchManaged = false;
 
     @Builder.Default

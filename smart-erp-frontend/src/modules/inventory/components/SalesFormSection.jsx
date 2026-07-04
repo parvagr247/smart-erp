@@ -1,5 +1,6 @@
 import React from 'react';
 import { Plus, Trash2 } from 'lucide-react';
+import StockItemSelector from './StockItemSelector';
 
 export default function SalesFormSection({
   mode,
@@ -92,11 +93,21 @@ export default function SalesFormSection({
             <tbody className="divide-y divide-[var(--border-light)]">
               {lines.map((line, idx) => (
                 <tr key={idx}>
-                  <td className="p-2">
-                    <select value={line.stockItemId} onChange={e => updateLine(idx, 'stockItemId', e.target.value)} className="w-full bg-[var(--bg-input)] border border-[var(--border-light)] rounded p-2 text-sm text-[var(--text-primary)] focus:outline-none">
-                      <option value="">-- Select Item --</option>
-                      {items.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
-                    </select>
+                  <td className="p-2 w-[320px]">
+                    <StockItemSelector 
+                      value={line.stockItemId} 
+                      items={items}
+                      onChange={item => {
+                        const gstRate = item.taxCategory ? item.taxCategory.gstRate : 0;
+                        const sellingPrice = item.priceLists?.find(p => p.priceType === 'RETAIL')?.price 
+                          || (item.openingValue && item.openingQuantity ? parseFloat((item.openingValue / item.openingQuantity).toFixed(2)) : 0);
+                        updateLine(idx, {
+                          stockItemId: item.id,
+                          taxPercentage: gstRate,
+                          rate: sellingPrice
+                        });
+                      }} 
+                    />
                   </td>
                   <td className="p-2 w-24">
                     <input type="number" min="1" value={line.quantity} onChange={e => updateLine(idx, 'quantity', e.target.value)} className="w-full bg-[var(--bg-input)] border border-[var(--border-light)] rounded p-2 text-sm text-[var(--text-primary)] text-right focus:outline-none" />

@@ -12,11 +12,11 @@ export default function ItemDetailsView() {
   const { navigate, item, loading, error, handleDelete } = useItemDetailsViewData();
 
   if (loading) return <div className="p-6 text-center text-slate-400">Loading stock item profile...</div>;
-  if (error || !item) return <ItemDetailsError error={error} onBack={() => navigate('/inventory/items')} />;
+  if (error || !item) return <ItemDetailsError error={error} onBack={() => navigate('/inventory/stock-items')} />;
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6 text-left">
-      <ItemDetailsHeader item={item} onEdit={() => navigate(`/inventory/items/${item.id}/edit`)} onDelete={handleDelete} />
+      <ItemDetailsHeader item={item} onEdit={() => navigate(`/inventory/stock-items/edit/${item.id}`)} onDelete={handleDelete} />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <ItemSpecifications item={item} />

@@ -35,7 +35,7 @@ export function useEditItemViewData() {
       setError('');
       const res = await inventoryService.updateItem(id, data);
       if (res.success) {
-        navigate('/inventory/items');
+        navigate('/inventory/stock-items');
       } else {
         setError(res.message || "Failed to save edits.");
       }

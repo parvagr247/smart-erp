@@ -92,6 +92,10 @@ export default function usePurchaseForm({ initialData, onSave, companyState, dis
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasChanges, disabled]);
 
+  const [hasDraftAvailable, setHasDraftAvailable] = useState(
+    !initialData && !!localStorage.getItem('smarterp_purchase_draft')
+  );
+
   const restoreDraft = () => {
     const raw = localStorage.getItem('smarterp_purchase_draft');
     if (raw) {
@@ -109,16 +113,16 @@ export default function usePurchaseForm({ initialData, onSave, companyState, dis
         setLines(draft.lines);
         setHasChanges(true);
         localStorage.removeItem('smarterp_purchase_draft');
+        setHasDraftAvailable(false);
       } catch (err) {
         console.error('Failed to restore draft', err);
       }
     }
   };
 
-  const hasDraftAvailable = !initialData && !!localStorage.getItem('smarterp_purchase_draft');
-
   const discardDraft = () => {
     localStorage.removeItem('smarterp_purchase_draft');
+    setHasDraftAvailable(false);
   };
 
   const submitForm = (status) => {

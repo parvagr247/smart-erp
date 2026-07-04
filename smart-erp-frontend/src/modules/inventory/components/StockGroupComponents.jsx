@@ -51,10 +51,20 @@ export function StockGroupList({ groups, onDelete }) {
     const output = [];
     const traverse = (node, depth = 0) => {
       output.push(
-        <tr key={node.id} className="border-b border-slate-50 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/30">
+        <tr 
+          key={node.id} 
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Delete') {
+              onDelete(node.id);
+              e.preventDefault();
+            }
+          }}
+          className="border-b border-slate-50 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/30 focus:bg-indigo-500/10 focus:outline-none"
+        >
           <td className="py-3 px-4 text-slate-800 dark:text-slate-200" style={{ paddingLeft: `${depth * 20 + 16}px` }}><span className="text-slate-400 mr-2">└─</span><span className="font-medium">{node.name}</span></td>
           <td className="py-3 px-4 text-slate-500 text-xs">{node.description || '-'}</td>
-          <td className="py-3 px-4 text-right"><button onClick={() => onDelete(node.id)} className="text-xs text-rose-600 hover:text-rose-700 font-semibold cursor-pointer">Delete</button></td>
+          <td className="py-3 px-4 text-right"><button onClick={() => onDelete(node.id)} className="text-xs text-rose-600 hover:text-rose-700 font-semibold cursor-pointer" tabIndex={-1}>Delete</button></td>
         </tr>
       );
       node.children.forEach(c => traverse(c, depth + 1));

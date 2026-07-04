@@ -5,16 +5,16 @@ import App from './App.jsx'
 import { ActiveCompanyProvider } from '@shared/context/ActiveCompanyContext'
 import { AuthProvider } from '@shared/context/AuthContext'
 import { BrowserRouter } from 'react-router-dom'
-import { KeyboardProvider } from '@shared/keyboard/KeyboardProvider'
+import { InteractionProvider } from '@shared/interaction/InteractionProvider'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
       <ActiveCompanyProvider>
         <BrowserRouter>
-          <KeyboardProvider>
+          <InteractionProvider>
             <App />
-          </KeyboardProvider>
+          </InteractionProvider>
         </BrowserRouter>
       </ActiveCompanyProvider>
     </AuthProvider>

@@ -58,6 +58,8 @@ public class UpdateCompanyRequest {
 
     private String currency;
     private String logo;
+    
+    private Boolean keyboardOnlyMode;
 
     @NotNull(message = "Version is required for concurrency control")
     private Long version;
@@ -77,5 +79,8 @@ public class UpdateCompanyRequest {
         company.setEmail(this.email);
         company.setCurrency(this.currency);
         company.setLogo(this.logo);
+        if (this.keyboardOnlyMode != null) {
+            company.setKeyboardOnlyMode(this.keyboardOnlyMode);
+        }
     }
 }

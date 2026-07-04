@@ -28,12 +28,52 @@ export default function AccountGroupNode({
   const count = (ledgerCounts && ledgerCounts[node.id]) || 0;
   const colorClass = NATURE_COLORS[node.nature] || NATURE_COLORS.ASSET;
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'ArrowRight') {
+      if (!isExpanded && (children.length > 0 || ledgers.length > 0)) {
+        setExpanded(node.id);
+        e.preventDefault();
+      }
+    } else if (e.key === 'ArrowLeft') {
+      if (isExpanded) {
+        setExpanded(node.id);
+        e.preventDefault();
+      }
+    } else if (e.key === 'ArrowDown') {
+      const allNodes = Array.from(document.querySelectorAll('[tabindex="0"].group\\/row'));
+      const currentIndex = allNodes.indexOf(e.currentTarget);
+      if (currentIndex > -1 && currentIndex < allNodes.length - 1) {
+        allNodes[currentIndex + 1].focus();
+        e.preventDefault();
+      }
+    } else if (e.key === 'ArrowUp') {
+      const allNodes = Array.from(document.querySelectorAll('[tabindex="0"].group\\/row'));
+      const currentIndex = allNodes.indexOf(e.currentTarget);
+      if (currentIndex > 0) {
+        allNodes[currentIndex - 1].focus();
+        e.preventDefault();
+      }
+    } else if (e.key === 'Enter') {
+      onEdit(node);
+      e.preventDefault();
+    } else if (e.key === 'Delete') {
+      if (!node.isSystemGenerated) {
+        onDelete(node.id);
+        e.preventDefault();
+      }
+    }
+  };
+
   return (
     <div className="pl-4 border-l border-dashed border-slate-300 dark:border-slate-700 ml-3 text-left">
-      <div className="flex items-center justify-between py-2 hover:bg-[var(--bg-input)]/70 rounded-lg px-3 transition-colors group/row">
+      <div 
+        tabIndex={0} 
+        onKeyDown={handleKeyDown}
+        className="flex items-center justify-between py-2 hover:bg-[var(--bg-input)]/70 rounded-lg px-3 transition-colors group/row focus:bg-[var(--bg-hover)] focus:ring-1 focus:ring-[var(--primary)] focus:outline-none"
+      >
         <div className="flex items-center gap-2.5 text-sm text-[var(--text-primary)]">
           {(children.length > 0 || ledgers.length > 0) ? (
-            <button onClick={() => setExpanded(node.id)} className="text-[var(--text-muted)] cursor-pointer focus:outline-none hover:text-[var(--text-primary)]">
+            <button onClick={() => setExpanded(node.id)} className="text-[var(--text-muted)] cursor-pointer focus:outline-none hover:text-[var(--text-primary)]" tabIndex={-1}>
               {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
             </button>
           ) : (

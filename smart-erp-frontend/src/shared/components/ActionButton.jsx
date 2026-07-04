@@ -1,13 +1,13 @@
 import React from 'react';
 import { Button } from '@shared/components/ui/button';
 import { useActionButtonData } from './services/ActionButtonService';
-import { useKeyboard } from '@shared/keyboard/KeyboardContext';
+import { useInteraction } from '@shared/interaction/InteractionContext';
 import './styles/ActionButton.css';
 
 export default function ActionButton(props) {
   const { label, onClick, icon, disabled = false, className = '', type = 'button', shortcut } = props;
   const { btnClass, innerVariant } = useActionButtonData(props);
-  const { settings } = useKeyboard();
+  const { settings } = useInteraction();
 
   return (
     <Button

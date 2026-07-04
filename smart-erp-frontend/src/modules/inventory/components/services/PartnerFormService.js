@@ -2,10 +2,13 @@ import { useState, useEffect } from 'react';
 import { inventoryService } from '../../inventory.service';
 
 export function usePartnerForm(partnerId, onSaveSuccess) {
+  const queryParams = new URLSearchParams(window.location.search);
+  const initialType = queryParams.get('type') || 'CUSTOMER';
+
   const [formData, setFormData] = useState({
     code: '',
     name: '',
-    type: 'CUSTOMER',
+    type: initialType === 'SUPPLIER' || initialType === 'BOTH' ? initialType : 'CUSTOMER',
     gstNumber: '',
     pan: '',
     email: '',

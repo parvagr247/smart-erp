@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@shared/components/ui/card';
+import { focusRegistry } from '@shared/interaction/FocusRegistry';
 import './styles/SectionCard.css';
 
 export default function SectionCard({ title, description, children, className = '' }) {

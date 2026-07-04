@@ -3,7 +3,7 @@ import { useRegisterViewData } from './services/RegisterViewService';
 import { Button } from '@shared/components/ui/button';
 import { Input } from '@shared/components/ui/input';
 import { Label } from '@shared/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@shared/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@shared/components/ui/card';
 import './styles/RegisterView.css';
 
 export default function RegisterView({ onRegisterSuccess, onLoginClick }) {
@@ -41,11 +41,14 @@ export default function RegisterView({ onRegisterSuccess, onLoginClick }) {
               <option value="INVENTORY_MANAGER">Inventory Manager</option>
             </select>
           </div>
+          <div className="pt-2">
+            <Button type="submit" disabled={loading} className="w-full bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] cursor-pointer py-2 rounded-lg">{loading ? 'Creating account...' : 'Register'}</Button>
+          </div>
+          <div className="auth-toggle pt-2 text-center text-xs">
+            Already have an account?{' '}
+            <span onClick={onLoginClick} className="text-[var(--primary)] hover:underline font-semibold cursor-pointer">Login here</span>
+          </div>
         </CardContent>
-        <CardFooter className="auth-footer">
-          <Button type="submit" disabled={loading}>{loading ? 'Creating account...' : 'Register'}</Button>
-          <div className="auth-toggle">Already have an account? <span onClick={onLoginClick}>Login here</span></div>
-        </CardFooter>
       </form>
     </Card>
   );

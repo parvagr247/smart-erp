@@ -15,7 +15,8 @@ export default function PartnerDashboardView() {
   return (
     <PageContainer>
       <PageHeader title="Business Partners Dashboard" description="Unified management ledger hub for Customers, Suppliers, and Creditors">
-        <ActionButton label="Register Partner" icon={<UserPlus size={14} />} onClick={() => navigate('/inventory/partners/create')} />
+        <ActionButton label="Register Customer" variant="secondary" icon={<UserPlus size={14} />} onClick={() => navigate('/inventory/partners/create?type=CUSTOMER')} />
+        <ActionButton label="Register Supplier" icon={<UserPlus size={14} />} onClick={() => navigate('/inventory/partners/create?type=SUPPLIER')} />
       </PageHeader>
       {loading ? <div className="text-center py-8 text-sm text-[var(--text-muted)] animate-pulse">Loading dashboard KPIs...</div> :
         <>

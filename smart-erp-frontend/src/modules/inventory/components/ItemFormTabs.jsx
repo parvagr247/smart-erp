@@ -3,9 +3,9 @@ import './styles/ItemFormTabs.css';
 
 export default function ItemFormTabs({ activeTab, setActiveTab }) {
   const tabs = [
-    { key: 'general', label: 'General Information' },
-    { key: 'stock', label: 'Inventory Rules' },
-    { key: 'pricing', label: 'Pricing & Taxes' }
+    { key: 'basic', label: 'Basic Details' },
+    { key: 'pricing', label: 'Pricing & GST' },
+    { key: 'inventory', label: 'Inventory' }
   ];
 
   return (

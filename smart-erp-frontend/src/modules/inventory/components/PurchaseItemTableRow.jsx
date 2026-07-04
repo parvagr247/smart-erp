@@ -1,28 +1,20 @@
 import React from 'react';
 import WarehouseSelector from './WarehouseSelector';
+import StockItemSelector from './StockItemSelector';
 import './styles/PurchaseItemTableRow.css';
 
-export default function PurchaseItemTableRow({ idx, row, disabled, searchQuery, setSearchQuery, handleSearchCatalog, setOpenDropdown, openDropdown, loadingRow, stockCatalog, handleSelectItem, handleRowChange, isIntraState, removeRow, items }) {
+export default function PurchaseItemTableRow({ idx, row, disabled, stockCatalog = [], handleSelectItem, handleRowChange, isIntraState, removeRow, items }) {
   return (
     <tr className="text-sm">
-      <td className="py-2 px-1 relative text-left">
+      <td className="py-2 px-1 relative text-left w-[320px]">
         {disabled ? <div className="font-medium text-[var(--text-primary)]">{row.stockItemName || 'N/A'}</div> :
-          <div>
-            <input type="text" placeholder="Select item..." value={searchQuery[idx] !== undefined ? searchQuery[idx] : row.stockItemName} onChange={(e) => { setSearchQuery(prev => ({ ...prev, [idx]: e.target.value })); handleSearchCatalog(idx, e.target.value); }} onFocus={() => setOpenDropdown(idx)} className="w-full px-2 py-1 bg-[var(--bg-body)] border border-[var(--border-color)] rounded-md text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--color-primary)]" />
-            {openDropdown === idx && (
-              <div className="absolute z-50 w-[300px] mt-1 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-md shadow-lg max-h-60 overflow-y-auto">
-                {loadingRow[idx] && <div className="p-2 text-xs text-[var(--text-muted)] text-center">Loading...</div>}
-                {!loadingRow[idx] && stockCatalog.map((item) => (
-                  <button key={item.id} type="button" onClick={() => handleSelectItem(idx, item)} className="w-full text-left px-3 py-2 hover:bg-[var(--bg-body)] text-xs text-[var(--text-primary)] border-b border-[var(--border-color)] last:border-b-0 cursor-pointer">
-                    <div className="font-semibold">{item.name}</div>
-                    <div className="text-[10px] text-[var(--text-muted)] flex justify-between mt-0.5"><span>SKU: {item.sku}</span><span>In Stock: {item.currentQuantity || 0}</span></div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <StockItemSelector 
+            value={row.stockItemId} 
+            items={stockCatalog}
+            onChange={(item) => handleSelectItem(idx, item)} 
+          />
         }
-        {row.sku && <div className="text-[10px] text-[var(--text-muted)] mt-0.5">SKU: {row.sku}</div>}
+        {row.sku && !disabled && <div className="text-[10px] text-[var(--text-muted)] mt-0.5">SKU: {row.sku}</div>}
       </td>
       <td className="py-2 px-1"><input type="number" min="1" value={row.quantity || ''} onChange={(e) => handleRowChange(idx, 'quantity', e.target.value)} disabled={disabled} className="w-full px-2 py-1 bg-[var(--bg-body)] border border-[var(--border-color)] rounded-md text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--color-primary)] disabled:opacity-75" /></td>
       <td className="py-2 px-1"><input type="number" min="0.01" step="0.01" value={row.rate || ''} onChange={(e) => handleRowChange(idx, 'rate', e.target.value)} disabled={disabled} className="w-full px-2 py-1 bg-[var(--bg-body)] border border-[var(--border-color)] rounded-md text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--color-primary)] disabled:opacity-75" /></td>

@@ -3,7 +3,8 @@ import { inventoryService } from '../../inventory.service';
 
 export function useItemFormViewData(props) {
   const { initialData, onSubmit, onCancel, loading } = props;
-  const [activeTab, setActiveTab] = useState('general');
+  const [activeTab, setActiveTab] = useState('basic');
+  const [validationError, setValidationError] = useState('');
 
   // Input states
   const [code, setCode] = useState(initialData?.code || '');
@@ -23,20 +24,30 @@ export function useItemFormViewData(props) {
   const [taxCategoryId, setTaxCategoryId] = useState(initialData?.taxCategoryId || '');
   const [hsnId, setHsnId] = useState(initialData?.hsnId || '');
 
+  // Business simplified inventory rules
+  const [productType, setProductType] = useState(initialData?.productType || 'PHYSICAL');
+  const [trackInventory, setTrackInventory] = useState(initialData?.trackInventory !== false);
   const [openingQuantity, setOpeningQuantity] = useState(initialData?.openingQuantity || 0);
-  const [openingValue, setOpeningValue] = useState(initialData?.openingValue || 0);
-  const [minimumStock, setMinimumStock] = useState(initialData?.minimumStock || 0);
-  const [maximumStock, setMaximumStock] = useState(initialData?.maximumStock || 0);
   const [reorderLevel, setReorderLevel] = useState(initialData?.reorderLevel || 0);
   const [reorderQuantity, setReorderQuantity] = useState(initialData?.reorderQuantity || 0);
 
+  // Advanced inventory settings
+  const [minimumStock, setMinimumStock] = useState(initialData?.minimumStock || 0);
+  const [maximumStock, setMaximumStock] = useState(initialData?.maximumStock || 0);
   const [weight, setWeight] = useState(initialData?.weight || 0);
+  const [binLocation, setBinLocation] = useState(initialData?.binLocation || '');
+  
   const [dimensions, setDimensions] = useState(initialData?.dimensions || '');
   const [notes, setNotes] = useState(initialData?.notes || '');
   const [status, setStatus] = useState(initialData?.status || 'ACTIVE');
 
-  // Price List States
-  const [priceLists, setPriceLists] = useState(initialData?.priceLists || []);
+  // Unified direct price fields
+  const [purchasePrice, setPurchasePrice] = useState(() => {
+    return initialData?.priceLists?.find(p => p.priceType === 'PURCHASE')?.price || 0;
+  });
+  const [sellingPrice, setSellingPrice] = useState(() => {
+    return initialData?.priceLists?.find(p => p.priceType === 'RETAIL')?.price || 0;
+  });
 
   // Lookups data
   const [brands, setBrands] = useState([]);
@@ -86,20 +97,6 @@ export function useItemFormViewData(props) {
     fetchLookups();
   }, []);
 
-  const handleAddPrice = () => {
-    setPriceLists([...priceLists, { name: 'Retail Price', priceType: 'RETAIL', price: 0 }]);
-  };
-
-  const handlePriceChange = (index, field, val) => {
-    const updated = [...priceLists];
-    updated[index][field] = val;
-    setPriceLists(updated);
-  };
-
-  const handleRemovePrice = (index) => {
-    setPriceLists(priceLists.filter((_, i) => i !== index));
-  };
-
   const handleCategoryToggle = (id) => {
     if (categoryIds.includes(id)) {
       setCategoryIds(categoryIds.filter(cid => cid !== id));
@@ -110,6 +107,40 @@ export function useItemFormViewData(props) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setValidationError('');
+
+    // Validations
+    const qty = parseFloat(openingQuantity) || 0;
+    const reorder = parseFloat(reorderLevel) || 0;
+    const preferredQty = parseFloat(reorderQuantity) || 0;
+    const minQty = parseFloat(minimumStock) || 0;
+    const maxQty = parseFloat(maximumStock) || 0;
+    const buyPrice = parseFloat(purchasePrice) || 0;
+    const sellPrice = parseFloat(sellingPrice) || 0;
+
+    if (qty < 0) {
+      setValidationError("Opening Stock cannot be negative.");
+      return;
+    }
+    if (reorder < 0) {
+      setValidationError("Reorder Level cannot be negative.");
+      return;
+    }
+    if (preferredQty < 0) {
+      setValidationError("Preferred Reorder Quantity cannot be negative.");
+      return;
+    }
+    if (buyPrice < 0 || sellPrice < 0) {
+      setValidationError("Prices cannot be negative.");
+      return;
+    }
+    if (maxQty > 0 && maxQty < reorder) {
+      setValidationError("Maximum Stock Limit cannot be smaller than Reorder Level.");
+      return;
+    }
+
+    const calculatedOpeningValue = qty * buyPrice;
+
     onSubmit({
       code,
       name,
@@ -126,17 +157,26 @@ export function useItemFormViewData(props) {
       warehouseId: warehouseId || null,
       taxCategoryId: taxCategoryId || null,
       hsnId: hsnId || null,
-      openingQuantity: parseFloat(openingQuantity),
-      openingValue: parseFloat(openingValue),
-      minimumStock: parseFloat(minimumStock),
-      maximumStock: parseFloat(maximumStock),
-      reorderLevel: parseFloat(reorderLevel),
-      reorderQuantity: parseFloat(reorderQuantity),
-      weight: parseFloat(weight),
+      
+      productType,
+      trackInventory,
+      openingQuantity: productType === 'SERVICE' || !trackInventory ? 0 : qty,
+      openingValue: productType === 'SERVICE' || !trackInventory ? 0 : calculatedOpeningValue,
+      reorderLevel: productType === 'SERVICE' || !trackInventory ? 0 : reorder,
+      reorderQuantity: productType === 'SERVICE' || !trackInventory ? 0 : preferredQty,
+      
+      minimumStock: productType === 'SERVICE' || !trackInventory ? 0 : minQty,
+      maximumStock: productType === 'SERVICE' || !trackInventory ? 0 : maxQty,
+      weight: productType === 'SERVICE' ? 0 : parseFloat(weight) || 0,
+      binLocation: productType === 'SERVICE' || !trackInventory ? '' : binLocation,
+      
       dimensions,
       notes,
       status,
-      priceLists
+      priceLists: [
+        { name: 'Purchase Price', priceType: 'PURCHASE', price: buyPrice },
+        { name: 'Retail Price', priceType: 'RETAIL', price: sellPrice }
+      ]
     });
   };
 
@@ -157,14 +197,15 @@ export function useItemFormViewData(props) {
       warehouseId !== (initialData?.warehouseId || '') ||
       taxCategoryId !== (initialData?.taxCategoryId || '') ||
       hsnId !== (initialData?.hsnId || '') ||
+      productType !== (initialData?.productType || 'PHYSICAL') ||
+      trackInventory !== (initialData?.trackInventory !== false) ||
       parseFloat(openingQuantity) !== parseFloat(initialData?.openingQuantity || 0) ||
-      parseFloat(openingValue) !== parseFloat(initialData?.openingValue || 0) ||
-      parseFloat(minimumStock) !== parseFloat(initialData?.minimumStock || 0) ||
-      parseFloat(maximumStock) !== parseFloat(initialData?.maximumStock || 0) ||
       parseFloat(reorderLevel) !== parseFloat(initialData?.reorderLevel || 0) ||
       parseFloat(reorderQuantity) !== parseFloat(initialData?.reorderQuantity || 0) ||
+      parseFloat(minimumStock) !== parseFloat(initialData?.minimumStock || 0) ||
+      parseFloat(maximumStock) !== parseFloat(initialData?.maximumStock || 0) ||
       parseFloat(weight) !== parseFloat(initialData?.weight || 0) ||
-      dimensions !== (initialData?.dimensions || '') ||
+      binLocation !== (initialData?.binLocation || '') ||
       notes !== (initialData?.notes || '') ||
       status !== (initialData?.status || 'ACTIVE');
 
@@ -174,13 +215,13 @@ export function useItemFormViewData(props) {
   }, [
     code, name, alias, sku, barcode, description, brandId, manufacturerId, 
     stockGroupId, primaryUnitId, secondaryUnitId, warehouseId, taxCategoryId, 
-    hsnId, openingQuantity, openingValue, minimumStock, maximumStock, 
-    reorderLevel, reorderQuantity, weight, dimensions, notes, status, initialData
+    hsnId, productType, trackInventory, openingQuantity, reorderLevel, 
+    reorderQuantity, minimumStock, maximumStock, weight, binLocation, notes, status, initialData
   ]);
 
   const handleCancel = () => {
     if (isDirty) {
-      if (!confirm("You have unsaved changes. Are you sure you want to discard them?")) {
+      if (!confirm("You have unsaved changes. Discard?")) {
         return;
       }
     }
@@ -193,58 +234,43 @@ export function useItemFormViewData(props) {
     handleSubmit,
     onCancel: handleCancel,
     loading,
-    code,
-    setCode,
-    name,
-    setName,
-    alias,
-    setAlias,
-    sku,
-    setSku,
-    barcode,
-    setBarcode,
-    description,
-    setDescription,
-    brandId,
-    setBrandId,
-    manufacturerId,
-    setManufacturerId,
-    stockGroupId,
-    setStockGroupId,
-    categoryIds,
-    setCategoryIds,
-    primaryUnitId,
-    setPrimaryUnitId,
-    secondaryUnitId,
-    setSecondaryUnitId,
-    warehouseId,
-    setWarehouseId,
-    taxCategoryId,
-    setTaxCategoryId,
-    hsnId,
-    setHsnId,
-    openingQuantity,
-    setOpeningQuantity,
-    openingValue,
-    setOpeningValue,
-    minimumStock,
-    setMinimumStock,
-    maximumStock,
-    setMaximumStock,
-    reorderLevel,
-    setReorderLevel,
-    reorderQuantity,
-    setReorderQuantity,
-    weight,
-    setWeight,
-    dimensions,
-    setDimensions,
-    notes,
-    setNotes,
-    status,
-    setStatus,
-    priceLists,
-    setPriceLists,
+    validationError,
+    setValidationError,
+    
+    code, setCode,
+    name, setName,
+    alias, setAlias,
+    sku, setSku,
+    barcode, setBarcode,
+    description, setDescription,
+    brandId, setBrandId,
+    manufacturerId, setManufacturerId,
+    stockGroupId, setStockGroupId,
+    categoryIds, setCategoryIds,
+    primaryUnitId, setPrimaryUnitId,
+    secondaryUnitId, setSecondaryUnitId,
+    warehouseId, setWarehouseId,
+    taxCategoryId, setTaxCategoryId,
+    hsnId, setHsnId,
+
+    productType, setProductType,
+    trackInventory, setTrackInventory,
+    openingQuantity, setOpeningQuantity,
+    reorderLevel, setReorderLevel,
+    reorderQuantity, setReorderQuantity,
+
+    minimumStock, setMinimumStock,
+    maximumStock, setMaximumStock,
+    weight, setWeight,
+    binLocation, setBinLocation,
+
+    dimensions, setDimensions,
+    notes, setNotes,
+    status, setStatus,
+    
+    purchasePrice, setPurchasePrice,
+    sellingPrice, setSellingPrice,
+
     brands,
     manufacturers,
     groups,
@@ -253,10 +279,6 @@ export function useItemFormViewData(props) {
     warehouses,
     taxes,
     hsns,
-    handleAddPrice,
-    handlePriceChange,
-    handleRemovePrice,
     handleCategoryToggle
   };
 }
-

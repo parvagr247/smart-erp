@@ -75,7 +75,6 @@ export default function Sidebar({ collapsed, onToggle, openSubmenus, onToggleSub
           {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
       </div>
-
       <nav className="sidebar-menu-list">
         {menuItems.map((item) => {
           if (item.children) {
@@ -84,7 +83,9 @@ export default function Sidebar({ collapsed, onToggle, openSubmenus, onToggleSub
               <div key={item.id} className="space-y-1">
                 <div
                   onClick={() => !collapsed && onToggleSubmenu(item.id)}
-                  className="sidebar-link justify-between"
+                  role="button"
+                  tabIndex={0}
+                  className="sidebar-link justify-between focus:bg-[var(--bg-hover)] focus:outline-none"
                   title={item.title}
                 >
                   <div className="flex items-center gap-3">

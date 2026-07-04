@@ -33,7 +33,7 @@ export function useItemDetailsViewData() {
     try {
       const res = await inventoryService.deleteItem(id);
       if (res.success) {
-        navigate('/inventory/items');
+        navigate('/inventory/stock-items');
       }
     } catch (e) {
       console.error(e);

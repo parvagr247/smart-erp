@@ -20,7 +20,7 @@ export default function PurchaseDetailsView() {
     return (
       <PageContainer>
         <div className="bg-red-100 border border-red-200 text-red-800 text-sm p-4 rounded-lg text-left"><span className="font-semibold">Error:</span> {details.error}</div>
-        <ActionButton label="Back to List" onClick={() => navigate('/inventory/purchases')} className="mt-4" />
+        <ActionButton label="Back to List" onClick={() => navigate('/purchase/list')} className="mt-4" />
       </PageContainer>
     );
   }
@@ -29,7 +29,7 @@ export default function PurchaseDetailsView() {
     <PageContainer>
       <PurchaseDetailsHeader id={id} purchase={details.purchase} details={details} navigate={navigate} />
       {details.error && <div className="bg-red-100 border border-red-200 text-red-800 text-sm p-4 rounded-lg mb-4 text-left"><span className="font-semibold">Error:</span> {details.error}</div>}
-      <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg p-6 shadow-sm text-left max-w-4xl mx-auto print:border-none print:shadow-none">
+      <div className="print-invoice-card bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg p-6 shadow-sm text-left max-w-4xl mx-auto print:border-none print:shadow-none">
         <PurchaseDetailsInvoiceHeader activeCompany={activeCompany} purchase={details.purchase} />
         <PurchaseDetailsAddresses purchase={details.purchase} />
         <PurchaseDetailsLineItems purchase={details.purchase} isIntraState={isIntraState()} />

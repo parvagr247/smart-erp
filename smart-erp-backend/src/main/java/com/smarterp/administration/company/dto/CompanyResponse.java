@@ -28,6 +28,7 @@ public class CompanyResponse {
     private String currency;
     private String logo;
     private Boolean isActive;
+    private Boolean keyboardOnlyMode;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long version;
@@ -50,6 +51,7 @@ public class CompanyResponse {
                 .currency(company.getCurrency())
                 .logo(company.getLogo())
                 .isActive(company.getIsActive())
+                .keyboardOnlyMode(company.getKeyboardOnlyMode())
                 .createdAt(company.getCreatedAt())
                 .updatedAt(company.getUpdatedAt())
                 .version(company.getVersion())

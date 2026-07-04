@@ -65,6 +65,8 @@ export default function ShortcutsPanel({ navigate }) {
         {portals.map((p, idx) => (
           <div 
             key={idx} 
+            tabIndex={0}
+            role="button"
             className="p-5 border border-[var(--border-light)] rounded bg-[var(--bg-surface)] hover:border-[var(--primary)] hover:shadow-sm transition-all duration-200 cursor-pointer flex flex-col justify-between"
             onClick={() => navigate(p.path)}
           >

@@ -57,6 +57,9 @@ public class CreateCompanyRequest {
 
     private String currency;
     private String logo;
+    
+    @Builder.Default
+    private Boolean keyboardOnlyMode = false;
 
     public com.smarterp.administration.company.entity.Company toEntity(com.smarterp.auth.entity.User owner) {
         return com.smarterp.administration.company.entity.Company.builder()
@@ -73,6 +76,7 @@ public class CreateCompanyRequest {
                 .email(this.email)
                 .currency(this.currency)
                 .logo(this.logo)
+                .keyboardOnlyMode(this.keyboardOnlyMode != null ? this.keyboardOnlyMode : false)
                 .owner(owner)
                 .build();
     }

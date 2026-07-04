@@ -62,6 +62,9 @@ public class StockItemResponse {
     private String image;
     private String notes;
     private String status;
+    private String productType;
+    private Boolean trackInventory;
+    private String binLocation;
     
     private Boolean isBatchManaged;
     private Boolean isSerialNumberManaged;
@@ -127,6 +130,9 @@ public class StockItemResponse {
                 .image(item.getImage())
                 .notes(item.getNotes())
                 .status(item.getStatus())
+                .productType(item.getProductType())
+                .trackInventory(item.getTrackInventory())
+                .binLocation(item.getBinLocation())
                 .isBatchManaged(item.getIsBatchManaged())
                 .isSerialNumberManaged(item.getIsSerialNumberManaged())
                 .hasVariants(item.getHasVariants())

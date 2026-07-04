@@ -7,7 +7,7 @@ export function usePurchaseDetailsViewData() {
   const navigate = useNavigate();
   const { activeCompany } = useActiveCompany();
 
-  const details = usePurchaseDetails(id, () => navigate('/inventory/purchases'));
+  const details = usePurchaseDetails(id, () => navigate('/purchase/list'));
 
   const isIntraState = () => {
     if (!details.purchase) return true;

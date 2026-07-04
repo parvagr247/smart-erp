@@ -81,6 +81,14 @@ public class StockItemRequest {
     private String status = "ACTIVE";
 
     @Builder.Default
+    private String productType = "PHYSICAL";
+
+    @Builder.Default
+    private Boolean trackInventory = true;
+
+    private String binLocation;
+
+    @Builder.Default
     private Boolean isBatchManaged = false;
 
     @Builder.Default
@@ -123,6 +131,9 @@ public class StockItemRequest {
                 .image(this.image)
                 .notes(this.notes)
                 .status(this.status != null ? this.status : "ACTIVE")
+                .productType(this.productType != null ? this.productType : "PHYSICAL")
+                .trackInventory(this.trackInventory != null ? this.trackInventory : true)
+                .binLocation(this.binLocation)
                 .isBatchManaged(this.isBatchManaged != null ? this.isBatchManaged : false)
                 .isSerialNumberManaged(this.isSerialNumberManaged != null ? this.isSerialNumberManaged : false)
                 .hasVariants(this.hasVariants != null ? this.hasVariants : false)
@@ -188,6 +199,9 @@ public class StockItemRequest {
         if (this.status != null) {
             item.setStatus(this.status);
         }
+        item.setProductType(this.productType != null ? this.productType : "PHYSICAL");
+        item.setTrackInventory(this.trackInventory != null ? this.trackInventory : true);
+        item.setBinLocation(this.binLocation);
         item.setIsBatchManaged(this.isBatchManaged != null ? this.isBatchManaged : false);
         item.setIsSerialNumberManaged(this.isSerialNumberManaged != null ? this.isSerialNumberManaged : false);
         item.setHasVariants(this.hasVariants != null ? this.hasVariants : false);

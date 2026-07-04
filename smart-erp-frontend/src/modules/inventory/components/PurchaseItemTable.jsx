@@ -27,7 +27,7 @@ export default function PurchaseItemTable({ items, onChange, isIntraState, isTax
         </thead>
         <tbody className="divide-y divide-[var(--border-color)]">
           {items.map((row, idx) => (
-            <PurchaseItemTableRow key={idx} idx={idx} row={row} disabled={disabled} searchQuery={searchQuery} setSearchQuery={setSearchQuery} handleSearchCatalog={handleSearchCatalog} setOpenDropdown={setOpenDropdown} openDropdown={openDropdown} loadingRow={loadingRow} stockCatalog={stockCatalog} handleSelectItem={handleSelectItem} handleRowChange={handleRowChange} isIntraState={isIntraState} removeRow={removeRow} items={items} />
+            <PurchaseItemTableRow key={idx} idx={idx} row={row} disabled={disabled} stockCatalog={stockCatalog} handleSelectItem={handleSelectItem} handleRowChange={handleRowChange} isIntraState={isIntraState} removeRow={removeRow} items={items} />
           ))}
         </tbody>
       </table>

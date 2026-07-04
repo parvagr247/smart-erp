@@ -5,7 +5,7 @@ import CommandPalette from './CommandPalette';
 import Breadcrumbs from '@shared/components/Breadcrumbs';
 import useSidebar from '@shared/hooks/useSidebar';
 import { useActiveCompany } from '@shared/context/ActiveCompanyContext';
-import { useKeyboard } from '@shared/keyboard/KeyboardContext';
+import { useInteraction } from '@shared/interaction/InteractionContext';
 import { 
   ChevronLeft, ChevronRight, LayoutDashboard, Users, 
   Key, ShieldAlert, FileText, Settings, ArrowLeft 
@@ -25,7 +25,7 @@ const ADMIN_MENU_ITEMS = [
 export default function AdminLayout() {
   const { collapsed, toggleSidebar } = useSidebar();
   const { activeCompany } = useActiveCompany();
-  const { isCommandPaletteOpen, setIsCommandPaletteOpen } = useKeyboard();
+  const { isCommandPaletteOpen, setIsCommandPaletteOpen } = useInteraction();
   const navigate = useNavigate();
 
   return (

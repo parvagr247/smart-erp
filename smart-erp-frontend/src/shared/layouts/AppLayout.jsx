@@ -6,13 +6,13 @@ import CommandPalette from './CommandPalette';
 import Breadcrumbs from '@shared/components/Breadcrumbs';
 import useSidebar from '@shared/hooks/useSidebar';
 import { useActiveCompany } from '@shared/context/ActiveCompanyContext';
-import { useKeyboard } from '@shared/keyboard/KeyboardContext';
+import { useInteraction } from '@shared/interaction/InteractionContext';
 import '@shared/styles/Layout.css';
 
 export default function AppLayout() {
   const { collapsed, toggleSidebar, openSubmenus, toggleSubmenu } = useSidebar();
   const { activeCompany } = useActiveCompany();
-  const { isCommandPaletteOpen, setIsCommandPaletteOpen } = useKeyboard();
+  const { isCommandPaletteOpen, setIsCommandPaletteOpen } = useInteraction();
   const navigate = useNavigate();
 
   return (

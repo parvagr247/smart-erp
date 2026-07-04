@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { inventoryService } from '@modules/inventory/inventory.service';
-import { useKeyboard } from '@shared/keyboard/KeyboardContext';
+import { useInteraction } from '@shared/interaction/InteractionContext';
 
 const SEARCHABLE_ITEMS = [
   { id: 'dash', category: 'Modules', title: 'Dashboard', path: '/dashboard', subtitle: 'View stats and quick overview' },
@@ -26,10 +27,11 @@ const SEARCHABLE_ITEMS = [
 ];
 
 export default function useCommandPalette(onNavigate) {
-  const { isCommandPaletteOpen: isOpen, setIsCommandPaletteOpen: setIsOpen } = useKeyboard();
+  const { isCommandPaletteOpen: isOpen, setIsCommandPaletteOpen: setIsOpen } = useInteraction();
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
   const [dynamicHits, setDynamicHits] = useState([]);
+  const navigate = useNavigate();
 
   // Debounced backend query trigger
   useEffect(() => {
@@ -63,9 +65,9 @@ export default function useCommandPalette(onNavigate) {
     const cleanQuery = query.toLowerCase();
     const staticFiltered = SEARCHABLE_ITEMS.filter(
       (item) =>
-        item.title.toLowerCase().includes(cleanQuery) ||
-        item.category.toLowerCase().includes(cleanQuery) ||
-        item.subtitle.toLowerCase().includes(cleanQuery)
+          item.title.toLowerCase().includes(cleanQuery) ||
+          item.category.toLowerCase().includes(cleanQuery) ||
+          item.subtitle.toLowerCase().includes(cleanQuery)
     );
     return [...staticFiltered, ...dynamicHits];
   }, [query, dynamicHits]);
@@ -80,6 +82,8 @@ export default function useCommandPalette(onNavigate) {
     setQuery('');
     if (onNavigate) {
       onNavigate(item.path);
+    } else {
+      navigate(item.path);
     }
   };
 

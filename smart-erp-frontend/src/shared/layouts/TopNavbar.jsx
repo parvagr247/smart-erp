@@ -4,13 +4,15 @@ import { useActiveCompany } from '@shared/context/ActiveCompanyContext';
 import { useAuth } from '@shared/context/AuthContext';
 import CompanySelector from '@modules/administration/components/CompanySelector';
 import useNotifications from '@shared/hooks/useNotifications';
-import { Search, Bell, Sun, Moon, LogOut, Settings, User as UserIcon, Building2, Calendar } from 'lucide-react';
+import { Search, Bell, Sun, Moon, LogOut, Settings, User as UserIcon, Building2, Calendar, Keyboard } from 'lucide-react';
+import { useInteraction } from '@shared/interaction/InteractionContext';
 
 export default function TopNavbar({ onSearchClick }) {
   const navigate = useNavigate();
   const { activeCompany } = useActiveCompany();
   const { user, theme, toggleTheme, handleLogout } = useAuth();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const { setIsShortcutOverlayOpen } = useInteraction();
 
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -61,6 +63,15 @@ export default function TopNavbar({ onSearchClick }) {
         <CompanySelector />
       </div>
 
+      {/* Keyboard Mode Indicator */}
+      {activeCompany?.keyboardOnlyMode && (
+        <div className="flex items-center mx-2">
+          <span className="px-2.5 py-1 bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 rounded-full text-[10px] sm:text-[11px] font-bold flex items-center gap-1.5 shadow-sm animate-pulse select-none">
+            ⌨️ Keyboard Mode Enabled
+          </span>
+        </div>
+      )}
+
       {/* Action buttons */}
       <div className="navbar-right">
         {/* Command Search bar trigger */}
@@ -70,6 +81,16 @@ export default function TopNavbar({ onSearchClick }) {
         >
           <Search size={14} />
           <span>Search... (Ctrl + K)</span>
+        </button>
+
+        {/* Keyboard shortcut help trigger */}
+        <button
+          onClick={() => setIsShortcutOverlayOpen(prev => !prev)}
+          className="w-9 h-9 border border-[var(--border-light)] rounded-lg flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--bg-input)] cursor-pointer transition-colors"
+          aria-label="Keyboard Shortcut Help"
+          title="Keyboard Shortcut Help (F1)"
+        >
+          <Keyboard size={16} />
         </button>
 
         {/* Theme mode toggler */}

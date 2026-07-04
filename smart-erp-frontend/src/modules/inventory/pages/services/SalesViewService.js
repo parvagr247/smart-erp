@@ -229,9 +229,15 @@ export function useSalesViewData() {
   };
 
   const updateLine = (index, field, val) => {
-    const updated = [...lines];
-    updated[index] = { ...updated[index], [field]: val };
-    setLines(updated);
+    setLines(prev => {
+      const updated = [...prev];
+      if (typeof field === 'object' && field !== null) {
+        updated[index] = { ...updated[index], ...field };
+      } else {
+        updated[index] = { ...updated[index], [field]: val };
+      }
+      return updated;
+    });
   };
 
   const addLine = () => {

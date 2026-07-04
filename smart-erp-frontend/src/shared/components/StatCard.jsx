@@ -1,14 +1,25 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { useStatCardData } from './services/StatCardService';
+import { focusRegistry } from '@shared/interaction/FocusRegistry';
 import './styles/StatCard.css';
 
 export default function StatCard(props) {
   const { title, value, icon, trend } = props;
   const { isPositive, trendClass } = useStatCardData(props);
+  const cardRef = useRef(null);
+
+  useEffect(() => {
+    const el = cardRef.current;
+    if (el) {
+      el.tabIndex = 0;
+      focusRegistry.register(el);
+      return () => focusRegistry.unregister(el);
+    }
+  }, []);
 
   return (
-    <div className="stat-card">
+    <div ref={cardRef} className="stat-card">
       <div className="stat-card-header">
         <span className="stat-card-title">{title}</span>
         {icon && <span className="stat-card-icon">{icon}</span>}

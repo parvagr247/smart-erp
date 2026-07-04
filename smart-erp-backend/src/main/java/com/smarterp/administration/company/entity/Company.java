@@ -56,6 +56,14 @@ public class Company extends BaseEntity {
     @Builder.Default
     private Boolean isActive = true;
 
+    @Column(name = "keyboard_only_mode")
+    @Builder.Default
+    private Boolean keyboardOnlyMode = false;
+
+    public Boolean getKeyboardOnlyMode() {
+        return keyboardOnlyMode != null ? keyboardOnlyMode : false;
+    }
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
     @com.fasterxml.jackson.annotation.JsonIgnore

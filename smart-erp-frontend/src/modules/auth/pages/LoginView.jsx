@@ -3,7 +3,7 @@ import { useLoginViewData } from './services/LoginViewService';
 import { Button } from '@shared/components/ui/button';
 import { Input } from '@shared/components/ui/input';
 import { Label } from '@shared/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@shared/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@shared/components/ui/card';
 import './styles/LoginView.css';
 
 export default function LoginView({ onLoginSuccess, onRegisterClick }) {
@@ -28,14 +28,14 @@ export default function LoginView({ onLoginSuccess, onRegisterClick }) {
             <Input id="password" type="password" placeholder="••••••••" {...passwordBind} />
             {errors?.password && <span className="text-red-500 text-xs mt-1 block text-left">{errors.password}</span>}
           </div>
-        </CardContent>
-        <CardFooter className="auth-footer">
-          <Button type="submit" disabled={loading}>{loading ? 'Logging in...' : 'Login'}</Button>
-          <div className="auth-toggle">
-            Don't have an account?{' '}
-            <span onClick={onRegisterClick}>Register here</span>
+          <div className="pt-2">
+            <Button type="submit" disabled={loading} className="w-full bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] cursor-pointer py-2 rounded-lg">{loading ? 'Logging in...' : 'Login'}</Button>
           </div>
-        </CardFooter>
+          <div className="auth-toggle pt-2 text-center text-xs">
+            Don't have an account?{' '}
+            <span onClick={onRegisterClick} className="text-[var(--primary)] hover:underline font-semibold cursor-pointer">Register here</span>
+          </div>
+        </CardContent>
       </form>
     </Card>
   );

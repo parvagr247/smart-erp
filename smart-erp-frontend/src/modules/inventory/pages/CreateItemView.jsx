@@ -18,7 +18,7 @@ export default function CreateItemView() {
         </div>
       )}
       <div className="p-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm">
-        <ItemForm onSubmit={handleSubmit} onCancel={() => navigate('/inventory/items')} loading={loading} />
+        <ItemForm onSubmit={handleSubmit} onCancel={() => navigate('/inventory/stock-items')} loading={loading} />
       </div>
     </div>
   );

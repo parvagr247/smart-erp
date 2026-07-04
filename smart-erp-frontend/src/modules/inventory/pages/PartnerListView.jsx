@@ -15,7 +15,8 @@ export default function PartnerListView() {
     <PageContainer>
       <PageHeader title="Business Partners Registry" description="Search, filter, and manage all your customer and vendor profiles">
         <ActionButton label="Partner Dashboard" variant="secondary" onClick={() => navigate('/inventory/partners')} />
-        <ActionButton label="Add Partner" onClick={() => navigate('/inventory/partners/create')} />
+        <ActionButton label="Add Customer" variant="secondary" onClick={() => navigate('/inventory/partners/create?type=CUSTOMER')} />
+        <ActionButton label="Add Supplier" onClick={() => navigate('/inventory/partners/create?type=SUPPLIER')} />
       </PageHeader>
       <SectionCard title="Ledger Index" description="Search and filter active partners list">
         <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6 text-left">

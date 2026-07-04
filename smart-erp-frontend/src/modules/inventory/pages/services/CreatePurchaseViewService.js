@@ -15,7 +15,7 @@ export function useCreatePurchaseViewData() {
     try {
       const res = await inventoryService.createPurchase(data);
       if (res.success) {
-        navigate(`/inventory/purchases/${res.data.id}`);
+        navigate(`/purchase/${res.data.id}`);
       } else {
         setError(res.message || 'Failed to create purchase.');
       }

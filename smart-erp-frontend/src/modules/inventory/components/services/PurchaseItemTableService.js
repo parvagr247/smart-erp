@@ -61,22 +61,39 @@ export function usePurchaseItemTableData(items, onChange, isTaxInclusive, disabl
   const handleSelectItem = (index, item) => {
     const updated = [...items];
     const gstRate = item.taxCategory ? item.taxCategory.gstRate : 0;
+    const rate = item.priceLists?.find(p => p.priceType === 'PURCHASE')?.price 
+      || (item.openingValue && item.openingQuantity ? parseFloat((item.openingValue / item.openingQuantity).toFixed(2)) : 0);
     
+    const qty = 1;
+    const discount = 0;
+    const rawAmount = qty * rate;
+    let taxableAmount = 0;
+    let taxAmount = 0;
+
+    if (isTaxInclusive) {
+      taxableAmount = (rawAmount - discount) / (1 + gstRate / 100);
+      taxAmount = (rawAmount - discount) - taxableAmount;
+    } else {
+      taxableAmount = rawAmount - discount;
+      taxAmount = taxableAmount * (gstRate / 100);
+    }
+
     updated[index] = {
       ...updated[index],
       stockItemId: item.id,
       stockItemName: item.name,
       sku: item.sku,
-      rate: item.openingValue && item.openingQuantity ? parseFloat((item.openingValue / item.openingQuantity).toFixed(2)) : 0,
+      rate: rate,
       taxPercentage: gstRate,
-      quantity: 1,
-      discount: 0
+      quantity: qty,
+      discount: discount,
+      taxAmount: parseFloat(taxAmount.toFixed(2)),
+      totalAmount: parseFloat((taxableAmount + taxAmount).toFixed(2))
     };
 
     setOpenDropdown(null);
     setSearchQuery(prev => ({ ...prev, [index]: '' }));
-
-    handleRowChange(index, 'quantity', 1);
+    onChange(updated);
   };
 
   const addRow = () => {

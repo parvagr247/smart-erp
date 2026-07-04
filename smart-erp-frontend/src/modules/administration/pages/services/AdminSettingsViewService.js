@@ -1,13 +1,22 @@
 import { useState, useEffect } from 'react';
-import { useKeyboard } from '@shared/keyboard/KeyboardContext';
+import { useInteraction } from '@shared/interaction/InteractionContext';
+import { useActiveCompany } from '@shared/context/ActiveCompanyContext';
+import { updateCompanyApi, fetchCompanyById } from '../../administration.service';
 
 export function useAdminSettingsViewData() {
-  const { settings, updateSettings } = useKeyboard();
+  const { settings, updateSettings } = useInteraction();
+  const { activeCompany, updateActiveCompany } = useActiveCompany();
+  
   const [localSettings, setLocalSettings] = useState(settings);
+  const [keyboardOnlyMode, setKeyboardOnlyMode] = useState(!!activeCompany?.keyboardOnlyMode);
 
   useEffect(() => {
     setLocalSettings(settings);
   }, [settings]);
+
+  useEffect(() => {
+    setKeyboardOnlyMode(!!activeCompany?.keyboardOnlyMode);
+  }, [activeCompany]);
 
   const securitySettings = [
     { label: 'Token Expiry', value: '86400 seconds (24h)' },
@@ -23,20 +32,45 @@ export function useAdminSettingsViewData() {
   ];
 
   const handleToggle = (key) => {
-    setLocalSettings(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
+    if (key === 'keyboardOnlyMode') {
+      setKeyboardOnlyMode(prev => !prev);
+    } else {
+      setLocalSettings(prev => ({
+        ...prev,
+        [key]: !prev[key]
+      }));
+    }
   };
 
-  const handleSaveSettings = () => {
+  const handleSaveSettings = async () => {
+    // 1. Save local preferences
     updateSettings(localSettings);
+
+    // 2. Save global company-wide setting to database
+    if (activeCompany) {
+      try {
+        const fullCompanyRes = await fetchCompanyById(activeCompany.id);
+        if (fullCompanyRes.success && fullCompanyRes.data) {
+          const payload = {
+            ...fullCompanyRes.data,
+            keyboardOnlyMode: keyboardOnlyMode
+          };
+          const response = await updateCompanyApi(activeCompany.id, payload);
+          if (response.success && response.data) {
+            updateActiveCompany(response.data);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to save Keyboard Only Mode setting to database:", err);
+      }
+    }
   };
 
   return {
     securitySettings,
     databaseSettings,
     localSettings,
+    keyboardOnlyMode,
     handleToggle,
     handleSaveSettings
   };

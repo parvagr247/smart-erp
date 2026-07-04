@@ -1,6 +1,6 @@
 import React from 'react';
 import { useDataTableData } from './services/DataTableService';
-import { NavigationManager } from '@shared/keyboard/NavigationManager';
+import { NavigationManager } from '@shared/interaction/NavigationManager';
 import './styles/DataTable.css';
 
 export default function DataTable(props) {

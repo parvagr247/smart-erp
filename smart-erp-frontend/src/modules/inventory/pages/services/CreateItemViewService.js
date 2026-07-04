@@ -13,7 +13,7 @@ export function useCreateItemViewData() {
       setError('');
       const res = await inventoryService.createItem(data);
       if (res.success) {
-        navigate('/inventory/items');
+        navigate('/inventory/stock-items');
       } else {
         setError(res.message || "Failed to create item.");
       }

@@ -2,22 +2,32 @@ import * as React from "react"
 
 import { cn } from "@shared/utils/utils"
 
-function Card({
+const Card = React.forwardRef(({
   className,
   size = "default",
+  tabIndex,
+  role,
   ...props
-}) {
+}, ref) => {
+  const isInteractive = !!props.onClick;
+  const computedTabIndex = tabIndex !== undefined ? tabIndex : (isInteractive ? 0 : undefined);
+  const computedRole = role !== undefined ? role : (isInteractive ? "button" : undefined);
+
   return (
     <div
+      ref={ref}
       data-slot="card"
       data-size={size}
+      tabIndex={computedTabIndex}
+      role={computedRole}
       className={cn(
         "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card py-(--card-spacing) text-sm text-card-foreground ring-1 ring-foreground/10 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        isInteractive && "cursor-pointer hover:bg-accent/50 focus:bg-accent/50 focus:ring-2 focus:ring-primary focus:outline-none transition-all",
         className
       )}
       {...props} />
   );
-}
+});
 
 function CardHeader({
   className,

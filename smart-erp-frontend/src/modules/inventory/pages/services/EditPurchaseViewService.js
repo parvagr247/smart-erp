@@ -40,7 +40,7 @@ export function useEditPurchaseViewData() {
     try {
       const res = await inventoryService.updatePurchase(id, data);
       if (res.success) {
-        navigate(`/inventory/purchases/${id}`);
+        navigate(`/purchase/${id}`);
       } else {
         setError(res.message || 'Failed to save changes.');
       }

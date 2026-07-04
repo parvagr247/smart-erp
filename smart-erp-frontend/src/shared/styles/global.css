@@ -234,11 +234,31 @@ body.mouse-nav-disabled .navbar-top * {
   pointer-events: auto;
 }
 
-body.high-vis-focus *:focus {
-  outline: 3px solid var(--primary) !important;
-  outline-offset: 2px !important;
-  box-shadow: 0 0 0 4px var(--primary-glow) !important;
-  transition: outline 0.15s ease-in-out !important;
+/* Universal Focus Style (Navigation Mode) */
+*:focus,
+*:focus-visible,
+[data-focused="true"] {
+  outline: 2px solid var(--primary, #4f46e5) !important;
+  outline-offset: 1px !important;
+  box-shadow: 0 0 8px rgba(79, 70, 229, 0.4) !important;
+  transition: outline 130ms ease, box-shadow 130ms ease, background-color 130ms ease !important;
+}
+
+input:focus,
+input:focus-visible,
+textarea:focus,
+textarea:focus-visible,
+[data-slot="select-trigger"]:focus {
+  background-color: rgba(79, 70, 229, 0.05) !important;
+}
+
+/* Edit Mode Focus State (Brighter background, amber accent outline) */
+[data-in-edit-mode="true"]:focus,
+[data-in-edit-mode="true"]:focus-visible,
+[data-in-edit-mode="true"] {
+  outline: 2px solid #f59e0b !important; /* Amber accent outline */
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.5) !important;
+  background-color: rgba(245, 158, 11, 0.09) !important; /* Slightly brighter background */
 }
 
 /* Mouse Warning Toast Alert */
@@ -265,5 +285,48 @@ body.high-vis-focus *:focus {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media print {
+  /* 1. Hide non-printed layout blocks */
+  .sidebar-panel,
+  .navbar-top,
+  .layout-footer,
+  .print\:hidden,
+  .space-y-4.mb-4,
+  button,
+  a {
+    display: none !important;
+  }
+
+  /* 2. Reset full-screen height and overflow parameters to allow multi-page printing */
+  html, 
+  body, 
+  #root, 
+  .layout-wrapper, 
+  .layout-main, 
+  .layout-content-scroll {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    overflow-y: visible !important;
+    position: static !important;
+    background: white !important;
+    color: black !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* 3. Strip down margins and shadows of the invoice card so it prints flat and clean */
+  .print-invoice-card {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    position: relative !important;
   }
 }

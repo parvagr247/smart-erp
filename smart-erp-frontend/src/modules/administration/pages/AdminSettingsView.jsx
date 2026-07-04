@@ -9,7 +9,7 @@ import { Save } from 'lucide-react';
 import './styles/AdminSettingsView.css';
 
 export default function AdminSettingsView() {
-  const { securitySettings, databaseSettings, localSettings, handleToggle, handleSaveSettings } = useAdminSettingsViewData();
+  const { securitySettings, databaseSettings, localSettings, keyboardOnlyMode, handleToggle, handleSaveSettings } = useAdminSettingsViewData();
 
   return (
     <PageContainer>
@@ -25,6 +25,19 @@ export default function AdminSettingsView() {
       <SectionCard title="Interaction Preferences" description="Configure global ERP keyboard-first behaviors and accessibility focus styles.">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-left p-2">
           
+          <div className="flex items-center justify-between p-3 border border-[var(--border-light)] rounded-xl bg-[var(--bg-surface)]">
+            <div>
+              <div className="text-xs font-bold text-[var(--text-primary)]">Keyboard Only Mode</div>
+              <div className="text-[10px] text-[var(--text-muted)]">Block all mouse pointer/touch events globally</div>
+            </div>
+            <input 
+              type="checkbox" 
+              checked={keyboardOnlyMode} 
+              onChange={() => handleToggle('keyboardOnlyMode')}
+              className="w-4 h-4 accent-[var(--primary)] cursor-pointer"
+            />
+          </div>
+
           <div className="flex items-center justify-between p-3 border border-[var(--border-light)] rounded-xl bg-[var(--bg-surface)]">
             <div>
               <div className="text-xs font-bold text-[var(--text-primary)]">Keyboard First Mode</div>
@@ -99,6 +112,19 @@ export default function AdminSettingsView() {
               type="checkbox" 
               checked={localSettings.enableGlobalShortcuts} 
               onChange={() => handleToggle('enableGlobalShortcuts')}
+              className="w-4 h-4 accent-[var(--primary)] cursor-pointer"
+            />
+          </div>
+
+          <div className="flex items-center justify-between p-3 border border-[var(--border-light)] rounded-xl bg-[var(--bg-surface)]">
+            <div>
+              <div className="text-xs font-bold text-[var(--text-primary)]">Show Out-of-Stock Items</div>
+              <div className="text-[10px] text-[var(--text-muted)]">Display out-of-stock items in product selection dropdowns</div>
+            </div>
+            <input 
+              type="checkbox" 
+              checked={localSettings.showOutOfStockItems} 
+              onChange={() => handleToggle('showOutOfStockItems')}
               className="w-4 h-4 accent-[var(--primary)] cursor-pointer"
             />
           </div>
