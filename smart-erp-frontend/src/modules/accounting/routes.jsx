@@ -8,8 +8,6 @@ const CreateLedgerView = lazy(() => import('./pages/CreateLedgerView'));
 const EditLedgerView = lazy(() => import('./pages/EditLedgerView'));
 const LedgerDetailsView = lazy(() => import('./pages/LedgerDetailsView'));
 
-const GstView = lazy(() => import('./pages/GstView'));
-const BankingView = lazy(() => import('./pages/BankingView'));
 const ReportsView = lazy(() => import('./pages/ReportsView'));
 
 export const getAccountingRoutes = () => (
@@ -21,8 +19,6 @@ export const getAccountingRoutes = () => (
     <Route path="accounting/ledgers/edit/:id" element={<EditLedgerView />} />
     <Route path="accounting/ledgers/:id" element={<LedgerDetailsView />} />
     
-    <Route path="gst" element={<GstView />} />
-    <Route path="banking" element={<BankingView />} />
     <Route path="reports" element={<ReportsView />} />
   </>
 );

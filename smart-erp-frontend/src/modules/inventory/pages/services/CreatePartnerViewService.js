@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { usePartnerForm } from '../../components/services/partner.service';
+import { usePartnerForm } from '../../components/services/PartnerFormService';
 
 export function useCreatePartnerViewData() {
   const navigate = useNavigate();

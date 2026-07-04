@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@shared/context/AuthContext';
-import { useCompanySelection, deleteCompanyApi } from '../../services/company.service';
+import { useCompanySelection, deleteCompanyApi } from '../../administration.service';
 
 export function useCompanySelectionViewData(props) {
   const { user, theme, toggleTheme, handleLogout } = useAuth();
@@ -78,3 +78,4 @@ export function useCompanySelectionViewData(props) {
     getInitials
   };
 }
+

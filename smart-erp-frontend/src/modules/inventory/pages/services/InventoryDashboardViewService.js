@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { inventoryService } from '../../services/inventory.service';
+import { inventoryService } from '../../inventory.service';
 
 export function useInventoryDashboardViewData() {
   const [summary, setSummary] = useState({
@@ -42,3 +42,4 @@ export function useInventoryDashboardViewData() {
     refresh: fetchDashboardData
   };
 }
+

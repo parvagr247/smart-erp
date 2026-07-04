@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useActiveCompany } from '@shared/context/ActiveCompanyContext';
-import { fetchCompaniesList } from '../../services/company.service';
+import { fetchCompaniesList } from '../../administration.service';
 
 export function useCompanySelectorData() {
   const { activeCompany, updateActiveCompany } = useActiveCompany();
@@ -30,3 +30,4 @@ export function useCompanySelectorData() {
     handleChange
   };
 }
+

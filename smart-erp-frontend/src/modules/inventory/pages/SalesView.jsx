@@ -1,17 +1,21 @@
 import React from 'react';
-import ComingSoonView from '@shared/components/ComingSoonView';
-import { ShoppingBag } from 'lucide-react';
+import PageContainer from '@shared/components/PageContainer';
 import { useSalesViewData } from './services/SalesViewService';
+import SalesListSection from '../components/SalesListSection';
+import SalesFormSection from '../components/SalesFormSection';
+import SalesDetailsSection from '../components/SalesDetailsSection';
 import './styles/SalesView.css';
 
 export default function SalesView() {
-  const {} = useSalesViewData();
+  const data = useSalesViewData();
+
+  if (data.loading) return <div className="p-6 text-center text-slate-400"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500 mx-auto mb-4"></div>Loading Sales...</div>;
+
   return (
-    <ComingSoonView
-      moduleName="Sales Vouchers"
-      description="Record billing tax invoices, credit notes, sales orders, and customer billing slips. This module will integrate with the GST portal for direct e-way bill generation."
-      requiredPermissions={['SALES_VIEW', 'SALES_CREATE', 'INVOICE_EDIT']}
-      icon={<ShoppingBag size={24} />}
-    />
+    <PageContainer>
+      {data.mode === 'LIST' && <SalesListSection {...data} />}
+      {(data.mode === 'CREATE' || data.mode === 'EDIT') && <SalesFormSection {...data} />}
+      {data.mode === 'DETAILS' && <SalesDetailsSection sale={data.selectedSale} setMode={data.setMode} handleEdit={data.handleEdit} handleStatusChange={data.handleStatusChange} handleDelete={data.handleDelete} />}
+    </PageContainer>
   );
 }

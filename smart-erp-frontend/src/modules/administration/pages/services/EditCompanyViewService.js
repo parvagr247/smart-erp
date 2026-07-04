@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@shared/context/AuthContext';
-import { useCompanyForm } from '../../services/company.service';
+import { useCompanyForm } from '../../administration.service';
 
 export function useEditCompanyViewData(props) {
   const { id } = useParams();
@@ -31,3 +31,4 @@ export function useEditCompanyViewData(props) {
     getInitials
   };
 }
+

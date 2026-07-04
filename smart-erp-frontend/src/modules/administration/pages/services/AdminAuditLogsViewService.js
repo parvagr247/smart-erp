@@ -1,11 +1,37 @@
+import { useState, useEffect } from 'react';
+import { inventoryService } from '@modules/inventory/inventory.service';
+
 export function useAdminAuditLogsViewData() {
-  const audits = [
-    { id: '1', time: '2026-07-03 09:44:12', user: 'parvagr247@gmail.com', event: 'Company Switch: Active scope switched to "Acme Corp"', ip: '192.168.1.42', status: 'Success' },
-    { id: '2', time: '2026-07-03 09:37:08', user: 'parvagr247@gmail.com', event: 'Authentication Login: Valid JWT token issued', ip: '192.168.1.42', status: 'Success' },
-    { id: '3', time: '2026-07-03 08:12:09', user: 'john.doe@company.com', event: 'Record Modification: Updated Company "Apex Tech"', ip: '122.14.9.112', status: 'Success' }
-  ];
+  const [audits, setAudits] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadAudits = async () => {
+      try {
+        const res = await inventoryService.getDashboardRecentActivity();
+        if (res.success && res.data && res.data.activities) {
+          const list = res.data.activities.map((act, index) => ({
+            id: String(index + 1),
+            time: act.timestamp ? new Date(act.timestamp).toLocaleString() : 'Just now',
+            user: act.performedBy || 'system',
+            event: act.title,
+            ip: '127.0.0.1',
+            status: 'Success'
+          }));
+          setAudits(list);
+        }
+      } catch (err) {
+        console.error('Failed to load audit logs', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadAudits();
+  }, []);
+
   const handleClearLogs = () => {
-    alert('Clear logs placeholder');
+    alert('Clear logs action is restricted to super administrators.');
   };
-  return { audits, handleClearLogs };
+
+  return { audits, loading, handleClearLogs };
 }

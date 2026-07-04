@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchGroupsList, createLedgerApi } from '@modules/accounting/services/accounting.service';
+import { fetchGroupsList, createLedgerApi } from '@modules/accounting/accounting.service';
 
 export function useCreateLedgerViewData() {
   const navigate = useNavigate();
@@ -82,3 +82,4 @@ export function useCreateLedgerViewData() {
     handleSubmit
   };
 }
+

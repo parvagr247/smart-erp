@@ -1,22 +1,25 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchGroupsList, fetchLedgersList } from '@modules/accounting/services/accounting.service';
+import { fetchGroupsList, fetchLedgersList } from '@modules/accounting/accounting.service';
+import { inventoryService } from '@modules/inventory/inventory.service';
 
 export function useAccountingDashboardViewData() {
   const navigate = useNavigate();
-  const [stats, setStats] = useState({ groups: 0, ledgers: 0, loading: true });
+  const [stats, setStats] = useState({ groups: 0, ledgers: 0, cashPosition: 0, loading: true });
   const [recentLedgers, setRecentLedgers] = useState([]);
 
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
-        const [groupsRes, ledgersRes] = await Promise.all([
+        const [groupsRes, ledgersRes, summaryRes] = await Promise.all([
           fetchGroupsList(),
-          fetchLedgersList({ page: 0, size: 5 })
+          fetchLedgersList({ page: 0, size: 5 }),
+          inventoryService.getDashboardSummary()
         ]);
         setStats({
           groups: groupsRes.data?.length || 0,
           ledgers: ledgersRes.data?.totalElements || 0,
+          cashPosition: summaryRes.data?.cashPosition || 0,
           loading: false
         });
         setRecentLedgers(ledgersRes.data?.content || []);
@@ -29,9 +32,8 @@ export function useAccountingDashboardViewData() {
 
   const kpis = [
     { title: 'Total Ledgers', value: stats.loading ? '...' : stats.ledgers, iconType: 'ledger' },
-    { title: 'Total Account Groups', value: stats.loading ? '...' : stats.group, iconType: 'group' },
-    { title: 'Cash Balance', value: '₹45,200.00', iconType: 'cash', trend: { value: 'Active', isPositive: true } },
-    { title: 'Bank Accounts', value: '₹3,84,500.00', iconType: 'bank', trend: { value: 'Active', isPositive: true } }
+    { title: 'Total Account Groups', value: stats.loading ? '...' : stats.groups, iconType: 'group' },
+    { title: 'Cash Position', value: stats.loading ? '...' : `₹${stats.cashPosition.toLocaleString()}`, iconType: 'cash', trend: { value: 'Active', isPositive: true } }
   ];
 
   return {

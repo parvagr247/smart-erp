@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { inventoryService } from '../../services/inventory.service';
+import { inventoryService } from '../../inventory.service';
 
 export function useItemList() {
   const [items, setItems] = useState([]);
@@ -101,3 +101,4 @@ export function useItemList() {
     handleDelete
   };
 }
+

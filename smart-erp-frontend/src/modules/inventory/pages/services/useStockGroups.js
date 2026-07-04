@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { inventoryService } from '../../services/inventory.service';
+import { inventoryService } from '../../inventory.service';
 
 export default function useStockGroups() {
   const [groups, setGroups] = useState([]);
@@ -62,3 +62,4 @@ export default function useStockGroups() {
     handleDelete
   };
 }
+

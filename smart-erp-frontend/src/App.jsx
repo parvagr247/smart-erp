@@ -5,7 +5,7 @@ import AppLayout from '@shared/layouts/AppLayout';
 import AdminLayout from '@shared/layouts/AdminLayout';
 import { useAuth } from '@shared/context/AuthContext';
 import { useActiveCompany } from '@shared/context/ActiveCompanyContext';
-import { fetchCompaniesList } from '@modules/administration/services/company.service';
+import { fetchCompaniesList } from '@modules/administration/administration.service';
 
 import { getAuthRoutes } from '@modules/auth';
 import { getBusinessRoutes } from '@modules/business';

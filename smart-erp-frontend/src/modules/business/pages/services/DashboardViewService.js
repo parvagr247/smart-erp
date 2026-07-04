@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useActiveCompany } from '@shared/context/ActiveCompanyContext';
 import { useAuth } from '@shared/context/AuthContext';
-import { inventoryService } from '@modules/inventory/services/inventory.service';
+import { inventoryService } from '@modules/inventory/inventory.service';
 
 export function useDashboardViewData() {
   const navigate = useNavigate();

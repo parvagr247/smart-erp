@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fetchPartnersList } from './partner.service';
+import { inventoryService } from '../../inventory.service';
 
 export function useSupplierSelectorData(search, value) {
   const [partners, setPartners] = useState([]);
@@ -9,7 +9,7 @@ export function useSupplierSelectorData(search, value) {
     const loadPartners = async () => {
       setLoading(true);
       try {
-        const res = await fetchPartnersList({ search, page: 0, size: 100 });
+        const res = await inventoryService.getPartners({ search, page: 0, size: 100 });
         if (res.success && res.data && res.data.content) {
           const suppliers = res.data.content.filter(
             p => p.type === 'SUPPLIER' || p.type === 'BOTH'

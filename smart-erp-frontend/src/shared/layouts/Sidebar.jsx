@@ -1,53 +1,63 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { useAuth } from '@shared/context/AuthContext';
 import { 
-  ChevronLeft, ChevronRight, LayoutDashboard, Database, 
-  Landmark, Box, ShoppingBag, ShoppingCart, FileSpreadsheet, 
-  CreditCard, BarChart3, ShieldCheck, Settings, ChevronDown, ChevronUp 
+  ChevronLeft, ChevronRight, LayoutDashboard, 
+  Landmark, Box, ShoppingBag, ShoppingCart, 
+  BarChart3, ShieldCheck, Settings, ChevronDown, ChevronUp 
 } from 'lucide-react';
 
-const MENU_ITEMS = [
-  { id: 'dash', title: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={18} /> },
-  {
-    id: 'masters',
-    title: 'Masters',
-    icon: <Database size={18} />,
-    children: [
-      { title: 'Ledgers', path: '/accounting/ledgers' },
-      { title: 'Groups', path: '/accounting/groups' },
-      { title: 'Business Partners', path: '/inventory/partners' }
-    ]
-  },
-  {
-    id: 'accounting',
-    title: 'Accounting',
-    icon: <Landmark size={18} />,
-    children: [
-      { title: 'Dashboard', path: '/accounting' },
-      { title: 'Groups Tree', path: '/accounting/groups' },
-      { title: 'Ledgers Registry', path: '/accounting/ledgers' }
-    ]
-  },
-  {
-    id: 'inventory',
-    title: 'Inventory',
-    icon: <Box size={18} />,
-    children: [
-      { title: 'Dashboard', path: '/inventory' },
-      { title: 'Stock Groups', path: '/inventory/stock-groups' },
-      { title: 'Stock Items', path: '/inventory/stock-items' }
-    ]
-  },
-  { id: 'sales', title: 'Sales', path: '/sales', icon: <ShoppingBag size={18} /> },
-  { id: 'purchase', title: 'Purchase', path: '/purchase', icon: <ShoppingCart size={18} /> },
-  { id: 'gst', title: 'GST', path: '/gst', icon: <FileSpreadsheet size={18} /> },
-  { id: 'banking', title: 'Banking', path: '/banking', icon: <CreditCard size={18} /> },
-  { id: 'reports', title: 'Reports', path: '/reports', icon: <BarChart3 size={18} /> },
-  { id: 'admin', title: 'Administration', path: '/admin/dashboard', icon: <ShieldCheck size={18} /> },
-  { id: 'settings', title: 'Settings', path: '/settings', icon: <Settings size={18} /> }
-];
+const getSidebarItems = (role) => {
+  const items = [
+    { id: 'dash', title: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={18} /> },
+  ];
+
+  // Accounting group (Admin or Accountant)
+  if (role === 'ADMIN' || role === 'ACCOUNTANT') {
+    items.push({
+      id: 'accounting',
+      title: 'Accounting',
+      icon: <Landmark size={18} />,
+      children: [
+        { title: 'Dashboard', path: '/accounting' },
+        { title: 'Groups Tree', path: '/accounting/groups' },
+        { title: 'Ledgers Registry', path: '/accounting/ledgers' }
+      ]
+    });
+  }
+
+  // Inventory group (Admin or Inventory Manager)
+  if (role === 'ADMIN' || role === 'INVENTORY_MANAGER') {
+    items.push({
+      id: 'inventory',
+      title: 'Inventory',
+      icon: <Box size={18} />,
+      children: [
+        { title: 'Dashboard', path: '/inventory' },
+        { title: 'Stock Groups', path: '/inventory/stock-groups' },
+        { title: 'Stock Items', path: '/inventory/stock-items' },
+        { title: 'Business Partners', path: '/inventory/partners' }
+      ]
+    });
+    items.push({ id: 'sales', title: 'Sales', path: '/sales', icon: <ShoppingBag size={18} /> });
+    items.push({ id: 'purchase', title: 'Purchase', path: '/purchase', icon: <ShoppingCart size={18} /> });
+  }
+
+  items.push({ id: 'reports', title: 'Reports', path: '/reports', icon: <BarChart3 size={18} /> });
+
+  if (role === 'ADMIN') {
+    items.push({ id: 'admin', title: 'Administration', path: '/admin/dashboard', icon: <ShieldCheck size={18} /> });
+  }
+
+  items.push({ id: 'settings', title: 'Settings', path: '/settings', icon: <Settings size={18} /> });
+
+  return items;
+};
 
 export default function Sidebar({ collapsed, onToggle, openSubmenus, onToggleSubmenu }) {
+  const { user } = useAuth();
+  const menuItems = getSidebarItems(user?.role);
+
   return (
     <aside className={`sidebar-panel ${collapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}`}>
       <div className="sidebar-header">
@@ -62,7 +72,7 @@ export default function Sidebar({ collapsed, onToggle, openSubmenus, onToggleSub
       </div>
 
       <nav className="sidebar-menu-list">
-        {MENU_ITEMS.map((item) => {
+        {menuItems.map((item) => {
           if (item.children) {
             const isExpanded = openSubmenus[item.id] && !collapsed;
             return (

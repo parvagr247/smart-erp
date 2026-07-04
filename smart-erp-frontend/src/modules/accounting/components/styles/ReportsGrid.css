@@ -5,21 +5,21 @@
 }
 
 .report-card {
-  @apply bg-white border border-neutral-200 rounded-xl p-6 shadow-sm hover:shadow-md cursor-pointer transition duration-200 hover:border-neutral-300 flex flex-col justify-between;
+  @apply bg-[var(--bg-surface)] border border-[var(--border-light)] rounded-xl p-6 shadow-sm hover:shadow-md cursor-pointer transition duration-200 hover:border-[var(--border-focus)] flex flex-col justify-between;
 }
 
 .report-card-icon-wrap {
-  @apply p-3 bg-neutral-50 rounded-lg w-fit mb-4;
+  @apply p-3 bg-[var(--bg-input)] rounded-lg w-fit mb-4;
 }
 
 .report-card-title {
-  @apply text-lg font-semibold text-neutral-800;
+  @apply text-lg font-semibold text-[var(--text-primary)];
 }
 
 .report-card-desc {
-  @apply text-sm text-neutral-500 mt-2;
+  @apply text-sm text-[var(--text-secondary)] mt-2;
 }
 
 .report-card-action {
-  @apply mt-4 text-xs font-semibold text-indigo-600 flex items-center gap-1;
+  @apply mt-4 text-xs font-semibold text-indigo-600 dark:text-indigo-400 flex items-center gap-1;
 }

@@ -151,5 +151,87 @@ export const inventoryService = {
   searchGlobal: async (query) => {
     const res = await axiosClient.get('/dashboard/search', { params: { query } });
     return res.data;
+  },
+
+  // Purchase Vouchers
+  getPurchases: async (params) => {
+    const res = await axiosClient.get('/inventory/purchases', { params });
+    return res.data;
+  },
+  getPurchase: async (id) => {
+    const res = await axiosClient.get(`/inventory/purchases/${id}`);
+    return res.data;
+  },
+  createPurchase: async (data) => {
+    const res = await axiosClient.post('/inventory/purchases', data);
+    return res.data;
+  },
+  updatePurchase: async (id, data) => {
+    const res = await axiosClient.put(`/inventory/purchases/${id}`, data);
+    return res.data;
+  },
+  updatePurchaseStatus: async (id, status) => {
+    const res = await axiosClient.post(`/inventory/purchases/${id}/status`, null, { params: { status } });
+    return res.data;
+  },
+  deletePurchase: async (id) => {
+    const res = await axiosClient.delete(`/inventory/purchases/${id}`);
+    return res.data;
+  },
+
+  // Sales Vouchers
+  getSales: async (params) => {
+    const res = await axiosClient.get('/inventory/sales', { params });
+    return res.data;
+  },
+  getSale: async (id) => {
+    const res = await axiosClient.get(`/inventory/sales/${id}`);
+    return res.data;
+  },
+  createSale: async (data) => {
+    const res = await axiosClient.post('/inventory/sales', data);
+    return res.data;
+  },
+  updateSale: async (id, data) => {
+    const res = await axiosClient.put(`/inventory/sales/${id}`, data);
+    return res.data;
+  },
+  updateSaleStatus: async (id, status) => {
+    const res = await axiosClient.patch(`/inventory/sales/${id}/status`, null, { params: { status } });
+    return res.data;
+  },
+  deleteSale: async (id) => {
+    const res = await axiosClient.delete(`/inventory/sales/${id}`);
+    return res.data;
+  },
+
+  // Partners
+  getPartners: async (params) => {
+    const res = await axiosClient.get('/inventory/partners', { params });
+    return res.data;
+  },
+  getPartner: async (id) => {
+    const res = await axiosClient.get(`/inventory/partners/${id}`);
+    return res.data;
+  },
+  createPartner: async (data) => {
+    const res = await axiosClient.post('/inventory/partners', data);
+    return res.data;
+  },
+  updatePartner: async (id, data) => {
+    const res = await axiosClient.put(`/inventory/partners/${id}`, data);
+    return res.data;
+  },
+  deletePartner: async (id) => {
+    const res = await axiosClient.delete(`/inventory/partners/${id}`);
+    return res.data;
+  },
+  updatePartnerStatus: async (id, status) => {
+    const res = await axiosClient.patch(`/inventory/partners/${id}/status`, null, { params: { status } });
+    return res.data;
+  },
+  getPartnerSummary: async () => {
+    const res = await axiosClient.get('/inventory/partners/summary');
+    return res.data;
   }
 };

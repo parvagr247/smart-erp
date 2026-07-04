@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { inventoryService } from '../../services/inventory.service';
+import { inventoryService } from '../../inventory.service';
 
 export function useEditItemViewData() {
   const navigate = useNavigate();
@@ -48,3 +48,4 @@ export function useEditItemViewData() {
 
   return { navigate, item, loading, saving, error, handleSubmit };
 }
+

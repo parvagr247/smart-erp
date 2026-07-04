@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useActiveCompany } from '@shared/context/ActiveCompanyContext';
-import { fetchPurchaseById, updatePurchaseApi } from '../../components/services/purchase.service';
+import { inventoryService } from '../../inventory.service';
 
 export function useEditPurchaseViewData() {
   const { id } = useParams();
@@ -15,7 +15,7 @@ export function useEditPurchaseViewData() {
   useEffect(() => {
     const loadPurchase = async () => {
       try {
-        const res = await fetchPurchaseById(id);
+        const res = await inventoryService.getPurchase(id);
         if (res.success && res.data) {
           if (res.data.status !== 'DRAFT') {
             setError('Only DRAFT purchases can be edited.');
@@ -38,7 +38,7 @@ export function useEditPurchaseViewData() {
     setSubmitting(true);
     setError('');
     try {
-      const res = await updatePurchaseApi(id, data);
+      const res = await inventoryService.updatePurchase(id, data);
       if (res.success) {
         navigate(`/inventory/purchases/${id}`);
       } else {

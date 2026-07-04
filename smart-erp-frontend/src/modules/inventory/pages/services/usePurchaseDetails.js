@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fetchPurchaseById, updatePurchaseStatusApi, deletePurchaseApi } from '../../components/services/purchase.service';
+import { inventoryService } from '../../inventory.service';
 
 export default function usePurchaseDetails(id, onDeletedSuccess) {
   const [purchase, setPurchase] = useState(null);
@@ -9,7 +9,7 @@ export default function usePurchaseDetails(id, onDeletedSuccess) {
 
   const loadPurchase = async () => {
     try {
-      const res = await fetchPurchaseById(id);
+      const res = await inventoryService.getPurchase(id);
       if (res.success && res.data) {
         setPurchase(res.data);
       } else {
@@ -31,10 +31,9 @@ export default function usePurchaseDetails(id, onDeletedSuccess) {
     setUpdating(true);
     setError('');
     try {
-      const res = await updatePurchaseStatusApi(id, newStatus);
+      const res = await inventoryService.updatePurchaseStatus(id, newStatus);
       if (res.success) {
-        // Reload purchase to fetch updated state
-        const updatedRes = await fetchPurchaseById(id);
+        const updatedRes = await inventoryService.getPurchase(id);
         if (updatedRes.success && updatedRes.data) {
           setPurchase(updatedRes.data);
         }
@@ -52,7 +51,7 @@ export default function usePurchaseDetails(id, onDeletedSuccess) {
   const deleteDraft = async () => {
     if (!window.confirm('Are you sure you want to delete this draft purchase?')) return false;
     try {
-      const res = await deletePurchaseApi(id);
+      const res = await inventoryService.deletePurchase(id);
       if (res.success) {
         if (onDeletedSuccess) onDeletedSuccess();
         return true;

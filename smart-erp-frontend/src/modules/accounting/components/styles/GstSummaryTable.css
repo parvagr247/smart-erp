@@ -1,1 +1,49 @@
 @reference "../../../../shared/styles/global.css";
+
+.gst-header-panel {
+  @apply mb-6 pb-4 border-b border-[var(--border-light)] flex justify-between items-end;
+}
+
+.gst-title {
+  @apply text-xl font-bold text-[var(--text-primary)];
+}
+
+.gst-subtitle {
+  @apply text-xs text-[var(--text-muted)];
+}
+
+.gst-section-title-itc {
+  @apply font-bold text-emerald-600 dark:text-emerald-400 border-b border-[var(--border-light)] pb-2 mb-3 bg-emerald-500/10 p-2 rounded;
+}
+
+.gst-section-title-liability {
+  @apply font-bold text-rose-600 dark:text-rose-400 border-b border-[var(--border-light)] pb-2 mb-3 bg-rose-500/10 p-2 rounded;
+}
+
+.gst-ul {
+  @apply divide-y divide-[var(--border-light)] text-sm text-left;
+}
+
+.gst-li {
+  @apply py-2.5 flex justify-between text-[var(--text-secondary)];
+}
+
+.gst-value {
+  @apply font-medium text-[var(--text-primary)];
+}
+
+.gst-li-total {
+  @apply py-3 flex justify-between font-bold border-t border-[var(--border-light)] text-[var(--text-primary)];
+}
+
+.gst-result-panel {
+  @apply mt-8 border-t border-[var(--border-light)] pt-6 flex flex-col items-end gap-2 text-right;
+}
+
+.gst-result-label {
+  @apply text-sm text-[var(--text-secondary)] font-semibold;
+}
+
+.gst-result-value {
+  @apply text-xl font-bold bg-[var(--bg-input)] p-4 rounded-xl border border-[var(--border-light)] mt-2 text-[var(--text-primary)];
+}

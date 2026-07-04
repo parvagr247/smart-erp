@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { inventoryService } from '../../services/inventory.service';
+import { inventoryService } from '../../inventory.service';
 
 export function useCreateItemViewData() {
   const navigate = useNavigate();
@@ -26,3 +26,4 @@ export function useCreateItemViewData() {
 
   return { navigate, loading, error, handleSubmit };
 }
+

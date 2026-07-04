@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { inventoryService } from '../../services/inventory.service';
+import { inventoryService } from '../../inventory.service';
 
 export function usePurchaseItemTableData(items, onChange, isTaxInclusive, disabled) {
   const [stockCatalog, setStockCatalog] = useState([]);
@@ -129,3 +129,4 @@ export function usePurchaseItemTableData(items, onChange, isTaxInclusive, disabl
     removeRow
   };
 }
+

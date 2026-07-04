@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@shared/context/AuthContext';
-import { useCompanyForm } from '../../services/company.service';
+import { useCompanyForm } from '../../administration.service';
 
 export function useCreateCompanyViewData(props) {
   const { user, theme, toggleTheme, handleLogout } = useAuth();
@@ -29,3 +29,4 @@ export function useCreateCompanyViewData(props) {
     getInitials
   };
 }
+

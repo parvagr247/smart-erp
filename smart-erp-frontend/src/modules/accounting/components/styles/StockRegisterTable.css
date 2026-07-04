@@ -1,1 +1,53 @@
 @reference "../../../../shared/styles/global.css";
+
+.sr-header-panel {
+  @apply mb-6 pb-4 border-b border-[var(--border-light)] flex justify-between items-end;
+}
+
+.sr-title {
+  @apply text-xl font-bold text-[var(--text-primary)];
+}
+
+.sr-subtitle {
+  @apply text-xs text-[var(--text-muted)];
+}
+
+.sr-table {
+  @apply w-full text-left border-collapse text-sm;
+}
+
+.sr-thead-tr {
+  @apply border-b border-[var(--border-light)] text-[var(--text-secondary)] font-semibold bg-[var(--bg-input)];
+}
+
+.sr-tr {
+  @apply border-b border-[var(--border-light)] hover:bg-[var(--bg-input)]/50;
+}
+
+.sr-cell-name {
+  @apply py-3 px-4 font-medium text-[var(--text-primary)];
+}
+
+.sr-cell-sku {
+  @apply py-3 px-4 text-[var(--text-secondary)] font-mono text-xs;
+}
+
+.sr-cell-qty {
+  @apply py-3 px-4 text-right text-[var(--text-primary)];
+}
+
+.sr-cell-inward {
+  @apply py-3 px-4 text-right text-emerald-600 dark:text-emerald-400 font-medium;
+}
+
+.sr-cell-outward {
+  @apply py-3 px-4 text-right text-rose-600 dark:text-rose-400 font-medium;
+}
+
+.sr-cell-closing {
+  @apply py-3 px-4 text-right font-bold text-[var(--text-primary)];
+}
+
+.sr-empty {
+  @apply py-8 text-center text-[var(--text-muted)] text-xs;
+}

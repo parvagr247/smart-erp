@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { inventoryService } from '../../services/inventory.service';
+import { inventoryService } from '../../inventory.service';
 
 export function useItemDetailsViewData() {
   const navigate = useNavigate();
@@ -48,3 +48,4 @@ export function useItemDetailsViewData() {
     handleDelete
   };
 }
+

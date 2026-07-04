@@ -1,5 +1,5 @@
 @reference "../../../../shared/styles/global.css";
 
 .report-print-pane {
-  @apply bg-white border border-neutral-200 rounded-xl p-8 shadow-sm;
+  @apply bg-[var(--bg-surface)] border border-[var(--border-light)] text-[var(--text-primary)] rounded-xl p-8 shadow-sm;
 }

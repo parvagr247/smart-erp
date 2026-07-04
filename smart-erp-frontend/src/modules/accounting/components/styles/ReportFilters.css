@@ -1,7 +1,7 @@
 @reference "../../../../shared/styles/global.css";
 
 .report-filter-bar {
-  @apply bg-white border border-neutral-200 rounded-xl p-5 mb-6 shadow-sm flex flex-wrap gap-4 items-end;
+  @apply bg-[var(--bg-surface)] border border-[var(--border-light)] rounded-xl p-5 mb-6 shadow-sm flex flex-wrap gap-4 items-end;
 }
 
 .report-filter-group {
@@ -9,13 +9,13 @@
 }
 
 .report-filter-select {
-  @apply px-3 py-2 border border-neutral-300 rounded-lg bg-white text-sm focus:outline-none;
+  @apply px-3 py-2 border border-[var(--border-light)] rounded-lg bg-[var(--bg-input)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-[var(--border-focus)];
 }
 
 .report-filter-input {
-  @apply px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none;
+  @apply px-3 py-2 border border-[var(--border-light)] rounded-lg bg-[var(--bg-input)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-[var(--border-focus)];
 }
 
 .report-btn-primary {
-  @apply px-4 py-2 bg-neutral-900 text-white hover:bg-neutral-800 rounded-lg text-sm font-semibold flex items-center gap-1.5 shadow-sm transition cursor-pointer;
+  @apply px-4 py-2 bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] rounded-lg text-sm font-semibold flex items-center gap-1.5 shadow-sm transition cursor-pointer;
 }

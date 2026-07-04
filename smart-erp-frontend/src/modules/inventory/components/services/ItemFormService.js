@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { inventoryService } from '../../services/inventory.service';
+import { inventoryService } from '../../inventory.service';
 
 export function useItemFormViewData(props) {
   const { initialData, onSubmit, onCancel, loading } = props;
@@ -212,3 +212,4 @@ export function useItemFormViewData(props) {
     handleCategoryToggle
   };
 }
+

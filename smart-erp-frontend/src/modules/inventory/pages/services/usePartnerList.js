@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fetchPartnersList, deletePartnerApi, updatePartnerStatusApi } from '../../components/services/partner.service';
+import { inventoryService } from '../../inventory.service';
 
 export default function usePartnerList() {
   const [partners, setPartners] = useState([]);
@@ -8,7 +8,6 @@ export default function usePartnerList() {
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize] = useState(10);
   
-  // Search & Filter parameters
   const [search, setSearch] = useState('');
   const [type, setType] = useState('');
   const [status, setStatus] = useState('');
@@ -25,7 +24,7 @@ export default function usePartnerList() {
       if (type) params.type = type;
       if (status) params.status = status;
 
-      const res = await fetchPartnersList(params);
+      const res = await inventoryService.getPartners(params);
       if (res.success && res.data) {
         setPartners(res.data.content || []);
         setTotalPages(res.data.totalPages || 0);
@@ -57,7 +56,7 @@ export default function usePartnerList() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this business partner ledger? This cannot be undone.')) return;
     try {
-      const res = await deletePartnerApi(id);
+      const res = await inventoryService.deletePartner(id);
       if (res.success) {
         alert('Partner deleted successfully.');
         loadPartners(currentPage);
@@ -76,7 +75,7 @@ export default function usePartnerList() {
     }
     
     try {
-      const res = await updatePartnerStatusApi(id, nextStatus);
+      const res = await inventoryService.updatePartnerStatus(id, nextStatus);
       if (res.success) {
         loadPartners(currentPage);
       }

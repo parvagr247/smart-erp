@@ -1,1 +1,45 @@
 @reference "../../../../shared/styles/global.css";
+
+.trial-header-panel {
+  @apply mb-6 pb-4 border-b border-[var(--border-light)] flex justify-between items-end;
+}
+
+.trial-title {
+  @apply text-xl font-bold text-[var(--text-primary)];
+}
+
+.trial-subtitle {
+  @apply text-xs text-[var(--text-muted)];
+}
+
+.trial-table {
+  @apply w-full text-left border-collapse text-sm;
+}
+
+.trial-thead-tr {
+  @apply border-b border-[var(--border-light)] text-[var(--text-secondary)] font-semibold bg-[var(--bg-input)];
+}
+
+.trial-tr {
+  @apply border-b border-[var(--border-light)] hover:bg-[var(--bg-input)]/50;
+}
+
+.trial-cell-ledger {
+  @apply py-3 px-4 font-medium text-[var(--text-primary)];
+}
+
+.trial-cell-group {
+  @apply py-3 px-4 text-[var(--text-secondary)];
+}
+
+.trial-cell-amount {
+  @apply py-3 px-4 text-right text-[var(--text-primary)];
+}
+
+.trial-total-tr {
+  @apply bg-[var(--bg-input)] font-bold border-t-2 border-[var(--border-light)];
+}
+
+.trial-total-cell {
+  @apply py-4 px-4 text-right text-[var(--text-primary)];
+}

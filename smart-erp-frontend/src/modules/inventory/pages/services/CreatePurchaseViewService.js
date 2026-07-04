@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useActiveCompany } from '@shared/context/ActiveCompanyContext';
-import { createPurchaseApi } from '../../components/services/purchase.service';
+import { inventoryService } from '../../inventory.service';
 
 export function useCreatePurchaseViewData() {
   const navigate = useNavigate();
@@ -13,7 +13,7 @@ export function useCreatePurchaseViewData() {
     setSubmitting(true);
     setError('');
     try {
-      const res = await createPurchaseApi(data);
+      const res = await inventoryService.createPurchase(data);
       if (res.success) {
         navigate(`/inventory/purchases/${res.data.id}`);
       } else {

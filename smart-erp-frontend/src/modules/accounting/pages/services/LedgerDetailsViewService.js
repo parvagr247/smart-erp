@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { fetchLedgerById } from '@modules/accounting/services/accounting.service';
+import { fetchLedgerById } from '@modules/accounting/accounting.service';
 
 export function useLedgerDetailsViewData() {
   const navigate = useNavigate();
@@ -32,3 +32,4 @@ export function useLedgerDetailsViewData() {
     copyToClipboard
   };
 }
+

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { inventoryService } from '../../services/inventory.service';
+import { inventoryService } from '../../inventory.service';
 
 export function useWarehouseSelectorData(value, onChange) {
   const [warehouses, setWarehouses] = useState([]);
@@ -27,3 +27,4 @@ export function useWarehouseSelectorData(value, onChange) {
 
   return { warehouses, loading };
 }
+

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { fetchGroupsList, fetchLedgerById, updateLedgerApi } from '@modules/accounting/services/accounting.service';
+import { fetchGroupsList, fetchLedgerById, updateLedgerApi } from '@modules/accounting/accounting.service';
 
 export function useEditLedgerViewData() {
   const navigate = useNavigate();
@@ -99,3 +99,4 @@ export function useEditLedgerViewData() {
     handleSubmit
   };
 }
+

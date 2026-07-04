@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { inventoryService } from '../../services/inventory.service';
-import { fetchPurchasesList } from '../../components/services/purchase.service';
+import { inventoryService } from '../../inventory.service';
 
 export function usePurchaseDashboardViewData() {
   const [stats, setStats] = useState({ purchaseCount: 0, totalPurchaseValue: 0 });
@@ -18,7 +17,7 @@ export function usePurchaseDashboardViewData() {
           });
         }
 
-        const purchasesRes = await fetchPurchasesList({ page: 0, size: 5 });
+        const purchasesRes = await inventoryService.getPurchases({ page: 0, size: 5 });
         if (purchasesRes.success && purchasesRes.data) {
           setRecentPurchases(purchasesRes.data.content);
         }

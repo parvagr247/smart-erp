@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { fetchPartnerById } from '../../components/services/partner.service';
+import { inventoryService } from '../../inventory.service';
 
 export function usePartnerDetailsViewData() {
   const navigate = useNavigate();
@@ -12,7 +12,7 @@ export function usePartnerDetailsViewData() {
   useEffect(() => {
     const loadPartnerDetails = async () => {
       try {
-        const res = await fetchPartnerById(id);
+        const res = await inventoryService.getPartner(id);
         if (res.success && res.data) {
           setPartner(res.data);
         } else {

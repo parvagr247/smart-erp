@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fetchLedgersList, fetchGroupsList, deleteLedgerApi } from '@modules/accounting/services/accounting.service';
+import { fetchLedgersList, fetchGroupsList, deleteLedgerApi } from '@modules/accounting/accounting.service';
 
 export function useLedgerListViewData() {
   const [ledgers, setLedgers] = useState([]);
@@ -60,3 +60,4 @@ export function useLedgerListViewData() {
     handleDelete
   };
 }
+

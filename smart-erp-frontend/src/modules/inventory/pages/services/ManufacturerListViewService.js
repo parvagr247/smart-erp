@@ -1,5 +1,5 @@
 import useLookupMaster from './useLookupMaster';
-import { inventoryService } from '../../services/inventory.service';
+import { inventoryService } from '../../inventory.service';
 
 export function useManufacturerListViewData() {
   return useLookupMaster({
@@ -8,3 +8,4 @@ export function useManufacturerListViewData() {
     deleteApi: inventoryService.deleteManufacturer
   });
 }
+

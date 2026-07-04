@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchPartnerSummary, fetchPartnersList } from '../../components/services/partner.service';
+import { inventoryService } from '../../inventory.service';
 import StatusBadge from '@shared/components/StatusBadge';
 import ActionButton from '@shared/components/ActionButton';
 import { Eye } from 'lucide-react';
@@ -21,8 +21,8 @@ export function usePartnerDashboardViewData() {
     const loadDashboardData = async () => {
       try {
         const [sumRes, listRes] = await Promise.all([
-          fetchPartnerSummary(),
-          fetchPartnersList({ page: 0, size: 5, sort: 'createdAt,desc' })
+          inventoryService.getPartnerSummary(),
+          inventoryService.getPartners({ page: 0, size: 5, sort: 'createdAt,desc' })
         ]);
         if (sumRes.success && sumRes.data) {
           setSummary(sumRes.data);

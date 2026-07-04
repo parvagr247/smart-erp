@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { inventoryService } from '../../services/inventory.service';
+import { inventoryService } from '../../inventory.service';
 
 export default function useTaxMaster() {
   const [taxes, setTaxes] = useState([]);
@@ -107,3 +107,4 @@ export default function useTaxMaster() {
     refresh: fetchData
   };
 }
+

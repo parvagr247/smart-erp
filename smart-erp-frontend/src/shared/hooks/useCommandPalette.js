@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { inventoryService } from '@modules/inventory/services/inventory.service';
+import { inventoryService } from '@modules/inventory/inventory.service';
 
 const SEARCHABLE_ITEMS = [
   { id: 'dash', category: 'Modules', title: 'Dashboard', path: '/dashboard', subtitle: 'View stats and quick overview' },

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fetchPurchasesList } from '../../components/services/purchase.service';
+import { inventoryService } from '../../inventory.service';
 
 export default function usePurchaseList() {
   const [purchases, setPurchases] = useState([]);
@@ -29,7 +29,7 @@ export default function usePurchaseList() {
         fromDate: fromDate || undefined,
         toDate: toDate || undefined
       };
-      const res = await fetchPurchasesList(params);
+      const res = await inventoryService.getPurchases(params);
       if (res.success && res.data) {
         setPurchases(res.data.content);
         setTotalPages(res.data.totalPages);

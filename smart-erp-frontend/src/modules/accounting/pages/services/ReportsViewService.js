@@ -5,7 +5,7 @@ import {
   fetchTrialBalance, fetchProfitLoss, fetchBalanceSheet, fetchCashBankBook,
   fetchOutstanding, fetchInventoryValuation, fetchStockRegister, fetchGstSummary,
   fetchLedgersList
-} from '@modules/accounting/services/accounting.service';
+} from '@modules/accounting/accounting.service';
 
 export const reportsList = [
   { key: 'trial-balance', title: 'Trial Balance', desc: 'Summary of all debit & credit ledger accounts.', iconType: 'trial-balance' },
@@ -151,3 +151,4 @@ export function useReportsViewData() {
     handlePrint
   };
 }
+
