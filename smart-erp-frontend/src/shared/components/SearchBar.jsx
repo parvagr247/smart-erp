@@ -1,17 +1,22 @@
 import React from 'react';
 import { Input } from '@shared/components/ui/input';
 import { Search } from 'lucide-react';
+import { useSearchBarData } from './services/SearchBarService';
+import './styles/SearchBar.css';
 
-export default function SearchBar({ value, onChange, placeholder = 'Search records...' }) {
+export default function SearchBar(props) {
+  const { value, placeholder = 'Search records...' } = props;
+  const { handleChange } = useSearchBarData(props);
+
   return (
-    <div className="relative w-full max-w-sm">
-      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-[var(--text-muted)]" />
+    <div className="search-bar-wrapper">
+      <Search className="search-bar-icon" />
       <Input
         type="text"
         placeholder={placeholder}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="pl-8 bg-[var(--bg-surface)] border-[var(--border-light)] text-[var(--text-primary)] placeholder-[var(--text-muted)] w-full"
+        onChange={handleChange}
+        className="search-bar-input"
       />
     </div>
   );

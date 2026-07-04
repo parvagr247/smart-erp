@@ -1,0 +1,120 @@
+@reference "../../styles/global.css";
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1.5rem;
+}
+
+.modal-content {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: 1rem;
+  max-width: 28rem;
+  width: 100%;
+  padding: 1.5rem;
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  animation: modal-fade-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-content-destructive {
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  color: var(--primary);
+}
+
+.modal-header-destructive {
+  color: rgb(239, 68, 68);
+}
+
+.modal-icon-container {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--primary-glow);
+}
+
+.modal-icon-destructive {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.modal-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.modal-title-destructive {
+  color: rgb(220, 38, 38);
+}
+
+.modal-desc {
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-top: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.modal-cancel-btn {
+  border: 1px solid var(--border-light) !important;
+  color: var(--text-primary) !important;
+  cursor: pointer;
+}
+
+.modal-cancel-btn:hover {
+  background-color: var(--bg-input) !important;
+}
+
+.modal-confirm-btn {
+  background-color: var(--primary) !important;
+  color: white !important;
+  cursor: pointer;
+}
+
+.modal-confirm-btn:hover {
+  background-color: var(--primary-hover) !important;
+}
+
+.modal-confirm-btn-destructive {
+  background-color: rgb(220, 38, 38) !important;
+}
+
+.modal-confirm-btn-destructive:hover {
+  background-color: rgb(185, 28, 28) !important;
+}
+
+@keyframes modal-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

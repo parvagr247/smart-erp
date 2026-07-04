@@ -4,20 +4,22 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { usePaginationData } from './services/PaginationService';
 import './styles/Pagination.css';
 
-export default function Pagination({ page, totalPages, onPageChange }) {
-  const _data = usePaginationData();
+export default function Pagination(props) {
+  const { totalPages } = props;
+  const { handlePrev, handleNext, displayPageText, isPrevDisabled, isNextDisabled } = usePaginationData(props);
+
   if (totalPages <= 1) return null;
 
   return (
     <div className="pagination-bar">
-      <Button variant="outline" size="sm" onClick={() => onPageChange(Math.max(page - 1, 0))} disabled={page === 0} className="pagination-btn">
+      <Button variant="outline" size="sm" onClick={handlePrev} disabled={isPrevDisabled} className="pagination-btn">
         <ChevronLeft size={16} />
         Previous
       </Button>
       <span className="text-sm font-semibold text-[var(--text-secondary)] font-heading">
-        Page {page + 1} of {totalPages}
+        {displayPageText}
       </span>
-      <Button variant="outline" size="sm" onClick={() => onPageChange(Math.min(page + 1, totalPages - 1))} disabled={page === totalPages - 1} className="pagination-btn">
+      <Button variant="outline" size="sm" onClick={handleNext} disabled={isNextDisabled} className="pagination-btn">
         Next
         <ChevronRight size={16} />
       </Button>

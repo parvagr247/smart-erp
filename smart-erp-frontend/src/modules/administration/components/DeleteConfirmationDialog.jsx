@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@shared/components/ui/button';
 import { AlertTriangle } from 'lucide-react';
-import '@shared/styles/CommonComponents.css';
+import '@shared/components/styles/ConfirmationDialog.css';
 
 export default function DeleteConfirmationDialog({ isOpen, companyName, onConfirm, onCancel, loading }) {
   if (!isOpen) return null;

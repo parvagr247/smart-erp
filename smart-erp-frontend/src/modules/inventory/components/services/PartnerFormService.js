@@ -98,8 +98,20 @@ export function usePartnerForm(partnerId, onSaveSuccess) {
 
 export function usePartnerFormViewData(props) {
   const { formData, setFormData, error, loading, handleChange, handleCustomChange, handleSubmit, onCancel } = props;
+  const [isDirty, setIsDirty] = useState(false);
+
+  const wrappedHandleChange = (e) => {
+    setIsDirty(true);
+    if (handleChange) handleChange(e);
+  };
+
+  const wrappedHandleCustomChange = (name, value) => {
+    setIsDirty(true);
+    if (handleCustomChange) handleCustomChange(name, value);
+  };
 
   const addAddress = () => {
+    setIsDirty(true);
     setFormData(prev => ({
       ...prev,
       addresses: [...prev.addresses, { addressType: 'BILLING', addressLine1: '', addressLine2: '', city: '', state: '', country: 'India', pincode: '' }]
@@ -107,6 +119,7 @@ export function usePartnerFormViewData(props) {
   };
 
   const removeAddress = (index) => {
+    setIsDirty(true);
     setFormData(prev => ({
       ...prev,
       addresses: prev.addresses.filter((_, i) => i !== index)
@@ -114,6 +127,7 @@ export function usePartnerFormViewData(props) {
   };
 
   const handleAddressChange = (index, field, value) => {
+    setIsDirty(true);
     setFormData(prev => {
       const updated = [...prev.addresses];
       updated[index] = { ...updated[index], [field]: value };
@@ -122,6 +136,7 @@ export function usePartnerFormViewData(props) {
   };
 
   const addContact = () => {
+    setIsDirty(true);
     setFormData(prev => ({
       ...prev,
       contacts: [...prev.contacts, { contactName: '', designation: '', email: '', phone: '', mobile: '', isPrimary: prev.contacts.length === 0 }]
@@ -129,6 +144,7 @@ export function usePartnerFormViewData(props) {
   };
 
   const removeContact = (index) => {
+    setIsDirty(true);
     setFormData(prev => ({
       ...prev,
       contacts: prev.contacts.filter((_, i) => i !== index)
@@ -136,6 +152,7 @@ export function usePartnerFormViewData(props) {
   };
 
   const handleContactChange = (index, field, value) => {
+    setIsDirty(true);
     setFormData(prev => {
       const updated = [...prev.contacts];
       if (field === 'isPrimary' && value === true) {
@@ -149,14 +166,23 @@ export function usePartnerFormViewData(props) {
     });
   };
 
+  const handleCancel = () => {
+    if (isDirty) {
+      if (!confirm("You have unsaved changes. Are you sure you want to discard them?")) {
+        return;
+      }
+    }
+    if (onCancel) onCancel();
+  };
+
   return {
     formData,
     error,
     loading,
-    handleChange,
-    handleCustomChange,
+    handleChange: wrappedHandleChange,
+    handleCustomChange: wrappedHandleCustomChange,
     handleSubmit,
-    onCancel,
+    onCancel: handleCancel,
     addAddress,
     removeAddress,
     handleAddressChange,

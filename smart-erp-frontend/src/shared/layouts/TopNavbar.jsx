@@ -46,7 +46,11 @@ export default function TopNavbar({ onSearchClick }) {
     <header className="navbar-top">
       {/* Active Company summary details */}
       <div className="navbar-left">
-        <div className="hidden sm:flex flex-col text-left">
+        <div 
+          onClick={() => activeCompany && navigate('/company-profile')}
+          className={`hidden sm:flex flex-col text-left ${activeCompany ? 'cursor-pointer hover:opacity-85 transition-all' : ''}`}
+          title={activeCompany ? "View Company Profile" : ""}
+        >
           <span className="text-sm font-bold text-[var(--text-primary)] font-heading leading-tight truncate max-w-xs">
             {activeCompany?.name || 'No Company Active'}
           </span>
@@ -155,14 +159,17 @@ export default function TopNavbar({ onSearchClick }) {
                 {/* Active Company Metadata */}
                 {activeCompany && (
                   <div className="mt-2 pt-2 border-t border-[var(--border-light)] space-y-1.5 text-xs text-[var(--text-secondary)]">
-                    <div className="flex items-center gap-1.5 font-semibold text-[var(--text-primary)]">
+                    <div 
+                      onClick={() => { setIsProfileOpen(false); navigate('/company-profile'); }}
+                      className="flex items-center gap-1.5 font-semibold text-[var(--text-primary)] cursor-pointer hover:text-[var(--primary)] transition-colors"
+                      title="View Company Profile"
+                    >
                       <Building2 size={13} className="text-indigo-500 shrink-0" />
                       <span className="truncate">{activeCompany.name}</span>
                     </div>
-                    <div className="pl-4 text-[10px] space-y-1 font-mono text-[var(--text-muted)]">
-                      <div>ID: {activeCompany.id}</div>
-                      <div>GST: {activeCompany.gstNumber || 'N/A'}</div>
-                      <div>FY: {activeCompany.financialYear || 'N/A'}</div>
+                    <div className="pl-4 text-[10px] space-y-1 text-[var(--text-secondary)]">
+                      <div><strong>GSTIN:</strong> {activeCompany.gstNumber || 'N/A'}</div>
+                      <div><strong>FY Period:</strong> {activeCompany.financialYear || 'N/A'}</div>
                     </div>
                   </div>
                 )}

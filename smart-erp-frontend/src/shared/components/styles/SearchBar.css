@@ -1,0 +1,13 @@
+@reference "../../styles/global.css";
+
+.search-bar-wrapper {
+  @apply relative w-full max-w-sm;
+}
+
+.search-bar-icon {
+  @apply absolute left-2.5 top-2.5 h-4 w-4 text-[var(--text-muted)];
+}
+
+.search-bar-input {
+  @apply pl-8 bg-[var(--bg-surface)] border-[var(--border-light)] text-[var(--text-primary)] placeholder-[var(--text-muted)] w-full;
+}

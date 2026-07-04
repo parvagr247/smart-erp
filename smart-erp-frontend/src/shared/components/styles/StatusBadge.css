@@ -1,0 +1,21 @@
+@reference "../../styles/global.css";
+
+.status-badge {
+  @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border;
+}
+
+.status-badge-active {
+  @apply bg-green-500/10 border-green-500/30 text-green-500;
+}
+
+.status-badge-inactive {
+  @apply bg-gray-500/10 border-gray-500/30 text-gray-500;
+}
+
+.status-badge-pending {
+  @apply bg-amber-500/10 border-amber-500/30 text-amber-500;
+}
+
+.status-badge-danger {
+  @apply bg-red-500/10 border-red-500/30 text-red-500;
+}

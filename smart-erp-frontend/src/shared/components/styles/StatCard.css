@@ -1,0 +1,41 @@
+@reference "../../styles/global.css";
+
+.stat-card-grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full;
+}
+
+.stat-card {
+  @apply bg-[var(--bg-surface)] border border-[var(--border-light)] rounded-xl p-5 flex flex-col justify-between shadow-xs hover:shadow-sm transition-all;
+}
+
+.stat-card-header {
+  @apply flex items-center justify-between text-[var(--text-secondary)] mb-3;
+}
+
+.stat-card-title {
+  @apply text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)];
+}
+
+.stat-card-icon {
+  @apply w-8 h-8 rounded-lg bg-[var(--primary-glow)] text-[var(--primary)] flex items-center justify-center;
+}
+
+.stat-card-content {
+  @apply space-y-1;
+}
+
+.stat-card-value {
+  @apply text-2xl font-bold text-[var(--text-primary)] font-heading tracking-tight;
+}
+
+.stat-card-footer {
+  @apply flex items-center gap-1.5 text-xs font-medium mt-1;
+}
+
+.stat-card-trend {
+  @apply flex items-center gap-0.5;
+}
+
+.stat-card-trend-label {
+  @apply text-[var(--text-muted)] font-normal;
+}

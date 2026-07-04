@@ -166,12 +166,15 @@ export function useCompanyForm(companyId, onSaveSuccess) {
     setErrors(prev => ({ ...prev, [name]: err }));
   };
 
+  const [isDirty, setIsDirty] = useState(false);
+
   const bindField = (fieldName) => ({
     value: formData[fieldName] || '',
     onChange: (e) => {
       const val = e.target.value;
       setFormData((prev) => ({ ...prev, [fieldName]: val }));
       validateField(fieldName, val);
+      setIsDirty(true);
     },
     disabled: loading,
   });
@@ -219,6 +222,7 @@ export function useCompanyForm(companyId, onSaveSuccess) {
     loading,
     error,
     errors,
+    isDirty,
     handleSubmit,
     nameBind: bindField('name'),
     gstBind: bindField('gstNumber'),

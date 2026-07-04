@@ -1,0 +1,5 @@
+@reference "../../styles/global.css";
+
+.page-container {
+  @apply space-y-6 w-full max-w-7xl mx-auto;
+}

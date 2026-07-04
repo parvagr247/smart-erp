@@ -140,11 +140,58 @@ export function useItemFormViewData(props) {
     });
   };
 
+  const [isDirty, setIsDirty] = useState(false);
+  useEffect(() => {
+    const hasChanged = 
+      code !== (initialData?.code || '') ||
+      name !== (initialData?.name || '') ||
+      alias !== (initialData?.alias || '') ||
+      sku !== (initialData?.sku || '') ||
+      barcode !== (initialData?.barcode || '') ||
+      description !== (initialData?.description || '') ||
+      brandId !== (initialData?.brandId || '') ||
+      manufacturerId !== (initialData?.manufacturerId || '') ||
+      stockGroupId !== (initialData?.stockGroupId || '') ||
+      primaryUnitId !== (initialData?.primaryUnitId || '') ||
+      secondaryUnitId !== (initialData?.secondaryUnitId || '') ||
+      warehouseId !== (initialData?.warehouseId || '') ||
+      taxCategoryId !== (initialData?.taxCategoryId || '') ||
+      hsnId !== (initialData?.hsnId || '') ||
+      parseFloat(openingQuantity) !== parseFloat(initialData?.openingQuantity || 0) ||
+      parseFloat(openingValue) !== parseFloat(initialData?.openingValue || 0) ||
+      parseFloat(minimumStock) !== parseFloat(initialData?.minimumStock || 0) ||
+      parseFloat(maximumStock) !== parseFloat(initialData?.maximumStock || 0) ||
+      parseFloat(reorderLevel) !== parseFloat(initialData?.reorderLevel || 0) ||
+      parseFloat(reorderQuantity) !== parseFloat(initialData?.reorderQuantity || 0) ||
+      parseFloat(weight) !== parseFloat(initialData?.weight || 0) ||
+      dimensions !== (initialData?.dimensions || '') ||
+      notes !== (initialData?.notes || '') ||
+      status !== (initialData?.status || 'ACTIVE');
+
+    if (hasChanged) {
+      setIsDirty(true);
+    }
+  }, [
+    code, name, alias, sku, barcode, description, brandId, manufacturerId, 
+    stockGroupId, primaryUnitId, secondaryUnitId, warehouseId, taxCategoryId, 
+    hsnId, openingQuantity, openingValue, minimumStock, maximumStock, 
+    reorderLevel, reorderQuantity, weight, dimensions, notes, status, initialData
+  ]);
+
+  const handleCancel = () => {
+    if (isDirty) {
+      if (!confirm("You have unsaved changes. Are you sure you want to discard them?")) {
+        return;
+      }
+    }
+    if (onCancel) onCancel();
+  };
+
   return {
     activeTab,
     setActiveTab,
     handleSubmit,
-    onCancel,
+    onCancel: handleCancel,
     loading,
     code,
     setCode,

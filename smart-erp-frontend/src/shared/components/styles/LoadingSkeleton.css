@@ -1,0 +1,29 @@
+@reference "../../styles/global.css";
+
+.skeleton-line {
+  @apply h-4 bg-[var(--border-light)] rounded-md animate-pulse w-full;
+}
+
+.skeleton-circle {
+  @apply w-10 h-10 bg-[var(--border-light)] rounded-full animate-pulse shrink-0;
+}
+
+.skeleton-card-grid {
+  @apply grid grid-cols-1 md:grid-cols-3 gap-6 w-full mt-4;
+}
+
+.skeleton-card-box {
+  @apply p-6 bg-[var(--bg-surface)] border border-[var(--border-light)] rounded-xl space-y-4 shadow-xs;
+}
+
+.skeleton-card-header {
+  @apply flex items-center gap-3;
+}
+
+.skeleton-container {
+  @apply w-full space-y-4 mt-4;
+}
+
+.skeleton-row {
+  @apply flex gap-4 items-center;
+}

@@ -1,13 +1,17 @@
 import React from 'react';
-import '@shared/styles/CommonComponents.css';
+import { useLoadingSkeletonData } from './services/LoadingSkeletonService';
+import './styles/LoadingSkeleton.css';
 
-export default function LoadingSkeleton({ rows = 3, variant = 'table' }) {
+export default function LoadingSkeleton(props) {
+  const { variant = 'table' } = props;
+  const { items } = useLoadingSkeletonData(props);
+
   if (variant === 'card') {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mt-4">
-        {Array.from({ length: rows }).map((_, idx) => (
-          <div key={idx} className="p-6 bg-[var(--bg-surface)] border border-[var(--border-light)] rounded-xl space-y-4 shadow-xs">
-            <div className="flex items-center gap-3">
+      <div className="skeleton-card-grid">
+        {items.map((_, idx) => (
+          <div key={idx} className="skeleton-card-box">
+            <div className="skeleton-card-header">
               <div className="skeleton-circle" />
               <div className="skeleton-line h-6 w-2/3" />
             </div>
@@ -20,9 +24,9 @@ export default function LoadingSkeleton({ rows = 3, variant = 'table' }) {
   }
 
   return (
-    <div className="w-full space-y-4 mt-4">
-      {Array.from({ length: rows }).map((_, idx) => (
-        <div key={idx} className="flex gap-4 items-center">
+    <div className="skeleton-container">
+      {items.map((_, idx) => (
+        <div key={idx} className="skeleton-row">
           <div className="skeleton-line" />
           <div className="skeleton-line w-5/6" />
         </div>

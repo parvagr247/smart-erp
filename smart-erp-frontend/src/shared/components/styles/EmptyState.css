@@ -1,0 +1,21 @@
+@reference "../../styles/global.css";
+
+.empty-state-card {
+  @apply bg-[var(--bg-surface)] border border-[var(--border-light)] rounded-xl p-8 flex flex-col items-center justify-center text-center shadow-xs max-w-xl mx-auto mt-6;
+}
+
+.empty-state-action {
+  @apply mt-2;
+}
+
+.empty-state-icon {
+  @apply w-12 h-12 rounded-full bg-[var(--primary-glow)] text-[var(--primary)] flex items-center justify-center mb-4;
+}
+
+.empty-state-title {
+  @apply text-base font-bold font-heading text-[var(--text-primary)] mb-2;
+}
+
+.empty-state-desc {
+  @apply text-xs text-[var(--text-secondary)] max-w-md mb-4;
+}

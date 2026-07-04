@@ -49,7 +49,6 @@ export default function CommandPalette({ isOpen, onClose, onNavigate }) {
       <div 
         className="cmd-palette-box" 
         onClick={(e) => e.stopPropagation()}
-        onKeyDown={handleKeyDown}
       >
         <div className="cmd-palette-header">
           <Search className="cmd-palette-search-icon" />
@@ -60,6 +59,7 @@ export default function CommandPalette({ isOpen, onClose, onNavigate }) {
             placeholder="Type to search modules, pages, or actions..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
           />
           <span className="cmd-palette-esc-badge">ESC</span>
         </div>

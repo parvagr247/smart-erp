@@ -1,0 +1,21 @@
+@reference "../../styles/global.css";
+
+.btn-action-primary {
+  @apply bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] cursor-pointer;
+}
+
+.btn-action-outline {
+  @apply border-[var(--border-light)] text-[var(--text-primary)] hover:bg-[var(--bg-input)] cursor-pointer;
+}
+
+.btn-action-destructive {
+  @apply bg-red-600 hover:bg-red-700 text-white cursor-pointer;
+}
+
+.btn-action-secondary {
+  @apply bg-[var(--bg-input)] text-[var(--text-primary)] hover:bg-[var(--border-light)] cursor-pointer border border-[var(--border-light)];
+}
+
+.action-button-base {
+  @apply flex items-center gap-1.5 font-semibold text-xs py-2 px-3 h-auto;
+}

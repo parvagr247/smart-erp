@@ -1,16 +1,17 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@shared/components/ui/card';
+import './styles/SectionCard.css';
 
 export default function SectionCard({ title, description, children, className = '' }) {
   return (
-    <Card className={`bg-[var(--bg-surface)] border border-[var(--border-light)] shadow-xs ${className}`}>
+    <Card className={`section-card-container ${className}`}>
       {(title || description) && (
-        <CardHeader className="pb-4 border-b border-[var(--border-light)] text-left">
-          {title && <CardTitle className="text-base font-bold font-heading text-[var(--text-primary)]">{title}</CardTitle>}
-          {description && <CardDescription className="text-xs text-[var(--text-secondary)]">{description}</CardDescription>}
+        <CardHeader className="section-card-header">
+          {title && <CardTitle className="section-card-title">{title}</CardTitle>}
+          {description && <CardDescription className="section-card-desc">{description}</CardDescription>}
         </CardHeader>
       )}
-      <CardContent className="pt-5 pb-5">
+      <CardContent className="section-card-content">
         {children}
       </CardContent>
     </Card>

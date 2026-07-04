@@ -1,0 +1,25 @@
+@reference "../../styles/global.css";
+
+.breadcrumbs-container {
+  @apply flex flex-wrap items-center gap-2 text-xs font-semibold text-[var(--text-muted)] select-none;
+}
+
+.breadcrumb-item {
+  @apply hover:text-[var(--text-primary)] transition-colors cursor-pointer;
+}
+
+.breadcrumb-separator {
+  @apply text-[var(--text-muted)]/50 mx-0.5;
+}
+
+.breadcrumb-home {
+  @apply hover:text-[var(--text-primary)] transition-colors cursor-pointer flex items-center gap-1;
+}
+
+.breadcrumb-active {
+  @apply text-[var(--text-primary)] font-bold truncate max-w-[120px] sm:max-w-none;
+}
+
+.breadcrumb-link {
+  @apply truncate max-w-[120px] sm:max-w-none;
+}

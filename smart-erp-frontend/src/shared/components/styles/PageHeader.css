@@ -1,0 +1,21 @@
+@reference "../../styles/global.css";
+
+.page-header-container {
+  @apply flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-[var(--border-light)];
+}
+
+.page-header-meta {
+  @apply space-y-1 text-left;
+}
+
+.page-header-title {
+  @apply text-2xl font-bold font-heading tracking-tight text-[var(--text-primary)];
+}
+
+.page-header-desc {
+  @apply text-xs text-[var(--text-secondary)];
+}
+
+.page-header-toolbar {
+  @apply flex flex-wrap gap-2 items-center;
+}

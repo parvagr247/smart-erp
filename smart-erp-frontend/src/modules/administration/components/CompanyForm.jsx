@@ -6,7 +6,16 @@ import { CardContent, CardFooter } from '@shared/components/ui/card';
 import './styles/CompanyForm.css';
 
 export default function CompanyForm({ formHooks, onCancel, isEdit = false }) {
-  const { loading, error, errors, handleSubmit, nameBind, gstBind, panBind, fyBind, addressBind, cityBind, stateBind, countryBind, pincodeBind, phoneBind, emailBind, currencyBind, logoBind } = formHooks;
+  const { loading, error, errors, isDirty, handleSubmit, nameBind, gstBind, panBind, fyBind, addressBind, cityBind, stateBind, countryBind, pincodeBind, phoneBind, emailBind, currencyBind, logoBind } = formHooks;
+
+  const handleCancel = () => {
+    if (isDirty) {
+      if (!confirm("You have unsaved changes. Are you sure you want to discard them?")) {
+        return;
+      }
+    }
+    onCancel();
+  };
 
   const fields = [
     { id: 'name', label: 'Company Name *', placeholder: 'e.g. Acme Corporation', bind: nameBind, error: errors?.name, fullWidth: true },
@@ -39,7 +48,7 @@ export default function CompanyForm({ formHooks, onCancel, isEdit = false }) {
         </div>
       </CardContent>
       <CardFooter className="form-actions">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={loading} className="border-[var(--border-light)] text-[var(--text-primary)] hover:bg-[var(--bg-input)] cursor-pointer">Cancel</Button>
+        <Button type="button" variant="outline" onClick={handleCancel} disabled={loading} className="border-[var(--border-light)] text-[var(--text-primary)] hover:bg-[var(--bg-input)] cursor-pointer">Cancel</Button>
         <Button type="submit" disabled={loading} className="bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] cursor-pointer">{loading ? 'Saving...' : isEdit ? 'Update Company' : 'Create Company'}</Button>
       </CardFooter>
     </form>

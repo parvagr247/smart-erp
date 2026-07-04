@@ -1,5 +1,5 @@
 import React from 'react';
-import '@shared/styles/CommonComponents.css';
+import './styles/PageContainer.css';
 
 export default function PageContainer({ children }) {
   return (

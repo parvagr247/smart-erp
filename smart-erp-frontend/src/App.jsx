@@ -16,6 +16,7 @@ import { getInventoryRoutes } from '@modules/inventory';
 const SettingsView = React.lazy(() => import('@shared/components/SettingsView'));
 const NotFoundView = React.lazy(() => import('@shared/components/NotFoundView'));
 const AccessDeniedView = React.lazy(() => import('@shared/components/AccessDeniedView'));
+const CompanyProfilePage = React.lazy(() => import('@modules/administration/pages/CompanyProfilePage'));
 
 const Loading = () => (
   <div className="flex items-center justify-center min-h-[40vh] text-sm text-[var(--text-muted)] font-semibold animate-pulse">
@@ -75,6 +76,7 @@ export default function App() {
           {getAccountingRoutes()}
 
           {getInventoryRoutes()}
+          <Route path="company-profile" element={<CompanyProfilePage />} />
           <Route path="settings" element={<SettingsView />} />
           <Route path="access-denied" element={<AccessDeniedView />} />
         </Route>

@@ -1,9 +1,11 @@
 import React from 'react';
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
-import '@shared/styles/CommonComponents.css';
+import { useStatCardData } from './services/StatCardService';
+import './styles/StatCard.css';
 
-export default function StatCard({ title, value, icon, trend }) {
-  const isPositive = trend?.isPositive;
+export default function StatCard(props) {
+  const { title, value, icon, trend } = props;
+  const { isPositive, trendClass } = useStatCardData(props);
 
   return (
     <div className="stat-card">
@@ -17,11 +19,11 @@ export default function StatCard({ title, value, icon, trend }) {
         
         {trend && (
           <div className="stat-card-footer">
-            <span className={`flex items-center gap-0.5 ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
+            <span className={`stat-card-trend ${trendClass}`}>
               {isPositive ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
               {trend.value}
             </span>
-            <span className="text-[var(--text-muted)] font-normal">{trend.label || 'vs last month'}</span>
+            <span className="stat-card-trend-label">{trend.label || 'vs last month'}</span>
           </div>
         )}
       </div>

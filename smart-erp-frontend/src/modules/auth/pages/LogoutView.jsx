@@ -35,7 +35,10 @@ export default function LogoutView() {
         </button>
         <button 
           type="button" 
-          onClick={handleLogout} 
+          onClick={() => {
+            handleLogout();
+            navigate('/login');
+          }} 
           className="logout-btn-confirm"
         >
           Yes, Logout
