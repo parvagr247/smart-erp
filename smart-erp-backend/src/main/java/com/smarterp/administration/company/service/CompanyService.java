@@ -23,4 +23,8 @@ public interface CompanyService {
     Page<CompanySummaryResponse> getCompanies(User owner, Pageable pageable);
 
     CompanyResponse switchCompany(UUID id, User owner);
+
+    java.util.List<com.smarterp.administration.company.dto.CompanyUserAccessResponse> getPermittedUsers(UUID companyId, User admin);
+
+    void updateAccess(UUID companyId, UUID userId, boolean grant, User admin);
 }

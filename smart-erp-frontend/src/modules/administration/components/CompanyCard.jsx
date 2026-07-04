@@ -2,7 +2,7 @@ import React from 'react';
 import { Briefcase, Calendar, MapPin, Trash2, Edit, ArrowRight } from 'lucide-react';
 import './styles/CompanyCard.css';
 
-export default function CompanyCard({ company, onSelect, onEdit, onDelete }) {
+export default function CompanyCard({ company, onSelect, onEdit, onDelete, isAdmin }) {
   return (
     <div className="company-card-container group">
       <div className="company-card-glow" />
@@ -28,10 +28,14 @@ export default function CompanyCard({ company, onSelect, onEdit, onDelete }) {
         </div>
       </div>
       <div className="company-card-footer">
-        <div className="company-card-footer-actions">
-          <button onClick={() => onEdit(company)} className="company-card-btn-edit" title="Edit Company"><Edit size={15} /></button>
-          <button onClick={() => onDelete(company)} className="company-card-btn-delete" title="Delete Company"><Trash2 size={15} /></button>
-        </div>
+        {isAdmin ? (
+          <div className="company-card-footer-actions">
+            <button onClick={() => onEdit(company)} className="company-card-btn-edit" title="Edit Company"><Edit size={15} /></button>
+            <button onClick={() => onDelete(company)} className="company-card-btn-delete" title="Delete Company"><Trash2 size={15} /></button>
+          </div>
+        ) : (
+          <div className="company-card-footer-actions opacity-0 pointer-events-none"></div>
+        )}
         <button onClick={() => onSelect(company)} className="company-card-btn-open font-semibold">Open <ArrowRight size={13} /></button>
       </div>
     </div>

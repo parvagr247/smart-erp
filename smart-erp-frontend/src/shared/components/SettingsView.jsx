@@ -123,8 +123,8 @@ export default function SettingsView() {
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 settings-input-group">
+                <div className="form-item">
                   <Label htmlFor="current-pw">Current Password</Label>
                   <Input 
                     id="current-pw" 
@@ -134,8 +134,8 @@ export default function SettingsView() {
                     required 
                   />
                 </div>
-                <div className="space-y-1 hidden md:block"></div>
-                <div className="space-y-1">
+                <div className="hidden md:block"></div>
+                <div className="form-item">
                   <Label htmlFor="new-pw">New Password</Label>
                   <Input 
                     id="new-pw" 
@@ -145,7 +145,7 @@ export default function SettingsView() {
                     required 
                   />
                 </div>
-                <div className="space-y-1">
+                <div className="form-item">
                   <Label htmlFor="confirm-pw">Confirm New Password</Label>
                   <Input 
                     id="confirm-pw" 
@@ -182,7 +182,17 @@ export default function SettingsView() {
                   <div><strong>GSTIN:</strong> {activeCompany.gstNumber || 'N/A'}</div>
                   <div><strong>PAN:</strong> {activeCompany.panNumber || 'N/A'}</div>
                   <div><strong>FY Period:</strong> {activeCompany.financialYear}</div>
-                  <div><strong>Address:</strong> {activeCompany.address ? `${activeCompany.address}, ${activeCompany.city}, ${activeCompany.state}` : 'N/A'}</div>
+                  <div>
+                    <strong>Address:</strong> {
+                      [
+                        activeCompany.address,
+                        activeCompany.city,
+                        activeCompany.pincode,
+                        activeCompany.state,
+                        activeCompany.country
+                      ].filter(p => p && String(p).trim() !== '' && String(p) !== 'undefined').join(', ') || 'N/A'
+                    }
+                  </div>
                 </div>
               </div>
             </SectionCard>

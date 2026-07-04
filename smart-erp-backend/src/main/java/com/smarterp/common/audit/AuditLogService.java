@@ -3,6 +3,7 @@ package com.smarterp.common.audit;
 import com.smarterp.administration.company.entity.Company;
 import com.smarterp.inventory.master.entity.ActivityTimeline;
 import com.smarterp.inventory.master.repository.ActivityTimelineRepository;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,6 +16,7 @@ import java.util.UUID;
 public class AuditLogService {
 
     private final ActivityTimelineRepository timelineRepository;
+    private final EntityManager entityManager;
 
     private String getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -27,8 +29,7 @@ public class AuditLogService {
     @Transactional
     public void saveLog(UUID companyId, String entityType, UUID entityId, String action, String details) {
         if (companyId == null) return;
-        Company company = new Company();
-        company.setId(companyId);
+        Company company = entityManager.getReference(Company.class, companyId);
 
         ActivityTimeline logEntry = ActivityTimeline.builder()
                 .company(company)

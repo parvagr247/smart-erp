@@ -24,7 +24,7 @@ export default function PartnerForm(props) {
       </div>
       <div className="flex gap-2 justify-end border-t border-[var(--border-light)] pt-6">
         <ActionButton label="Cancel" variant="secondary" onClick={onCancel} disabled={loading} />
-        <button type="submit" disabled={loading} className="p-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white text-sm font-semibold rounded transition px-6 flex items-center justify-center disabled:opacity-50 cursor-pointer">{loading ? 'Processing...' : 'Save Partner Record'}</button>
+        <ActionButton label={loading ? 'Processing...' : 'Save Partner Record'} type="submit" disabled={loading} className="px-6 py-2.5 h-auto text-sm font-semibold" />
       </div>
     </form>
   );

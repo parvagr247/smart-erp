@@ -12,7 +12,7 @@ export default function PartnerAddressesCard({ addresses }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
           {addresses.map((addr) => (
             <div key={addr.id} className="p-4 border border-[var(--border-light)] rounded bg-[var(--bg-surface)] flex gap-3">
-              <MapPin size={18} className="text-[var(--accent)] shrink-0 mt-0.5" />
+              <MapPin size={18} className="text-[var(--primary)] shrink-0 mt-0.5" />
               <div className="text-xs">
                 <span className="font-bold text-[var(--text-primary)] uppercase tracking-wide block mb-1">{addr.addressType}</span>
                 <p className="text-[var(--text-primary)]">{addr.addressLine1}</p>

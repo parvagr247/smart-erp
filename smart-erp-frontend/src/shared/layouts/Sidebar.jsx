@@ -36,6 +36,11 @@ const getSidebarItems = (role) => {
         { title: 'Dashboard', path: '/inventory' },
         { title: 'Stock Groups', path: '/inventory/stock-groups' },
         { title: 'Stock Items', path: '/inventory/stock-items' },
+        { title: 'Brands', path: '/inventory/brands' },
+        { title: 'Manufacturers', path: '/inventory/manufacturers' },
+        { title: 'Categories', path: '/inventory/categories' },
+        { title: 'Units of Measure', path: '/inventory/units' },
+        { title: 'Warehouses', path: '/inventory/warehouses' },
         { title: 'Business Partners', path: '/inventory/partners' }
       ]
     });

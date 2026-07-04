@@ -20,7 +20,23 @@ export default function ProtectedRoute({ children, requireCompany = true, requir
 
   // 3. Administrative role validation
   if (requireAdmin && user?.role !== 'ADMIN') {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/access-denied" replace />;
+  }
+
+  // 4. Role-based namespace constraints
+  const path = location.pathname;
+  if (user?.role === 'ACCOUNTANT') {
+    const isRestricted = ['/inventory', '/sales', '/purchase'].some(p => path.startsWith(p));
+    if (isRestricted) {
+      return <Navigate to="/access-denied" replace />;
+    }
+  }
+
+  if (user?.role === 'INVENTORY_MANAGER') {
+    const isRestricted = ['/accounting'].some(p => path.startsWith(p));
+    if (isRestricted) {
+      return <Navigate to="/access-denied" replace />;
+    }
   }
 
   return children;

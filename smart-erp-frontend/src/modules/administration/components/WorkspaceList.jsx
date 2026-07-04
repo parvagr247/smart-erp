@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import './styles/WorkspaceList.css';
 
 export default function WorkspaceList({
-  companies, page, setPage, totalPages, handleSelect, onEdit, onDelete, onCreateCompany
+  companies, page, setPage, totalPages, handleSelect, onEdit, onDelete, onCreateCompany, isAdmin
 }) {
   return (
     <>
@@ -17,10 +17,10 @@ export default function WorkspaceList({
           Active Session
         </span>
       </div>
-
+ 
       {companies.length === 0 ? (
         <div className="my-8">
-          <EmptyCompanyState onCreateClick={onCreateCompany} />
+          <EmptyCompanyState onCreateClick={onCreateCompany} isAdmin={isAdmin} />
         </div>
       ) : (
         <>
@@ -32,6 +32,7 @@ export default function WorkspaceList({
                 onSelect={handleSelect}
                 onEdit={onEdit}
                 onDelete={onDelete}
+                isAdmin={isAdmin}
               />
             ))}
           </div>

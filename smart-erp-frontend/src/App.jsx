@@ -15,6 +15,7 @@ import { getInventoryRoutes } from '@modules/inventory';
 
 const SettingsView = React.lazy(() => import('@shared/components/SettingsView'));
 const NotFoundView = React.lazy(() => import('@shared/components/NotFoundView'));
+const AccessDeniedView = React.lazy(() => import('@shared/components/AccessDeniedView'));
 
 const Loading = () => (
   <div className="flex items-center justify-center min-h-[40vh] text-sm text-[var(--text-muted)] font-semibold animate-pulse">
@@ -24,7 +25,7 @@ const Loading = () => (
 
 export default function App() {
   const navigate = useNavigate();
-  const { token, handleLoginSuccess } = useAuth();
+  const { token, user, handleLoginSuccess } = useAuth();
   const { activeCompany, updateActiveCompany } = useActiveCompany();
 
   // Enforce company selection if logged in without company context
@@ -35,17 +36,25 @@ export default function App() {
     
     if (!activeCompany && !isEx) {
       fetchCompaniesList(0, 1).then((res) => {
-        if (res.success && res.data && res.data.totalElements > 0) navigate('/company-select');
-        else navigate('/create-company');
+        if (res.success && res.data && res.data.totalElements > 0) {
+          navigate('/company-select');
+        } else {
+          if (user?.role === 'ADMIN') navigate('/create-company');
+          else navigate('/company-select');
+        }
       }).catch(() => navigate('/company-select'));
     }
-  }, [token, activeCompany, navigate]);
+  }, [token, activeCompany, navigate, user]);
 
   const handleAuthSuccess = (userData, jwtToken) => {
     handleLoginSuccess(userData, jwtToken);
     fetchCompaniesList(0, 1).then((res) => {
-      if (res.success && res.data && res.data.totalElements > 0) navigate('/company-select');
-      else navigate('/create-company');
+      if (res.success && res.data && res.data.totalElements > 0) {
+        navigate('/company-select');
+      } else {
+        if (userData?.role === 'ADMIN') navigate('/create-company');
+        else navigate('/company-select');
+      }
     }).catch(() => navigate('/company-select'));
   };
 
@@ -67,6 +76,7 @@ export default function App() {
 
           {getInventoryRoutes()}
           <Route path="settings" element={<SettingsView />} />
+          <Route path="access-denied" element={<AccessDeniedView />} />
         </Route>
 
         {/* Administration console layout routes */}

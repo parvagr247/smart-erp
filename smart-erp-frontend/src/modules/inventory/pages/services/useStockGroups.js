@@ -36,11 +36,12 @@ export default function useStockGroups() {
         return false;
       }
     } catch (err) {
-      setMessage("Error saving stock group.");
+      const errMsg = err.response?.data?.message || err.message || "Error saving stock group.";
+      setMessage(errMsg);
       return false;
     } finally {
       setLoading(false);
-      setTimeout(() => setMessage(''), 3000);
+      setTimeout(() => setMessage(''), 5000);
     }
   };
 

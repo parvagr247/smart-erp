@@ -26,9 +26,9 @@ export function StockGroupForm({ groups, submitLoading, message, onCreate }) {
           <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none" placeholder="Group purpose" />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Parent Group (optional)</label>
+          <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Parent Stock Group (Optional)</label>
           <select value={parentId} onChange={(e) => setParentId(e.target.value)} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none text-sm cursor-pointer">
-            <option value="">Primary (No Parent)</option>
+            <option value="">None (Primary Group)</option>
             {groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
           </select>
         </div>

@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useActiveCompany } from '@shared/context/ActiveCompanyContext';
 import { useAuth } from '@shared/context/AuthContext';
 import CompanySelector from '@modules/administration/components/CompanySelector';
 import useNotifications from '@shared/hooks/useNotifications';
-import { Search, Bell, Sun, Moon, LogOut, Settings, User as UserIcon } from 'lucide-react';
+import { Search, Bell, Sun, Moon, LogOut, Settings, User as UserIcon, Building2, Calendar } from 'lucide-react';
 
 export default function TopNavbar({ onSearchClick }) {
+  const navigate = useNavigate();
   const { activeCompany } = useActiveCompany();
   const { user, theme, toggleTheme, handleLogout } = useAuth();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
@@ -145,29 +147,52 @@ export default function TopNavbar({ onSearchClick }) {
           </button>
 
           {isProfileOpen && (
-            <div className="absolute right-0 mt-2 w-56 bg-[var(--bg-surface)] border border-[var(--border-light)] rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150 p-2">
-              <div className="px-3 py-2 border-b border-[var(--border-light)] text-left mb-1">
+            <div className="absolute right-0 mt-2 w-64 bg-[var(--bg-surface)] border border-[var(--border-light)] rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150 p-3 space-y-2">
+              <div className="px-1 py-1 text-left">
                 <div className="font-bold text-sm text-[var(--text-primary)] truncate">{user?.fullName}</div>
-                <div className="text-[10px] text-[var(--text-muted)] truncate">{user?.email}</div>
+                <div className="text-xs text-[var(--text-muted)] truncate mb-2">{user?.email}</div>
+                
+                {/* Active Company Metadata */}
+                {activeCompany && (
+                  <div className="mt-2 pt-2 border-t border-[var(--border-light)] space-y-1.5 text-xs text-[var(--text-secondary)]">
+                    <div className="flex items-center gap-1.5 font-semibold text-[var(--text-primary)]">
+                      <Building2 size={13} className="text-indigo-500 shrink-0" />
+                      <span className="truncate">{activeCompany.name}</span>
+                    </div>
+                    <div className="pl-4 text-[10px] space-y-1 font-mono text-[var(--text-muted)]">
+                      <div>ID: {activeCompany.id}</div>
+                      <div>GST: {activeCompany.gstNumber || 'N/A'}</div>
+                      <div>FY: {activeCompany.financialYear || 'N/A'}</div>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="mt-2 pt-2 border-t border-[var(--border-light)] flex items-center gap-1.5 text-[10px] text-[var(--text-muted)]">
+                  <Calendar size={12} className="text-indigo-400 shrink-0" />
+                  <span>{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                </div>
               </div>
-              <button
-                onClick={() => { setIsProfileOpen(false); }}
-                className="w-full text-left flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-input)] hover:text-[var(--text-primary)] cursor-pointer"
-              >
-                <UserIcon size={14} /> My Profile
-              </button>
-              <button
-                onClick={() => { setIsProfileOpen(false); }}
-                className="w-full text-left flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-input)] hover:text-[var(--text-primary)] cursor-pointer border-b border-[var(--border-light)] pb-2 mb-1"
-              >
-                <Settings size={14} /> Settings
-              </button>
-              <button
-                onClick={() => { setIsProfileOpen(false); handleLogout(); }}
-                className="w-full text-left flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg text-red-500 hover:bg-red-500/10 cursor-pointer"
-              >
-                <LogOut size={14} /> Logout
-              </button>
+
+              <div className="border-t border-[var(--border-light)] pt-2 space-y-1">
+                <button
+                  onClick={() => { setIsProfileOpen(false); navigate('/settings'); }}
+                  className="w-full text-left flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-input)] hover:text-[var(--text-primary)] cursor-pointer"
+                >
+                  <UserIcon size={14} /> My Profile
+                </button>
+                <button
+                  onClick={() => { setIsProfileOpen(false); navigate('/settings'); }}
+                  className="w-full text-left flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-input)] hover:text-[var(--text-primary)] cursor-pointer"
+                >
+                  <Settings size={14} /> Settings
+                </button>
+                <button
+                  onClick={() => { setIsProfileOpen(false); navigate('/logout'); }}
+                  className="w-full text-left flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg text-red-500 hover:bg-red-500/10 cursor-pointer"
+                >
+                  <LogOut size={14} /> Logout
+                </button>
+              </div>
             </div>
           )}
         </div>

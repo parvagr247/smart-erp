@@ -39,11 +39,12 @@ export default function useLookupMaster({ fetchApi, createApi, deleteApi }) {
         return false;
       }
     } catch (err) {
-      setMessage("An error occurred while saving.");
+      const errMsg = err.response?.data?.message || err.message || "An error occurred while saving.";
+      setMessage(errMsg);
       return false;
     } finally {
       setSubmitLoading(false);
-      setTimeout(() => setMessage(''), 3500);
+      setTimeout(() => setMessage(''), 5000);
     }
   };
 

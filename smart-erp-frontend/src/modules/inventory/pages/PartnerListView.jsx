@@ -26,8 +26,8 @@ export default function PartnerListView() {
           <select value={type} onChange={(e) => setType(e.target.value)} className="w-full p-2 bg-[var(--bg-input)] rounded border border-[var(--border-light)] text-sm text-[var(--text-primary)] cursor-pointer"><option value="">-- Classification --</option><option value="CUSTOMER">Customer</option><option value="SUPPLIER">Supplier</option><option value="BOTH">Both</option></select>
           <select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full p-2 bg-[var(--bg-input)] rounded border border-[var(--border-light)] text-sm text-[var(--text-primary)] cursor-pointer"><option value="">-- Status --</option><option value="ACTIVE">Active</option><option value="INACTIVE">Inactive</option><option value="BLOCKED">Blocked</option></select>
           <div className="flex gap-2">
-            <button type="submit" className="flex-1 p-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white text-sm font-semibold rounded transition cursor-pointer">Apply Search</button>
-            <button type="button" onClick={handleClearFilters} className="p-2 border border-[var(--border-light)] text-[var(--text-muted)] rounded hover:bg-[var(--bg-hover)] cursor-pointer" title="Reset parameters"><RefreshCw size={14} /></button>
+            <ActionButton label="Apply Search" type="submit" className="flex-grow w-full py-2 h-auto text-xs font-semibold" />
+            <button type="button" onClick={handleClearFilters} className="p-2 border border-[var(--border-light)] text-[var(--text-muted)] rounded-lg hover:bg-[var(--bg-input)] cursor-pointer flex items-center justify-center" title="Reset parameters"><RefreshCw size={14} /></button>
           </div>
         </form>
         {loading ? <div className="text-center py-8 text-sm text-[var(--text-muted)] animate-pulse">Loading partners dataset...</div> :

@@ -20,7 +20,7 @@ export default function PartnerProfileDetailsCard({ partner }) {
           <span className="text-[var(--text-muted)] block text-xs font-semibold">Primary Email Address</span>
           <span className="font-medium text-[var(--text-primary)] flex items-center gap-1.5 mt-0.5 animate-pulse-none">
             <Mail size={12} className="text-[var(--text-muted)]" />
-            {partner.email ? <a href={`mailto:${partner.email}`} className="hover:underline text-[var(--accent)]">{partner.email}</a> : 'N/A'}
+            {partner.email ? <a href={`mailto:${partner.email}`} className="hover:underline text-[var(--primary)]">{partner.email}</a> : 'N/A'}
           </span>
         </div>
         <div>
@@ -34,7 +34,7 @@ export default function PartnerProfileDetailsCard({ partner }) {
           <span className="text-[var(--text-muted)] block text-xs font-semibold">Official Website</span>
           <span className="font-medium text-[var(--text-primary)] flex items-center gap-1.5 mt-0.5">
             <Globe size={12} className="text-[var(--text-muted)]" />
-            {partner.website ? <a href={partner.website.startsWith('http') ? partner.website : `https://${partner.website}`} target="_blank" rel="noopener noreferrer" className="hover:underline text-[var(--accent)]">{partner.website}</a> : 'N/A'}
+            {partner.website ? <a href={partner.website.startsWith('http') ? partner.website : `https://${partner.website}`} target="_blank" rel="noopener noreferrer" className="hover:underline text-[var(--primary)]">{partner.website}</a> : 'N/A'}
           </span>
         </div>
         <div>

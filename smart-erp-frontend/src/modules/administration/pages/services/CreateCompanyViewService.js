@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@shared/context/AuthContext';
 import { useCompanyForm } from '../../administration.service';
 
 export function useCreateCompanyViewData(props) {
-  const { user, theme, toggleTheme, handleLogout } = useAuth();
+  const navigate = useNavigate();
+  const { user, theme, toggleTheme } = useAuth();
   const formHooks = useCompanyForm(null, props.onSaveSuccess);
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
 
@@ -23,7 +25,7 @@ export function useCreateCompanyViewData(props) {
     user,
     theme,
     toggleTheme,
-    handleLogout,
+    handleLogout: () => navigate('/logout'),
     formHooks,
     currentTime,
     getInitials

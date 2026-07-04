@@ -1,0 +1,33 @@
+@reference "../../../../shared/styles/global.css";
+
+.logout-card {
+  @apply w-full max-w-md shadow-2xl border border-[var(--border-light)] bg-[var(--bg-surface)] rounded-2xl;
+}
+
+.logout-header {
+  @apply text-center space-y-2 pt-6 pb-4;
+}
+
+.logout-title {
+  @apply text-2xl font-bold font-heading tracking-tight text-[var(--text-primary)];
+}
+
+.logout-desc {
+  @apply text-sm text-[var(--text-secondary)] px-4;
+}
+
+.logout-content {
+  @apply py-4 text-center border-t border-b border-[var(--border-light)] bg-[var(--bg-base)]/30;
+}
+
+.logout-footer {
+  @apply flex gap-4 p-6 justify-center items-center;
+}
+
+.logout-btn-cancel {
+  @apply flex-1 px-4 py-2.5 text-sm font-semibold rounded-xl border border-[var(--border-light)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] transition-all cursor-pointer text-center bg-[var(--bg-surface)];
+}
+
+.logout-btn-confirm {
+  @apply flex-1 px-4 py-2.5 text-sm font-semibold rounded-xl bg-rose-600 text-white hover:bg-rose-700 active:bg-rose-800 transition-all cursor-pointer text-center shadow-sm shadow-rose-600/10;
+}

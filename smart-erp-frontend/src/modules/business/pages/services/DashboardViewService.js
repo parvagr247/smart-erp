@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useActiveCompany } from '@shared/context/ActiveCompanyContext';
 import { useAuth } from '@shared/context/AuthContext';
 import { inventoryService } from '@modules/inventory/inventory.service';
+import { fetchCompanyPermittedUsers, updateCompanyUserAccess } from '@modules/administration/administration.service';
 
 export function useDashboardViewData() {
   const navigate = useNavigate();
@@ -19,6 +20,8 @@ export function useDashboardViewData() {
   });
 
   const [activities, setActivities] = useState([]);
+  const [usersAccess, setUsersAccess] = useState([]);
+  const [accessLoading, setAccessLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -35,11 +38,33 @@ export function useDashboardViewData() {
       if (actRes.success && actRes.data) {
         setActivities(actRes.data.activities || []);
       }
+
+      if (user?.role === 'ADMIN' && activeCompany) {
+        const accessRes = await fetchCompanyPermittedUsers(activeCompany.id);
+        if (accessRes.success && accessRes.data) {
+          setUsersAccess(accessRes.data);
+        }
+      }
     } catch (err) {
       console.error("Error loading dashboard data", err);
       setError("Unable to sync dashboard statistics with backend services.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleToggleAccess = async (userId, currentAccess) => {
+    try {
+      setAccessLoading(true);
+      const grant = !currentAccess;
+      const res = await updateCompanyUserAccess(activeCompany.id, userId, grant);
+      if (res.success) {
+        setUsersAccess(prev => prev.map(u => u.userId === userId ? { ...u, hasAccess: grant } : u));
+      }
+    } catch (err) {
+      console.error("Error toggling user access", err);
+    } finally {
+      setAccessLoading(false);
     }
   };
 
@@ -73,6 +98,9 @@ export function useDashboardViewData() {
     todayStr,
     stats,
     navigate,
-    fetchDashboardData
+    fetchDashboardData,
+    usersAccess,
+    accessLoading,
+    handleToggleAccess
   };
 }

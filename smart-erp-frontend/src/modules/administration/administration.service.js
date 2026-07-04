@@ -295,3 +295,13 @@ export function useCompanyDetails(companyId, onDeleteSuccess) {
     refreshDetails: loadCompanyDetails,
   };
 }
+
+export async function fetchCompanyPermittedUsers(companyId) {
+  const response = await axiosClient.get(`/companies/${companyId}/permitted-users`);
+  return response.data;
+}
+
+export async function updateCompanyUserAccess(companyId, userId, grant) {
+  const response = await axiosClient.post(`/companies/${companyId}/users/${userId}/access?grant=${grant}`);
+  return response.data;
+}

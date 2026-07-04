@@ -1,32 +1,89 @@
 import React from 'react';
 import SectionCard from '@shared/components/SectionCard';
-import ActionButton from '@shared/components/ActionButton';
-import { Plus } from 'lucide-react';
+import { useAuth } from '@shared/context/AuthContext';
+import { BookOpen, Package, ShoppingCart, FileSpreadsheet, Users, BarChart3, ChevronRight } from 'lucide-react';
 import './styles/ShortcutsPanel.css';
 
 export default function ShortcutsPanel({ navigate }) {
+  const { user } = useAuth();
+  const role = user?.role;
+
+  const portals = [];
+
+  if (role === 'ADMIN' || role === 'ACCOUNTANT') {
+    portals.push({
+      title: 'Accounting & Ledger',
+      desc: 'Chart of accounts, general ledger entries, voucher configurations, and transaction audits.',
+      icon: <BookOpen className="text-indigo-500 shrink-0" size={22} />,
+      btnText: 'Go to Accounting',
+      path: '/accounting'
+    });
+  }
+
+  if (role === 'ADMIN' || role === 'INVENTORY_MANAGER') {
+    portals.push({
+      title: 'Inventory Control',
+      desc: 'Manage stock items, groups, unit of measurements, brands, manufacturers, and warehouses.',
+      icon: <Package className="text-emerald-500 shrink-0" size={22} />,
+      btnText: 'Go to Inventory',
+      path: '/inventory'
+    });
+    portals.push({
+      title: 'Sales & Outstandings',
+      desc: 'Track customer sales invoices, accounts receivables, billing parameters, and collections.',
+      icon: <ShoppingCart className="text-sky-500 shrink-0" size={22} />,
+      btnText: 'Go to Sales Registry',
+      path: '/sales'
+    });
+    portals.push({
+      title: 'Procurement & Purchases',
+      desc: 'Purchase orders, supplier outstandings, raw materials intake, and accounts payables.',
+      icon: <FileSpreadsheet className="text-amber-500 shrink-0" size={22} />,
+      btnText: 'Go to Purchases',
+      path: '/purchase'
+    });
+    portals.push({
+      title: 'Business Partners & CRM',
+      desc: 'Manage supplier and customer contact details, tax registrations (GSTIN/PAN), and addresses.',
+      icon: <Users className="text-rose-500 shrink-0" size={22} />,
+      btnText: 'Go to Partners',
+      path: '/inventory/partners'
+    });
+  }
+
+  portals.push({
+    title: 'Reports & Analytics',
+    desc: 'Ledger registers, balance sheets, daybooks, inventory valuations, and financial summaries.',
+    icon: <BarChart3 className="text-violet-500 shrink-0" size={22} />,
+    btnText: 'Go to Reports',
+    path: '/reports'
+  });
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">
-      <SectionCard title="Shortcuts" description="Instantly open setup forms" className="lg:col-span-2 text-left">
-        <div className="db-shortcut-grid">
-          <ActionButton label="Create Ledger" icon={<Plus size={14} />} variant="outline" onClick={() => navigate('/accounting/ledgers/create')} className="w-full justify-start py-3" />
-          <ActionButton label="Create Partner" icon={<Plus size={14} />} variant="outline" onClick={() => navigate('/inventory/partners/create')} className="w-full justify-start py-3" />
-          <ActionButton label="Add Stock Item" icon={<Plus size={14} />} variant="outline" onClick={() => navigate('/inventory/stock-items/create')} className="w-full justify-start py-3" />
-          <ActionButton label="Manage Warehouses" icon={<Plus size={14} />} variant="outline" onClick={() => navigate('/inventory/warehouses')} className="w-full justify-start py-3" />
-          <ActionButton label="Manage Units" icon={<Plus size={14} />} variant="outline" onClick={() => navigate('/inventory/units')} className="w-full justify-start py-3" />
-          <ActionButton label="Manage Tax & HSN" icon={<Plus size={14} />} variant="outline" onClick={() => navigate('/inventory/tax-categories')} className="w-full justify-start py-3" />
-        </div>
-      </SectionCard>
-      
-      <SectionCard title="Notifications" description="Updates from system audit logs" className="text-left">
-        <div className="text-xs text-slate-500 dark:text-slate-400 space-y-3">
-          <div className="db-announcement-card">
-            <strong className="text-slate-800 dark:text-slate-200 block mb-0.5">Welcome!</strong>
-            System parameters synced with company database context.
+    <SectionCard title="Quick Access Portal" description="Navigate to central business workspace modules" className="w-full text-left">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-2">
+        {portals.map((p, idx) => (
+          <div 
+            key={idx} 
+            className="p-5 border border-[var(--border-light)] rounded bg-[var(--bg-surface)] hover:border-[var(--primary)] hover:shadow-sm transition-all duration-200 cursor-pointer flex flex-col justify-between"
+            onClick={() => navigate(p.path)}
+          >
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 rounded bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+                  {p.icon}
+                </div>
+                <h4 className="font-bold text-[var(--text-primary)] text-sm tracking-wide">{p.title}</h4>
+              </div>
+              <p className="text-xs text-[var(--text-muted)] leading-relaxed mb-4">{p.desc}</p>
+            </div>
+            <div className="flex items-center justify-between text-xs font-semibold text-[var(--primary)] mt-auto pt-2 border-t border-[var(--border-light)]/50">
+              <span>{p.btnText}</span>
+              <ChevronRight size={14} />
+            </div>
           </div>
-          <div className="db-announcement-muted">No new notifications.</div>
-        </div>
-      </SectionCard>
-    </div>
+        ))}
+      </div>
+    </SectionCard>
   );
 }

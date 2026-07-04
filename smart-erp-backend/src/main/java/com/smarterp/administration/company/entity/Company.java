@@ -4,6 +4,7 @@ import com.smarterp.common.entity.BaseEntity;
 import com.smarterp.auth.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.List;
 
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
@@ -57,5 +58,17 @@ public class Company extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private User owner;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "company_permitted_users",
+        schema = "administration",
+        joinColumns = @JoinColumn(name = "company_id"),
+        inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    @Builder.Default
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private List<User> permittedUsers = new java.util.ArrayList<>();
 }

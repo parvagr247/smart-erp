@@ -11,7 +11,7 @@ export default function PartnerContactsCard({ contacts }) {
       ) : (
         <div className="space-y-3 text-left">
           {contacts.map((c) => (
-            <div key={c.id} className={`p-4 border rounded bg-[var(--bg-surface)] text-xs space-y-2 ${c.isPrimary ? 'border-[var(--accent)] shadow-sm' : 'border-[var(--border-light)]'}`}>
+            <div key={c.id} className={`p-4 border rounded bg-[var(--bg-surface)] text-xs space-y-2 ${c.isPrimary ? 'border-[var(--primary)] shadow-sm' : 'border-[var(--border-light)]'}`}>
               <div className="flex items-center justify-between">
                 <span className="font-bold text-sm text-[var(--text-primary)] flex items-center gap-1.5">
                   <User size={14} className="text-[var(--text-muted)]" />
@@ -26,7 +26,7 @@ export default function PartnerContactsCard({ contacts }) {
                 {c.email && (
                   <p className="flex items-center gap-2">
                     <Mail size={12} className="text-[var(--text-muted)]" />
-                    <a href={`mailto:${c.email}`} className="hover:underline text-[var(--accent)]">{c.email}</a>
+                    <a href={`mailto:${c.email}`} className="hover:underline text-[var(--primary)]">{c.email}</a>
                   </p>
                 )}
                 {c.mobile && (

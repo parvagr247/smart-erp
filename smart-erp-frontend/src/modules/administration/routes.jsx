@@ -29,7 +29,7 @@ export const getAdministrationRoutes = (updateActiveCompany, activeCompany, mode
         } />
         
         <Route path="/create-company" element={
-          <ProtectedRoute requireCompany={false}>
+          <ProtectedRoute requireCompany={false} requireAdmin={true}>
             <CreateCompanyView 
               onSaveSuccess={(c) => { updateActiveCompany(c); window.location.assign('/dashboard'); }} 
               onCancel={() => activeCompany ? window.location.assign('/dashboard') : window.location.assign('/company-select')} 
@@ -38,7 +38,7 @@ export const getAdministrationRoutes = (updateActiveCompany, activeCompany, mode
         } />
         
         <Route path="/edit-company/:id" element={
-          <ProtectedRoute requireCompany={false}>
+          <ProtectedRoute requireCompany={false} requireAdmin={true}>
             <EditCompanyView 
               onSaveSuccess={(c) => { 
                 if (activeCompany && activeCompany.id === c.id) updateActiveCompany(c); 

@@ -11,7 +11,7 @@ export default function EditCompanyView(props) {
   const { user, theme, toggleTheme, handleLogout, formHooks, currentTime, getInitials } = useEditCompanyViewData(props);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--bg-base)] text-[var(--text-primary)] transition-colors duration-200">
+    <div className="h-screen overflow-y-auto flex flex-col bg-[var(--bg-base)] text-[var(--text-primary)] transition-colors duration-200">
       <WorkspaceHeader user={user} theme={theme} onToggleTheme={toggleTheme} onLogout={handleLogout} getInitials={getInitials} />
       <main className="flex-1 max-w-3xl w-full mx-auto px-6 py-10 flex flex-col justify-start">
         <div className="mb-6 text-left">

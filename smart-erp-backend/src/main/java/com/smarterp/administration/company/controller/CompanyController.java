@@ -83,4 +83,24 @@ public class CompanyController {
         CompanyResponse response = companyService.switchCompany(id, authenticatedUser.getUser());
         return ResponseEntity.ok(ApiResponse.success("Active company switched successfully", response));
     }
+
+    @GetMapping("/{id}/permitted-users")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('Company.Update')")
+    public ResponseEntity<ApiResponse<java.util.List<com.smarterp.administration.company.dto.CompanyUserAccessResponse>>> getPermittedUsers(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        java.util.List<com.smarterp.administration.company.dto.CompanyUserAccessResponse> list = companyService.getPermittedUsers(id, authenticatedUser.getUser());
+        return ResponseEntity.ok(ApiResponse.success("Permitted users list retrieved successfully", list));
+    }
+
+    @PostMapping("/{id}/users/{userId}/access")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('Company.Update')")
+    public ResponseEntity<ApiResponse<Void>> updateAccess(
+            @PathVariable UUID id,
+            @PathVariable UUID userId,
+            @RequestParam boolean grant,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        companyService.updateAccess(id, userId, grant, authenticatedUser.getUser());
+        return ResponseEntity.ok(ApiResponse.success("Access updated successfully", null));
+    }
 }

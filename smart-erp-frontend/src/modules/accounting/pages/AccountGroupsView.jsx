@@ -15,7 +15,7 @@ export default function AccountGroupsView() {
   const {
     groups, allGroups, expanded, editGroup, showForm, setShowForm, name, setName, nature, setNature, parentId, setParentId,
     search, setSearch, handleEdit, handleCreateChild, handleDelete, handleToggleActive, handleSubmit, toggleExpand,
-    handleExpandAll, handleCollapseAll, ledgerCounts
+    handleExpandAll, handleCollapseAll, ledgerCounts, groupLedgersMap
   } = state;
 
   const isSearching = search.trim() !== '';
@@ -98,6 +98,7 @@ export default function AccountGroupsView() {
                     onCreateChild={handleCreateChild}
                     onToggleActive={handleToggleActive}
                     ledgerCounts={ledgerCounts}
+                    groupLedgersMap={groupLedgersMap}
                   />
                 ))
               )

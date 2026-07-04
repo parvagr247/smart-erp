@@ -24,6 +24,7 @@ import java.util.UUID;
 public class CompanyServiceImpl implements CompanyService {
 
     private final CompanyRepository repository;
+    private final com.smarterp.auth.repository.UserRepo userRepo;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
@@ -81,7 +82,12 @@ public class CompanyServiceImpl implements CompanyService {
     @Override
     @Transactional(readOnly = true)
     public Page<CompanySummaryResponse> getCompanies(User owner, Pageable pageable) {
-        Page<Company> companiesPage = repository.findByOwner(owner, pageable);
+        Page<Company> companiesPage;
+        if (owner.getRole() == com.smarterp.auth.entity.enums.Role.ADMIN) {
+            companiesPage = repository.findAll(pageable);
+        } else {
+            companiesPage = repository.findByOwnerOrPermittedUser(owner.getId(), pageable);
+        }
         return companiesPage.map(CompanySummaryResponse::fromEntity);
     }
 
@@ -114,8 +120,69 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     private void validateOwnership(Company company, User owner) {
-        if (!company.getOwner().getId().equals(owner.getId())) {
+        if (owner.getRole() == com.smarterp.auth.entity.enums.Role.ADMIN) {
+            return;
+        }
+        if (company.getOwner().getId().equals(owner.getId())) {
+            return;
+        }
+        boolean isPermitted = company.getPermittedUsers().stream()
+                .anyMatch(u -> u.getId().equals(owner.getId()));
+        if (!isPermitted) {
             throw new com.smarterp.common.exception.UnauthorizedAccessException("You do not have access to this company resource.");
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public java.util.List<com.smarterp.administration.company.dto.CompanyUserAccessResponse> getPermittedUsers(UUID companyId, User admin) {
+        if (admin.getRole() != com.smarterp.auth.entity.enums.Role.ADMIN) {
+            throw new com.smarterp.common.exception.UnauthorizedAccessException("Only administrators can manage company access.");
+        }
+        Company company = repository.findById(companyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Company not found with ID: " + companyId));
+
+        java.util.List<User> allUsers = userRepo.findAll();
+        return allUsers.stream()
+                .filter(u -> u.getRole() != com.smarterp.auth.entity.enums.Role.ADMIN)
+                .map(u -> {
+                    boolean hasAccess = company.getPermittedUsers().stream()
+                            .anyMatch(permitted -> permitted.getId().equals(u.getId()))
+                            || company.getOwner().getId().equals(u.getId());
+                    return com.smarterp.administration.company.dto.CompanyUserAccessResponse.builder()
+                            .userId(u.getId())
+                            .fullName(u.getFullName())
+                            .email(u.getEmail())
+                            .role(u.getRole())
+                            .hasAccess(hasAccess)
+                            .build();
+                })
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Override
+    public void updateAccess(UUID companyId, UUID userId, boolean grant, User admin) {
+        if (admin.getRole() != com.smarterp.auth.entity.enums.Role.ADMIN) {
+            throw new com.smarterp.common.exception.UnauthorizedAccessException("Only administrators can manage company access.");
+        }
+        Company company = repository.findById(companyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Company not found with ID: " + companyId));
+
+        User targetUser = userRepo.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
+
+        if (company.getOwner().getId().equals(userId)) {
+            throw new BusinessValidationException("Cannot modify access for the company owner.");
+        }
+
+        if (grant) {
+            if (!company.getPermittedUsers().stream().anyMatch(u -> u.getId().equals(userId))) {
+                company.getPermittedUsers().add(targetUser);
+            }
+        } else {
+            company.getPermittedUsers().removeIf(u -> u.getId().equals(userId));
+        }
+
+        repository.save(company);
     }
 }

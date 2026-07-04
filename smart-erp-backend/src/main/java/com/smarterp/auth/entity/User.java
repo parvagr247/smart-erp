@@ -50,6 +50,7 @@ public class User extends BaseEntity {
 
     @OneToMany(mappedBy = "owner")
     @Builder.Default
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Company> companies = new ArrayList<>();
 }
 

@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@shared/context/AuthContext';
 import { useCompanySelection, deleteCompanyApi } from '../../administration.service';
 
 export function useCompanySelectionViewData(props) {
-  const { user, theme, toggleTheme, handleLogout } = useAuth();
+  const navigate = useNavigate();
+  const { user, theme, toggleTheme } = useAuth();
   const {
     companies,
     loading,
@@ -60,7 +62,7 @@ export function useCompanySelectionViewData(props) {
     user,
     theme,
     toggleTheme,
-    handleLogout,
+    handleLogout: () => navigate('/logout'),
     companies,
     loading,
     error,

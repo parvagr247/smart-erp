@@ -92,9 +92,14 @@ export function useAccountGroupsViewData() {
 
   // Compute ledger counts per group
   const ledgerCounts = {};
+  const groupLedgersMap = {};
   ledgers.forEach(l => {
     if (l.groupId) {
       ledgerCounts[l.groupId] = (ledgerCounts[l.groupId] || 0) + 1;
+      if (!groupLedgersMap[l.groupId]) {
+        groupLedgersMap[l.groupId] = [];
+      }
+      groupLedgersMap[l.groupId].push(l);
     }
   });
 
@@ -128,6 +133,7 @@ export function useAccountGroupsViewData() {
     toggleExpand,
     handleExpandAll,
     handleCollapseAll,
-    ledgerCounts
+    ledgerCounts,
+    groupLedgersMap
   };
 }
