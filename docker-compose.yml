@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:16-alpine
@@ -20,49 +18,34 @@ services:
       retries: 5
       start_period: 10s
 
-  redis:
-    image: redis:7-alpine
-    container_name: smarterp-redis
-    restart: always
-    command: redis-server --requirepass "${REDIS_PASSWORD:-}"
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   backend:
     build:
       context: ./smart-erp-backend
       dockerfile: Dockerfile
     container_name: smarterp-backend
     restart: always
+
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_healthy
+
     env_file:
       - ./smart-erp-backend/.env
+
     environment:
-      - DATABASE_URL=jdbc:postgresql://postgres:5432/smarterp
-      - DATABASE_USERNAME=${DATABASE_USERNAME:-postgres}
-      - DATABASE_PASSWORD=${DATABASE_PASSWORD:-postgres}
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      DATABASE_URL: jdbc:postgresql://postgres:5432/smarterp
+      DATABASE_USERNAME: ${DATABASE_USERNAME:-postgres}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-postgres}
+
     ports:
       - "9521:9521"
+
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9521/health"]
-      interval: 10s
+      test: ["CMD", "curl", "-fsS", "http://localhost:9521/health"]
+      interval: 15s
       timeout: 5s
-      retries: 5
-      start_period: 20s
+      retries: 10
+      start_period: 120s
 
   frontend:
     build:
@@ -70,19 +53,23 @@ services:
       dockerfile: Dockerfile
     container_name: smarterp-frontend
     restart: always
+
     depends_on:
       backend:
         condition: service_healthy
+
     env_file:
       - ./smart-erp-frontend/.env
+
     ports:
       - "80:80"
+
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/"]
       interval: 15s
       timeout: 5s
       retries: 3
+      start_period: 20s
 
 volumes:
   postgres_data:
-  redis_data:
