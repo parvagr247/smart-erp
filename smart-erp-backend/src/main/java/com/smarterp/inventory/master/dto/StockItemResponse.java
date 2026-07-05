@@ -52,6 +52,10 @@ public class StockItemResponse {
     
     private BigDecimal openingQuantity;
     private BigDecimal openingValue;
+    private BigDecimal currentQuantity;
+    private BigDecimal averageCost;
+    private java.time.LocalDate lastPurchaseDate;
+    private java.time.LocalDate lastSalesDate;
     private BigDecimal minimumStock;
     private BigDecimal maximumStock;
     private BigDecimal reorderLevel;
@@ -121,6 +125,8 @@ public class StockItemResponse {
                 .hsnCode(item.getHsn() != null ? item.getHsn().getHsnCode() : null)
                 .openingQuantity(item.getOpeningQuantity())
                 .openingValue(item.getOpeningValue())
+                .currentQuantity(item.getCurrentQuantity())
+                .averageCost(item.getAverageCost())
                 .minimumStock(item.getMinimumStock())
                 .maximumStock(item.getMaximumStock())
                 .reorderLevel(item.getReorderLevel())

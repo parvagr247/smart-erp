@@ -9,13 +9,27 @@ import { Save } from 'lucide-react';
 import './styles/AdminSettingsView.css';
 
 export default function AdminSettingsView() {
-  const { securitySettings, databaseSettings, localSettings, keyboardOnlyMode, nextFy, setNextFy, fyStatus, importStatus, handleToggle, handleSaveSettings, handleSwitchFy, handleCloseFy, handleDownloadBackup, handleRestoreBackup, handleImportLedgers, handleImportStockItems } = useAdminSettingsViewData();
+  const { securitySettings, databaseSettings, localSettings, keyboardOnlyMode, nextFy, setNextFy, fyStatus, importStatus, isSaving, saveStatus, handleToggle, handleSaveSettings, handleSwitchFy, handleCloseFy, handleDownloadBackup, handleRestoreBackup, handleImportLedgers, handleImportStockItems } = useAdminSettingsViewData();
 
   return (
     <PageContainer>
       <PageHeader title="System Settings" description="Configure backend server parameters, token windows, and security locks">
-        <ActionButton label="Save Settings" icon={<Save size={14} />} onClick={handleSaveSettings} />
+        <ActionButton 
+          label={isSaving ? "Saving Settings..." : "Save Settings"} 
+          icon={<Save size={14} />} 
+          onClick={handleSaveSettings} 
+        />
       </PageHeader>
+
+      {saveStatus && (
+        <div className={`mb-6 p-3 border rounded-xl text-xs font-bold ${
+          saveStatus.includes('failed') || saveStatus.includes('Failed')
+            ? 'bg-rose-50 border-rose-200 text-rose-700 dark:bg-rose-950/20 dark:border-rose-900/50 dark:text-rose-400'
+            : 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-950/20 dark:border-indigo-900/50 dark:text-indigo-400'
+        }`}>
+          {saveStatus}
+        </div>
+      )}
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
         <InfoCard title="Security Parameters" items={securitySettings} />

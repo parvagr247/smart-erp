@@ -261,10 +261,12 @@ public class SalesServiceImpl implements SalesService {
                     .filter(i -> i.getCompany().getId().equals(companyId))
                     .orElseThrow(() -> new ResourceNotFoundException("Stock item not found."));
 
-            BigDecimal available = item.getCurrentQuantity() != null ? item.getCurrentQuantity() : BigDecimal.ZERO;
-            if (available.compareTo(line.getQuantity()) < 0) {
-                throw new BusinessValidationException("Insufficient stock for item: " + item.getName() + 
-                        ". Available: " + available + ", Required: " + line.getQuantity());
+            if (item.getTrackInventory() != null && item.getTrackInventory()) {
+                BigDecimal available = item.getCurrentQuantity() != null ? item.getCurrentQuantity() : BigDecimal.ZERO;
+                if (available.compareTo(line.getQuantity()) < 0) {
+                    throw new BusinessValidationException("Insufficient stock for item: " + item.getName() + 
+                            ". Available: " + available + ", Required: " + line.getQuantity());
+                }
             }
         }
     }
@@ -292,7 +294,7 @@ public class SalesServiceImpl implements SalesService {
         String maxNum = salesRepository.findMaxSalesNumberByCompanyAndPrefix(company, prefix);
 
         int nextVal = 1;
-        if (maxNum != null && maxNum.length() >= 17) {
+        if (maxNum != null && maxNum.length() >= 15) {
             try {
                 String seqStr = maxNum.substring(maxNum.length() - 6);
                 nextVal = Integer.parseInt(seqStr) + 1;

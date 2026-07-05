@@ -264,7 +264,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         String maxNum = purchaseRepository.findMaxPurchaseNumberByCompanyAndPrefix(company, prefix);
 
         int nextVal = 1;
-        if (maxNum != null && maxNum.length() >= 17) {
+        if (maxNum != null && maxNum.length() >= 15) {
             try {
                 String seqStr = maxNum.substring(maxNum.length() - 6);
                 nextVal = Integer.parseInt(seqStr) + 1;

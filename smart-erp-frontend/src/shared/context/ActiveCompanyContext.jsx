@@ -13,6 +13,31 @@ export function ActiveCompanyProvider({ children }) {
     }
   });
 
+  useEffect(() => {
+    if (!activeCompany?.id) return;
+
+    let isMounted = true;
+    const syncCompany = async () => {
+      try {
+        const response = await axiosClient.get(`/companies/${activeCompany.id}`);
+        if (isMounted && response.data?.success && response.data?.data) {
+          const freshCompany = response.data.data;
+          if (JSON.stringify(freshCompany) !== JSON.stringify(activeCompany)) {
+            localStorage.setItem('activeCompany', JSON.stringify(freshCompany));
+            setActiveCompanyState(freshCompany);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to sync active company details with backend:', err);
+      }
+    };
+
+    syncCompany();
+    return () => {
+      isMounted = false;
+    };
+  }, [activeCompany?.id]);
+
   const updateActiveCompany = async (company) => {
     if (!company) {
       clearActiveCompany();

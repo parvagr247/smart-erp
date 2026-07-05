@@ -2,14 +2,25 @@ import React from 'react';
 import './styles/ItemInventorySummary.css';
 
 export default function ItemInventorySummary({ item }) {
+  const currentQty = item.currentQuantity !== undefined ? item.currentQuantity : item.openingQuantity;
+  const avgCost = item.averageCost || 0;
+  const reorder = item.reorderLevel || 0;
+  const isLow = currentQty <= reorder;
+  const isOut = currentQty <= 0;
+  
+  const statusText = isOut ? '🔴 OUT OF STOCK' : (isLow ? '⚠️ LOW STOCK' : '🟢 IN STOCK');
+  const stockVal = currentQty * avgCost;
+
   const balances = [
-    { label: 'Available Quantity', value: `${item.openingQuantity} ${item.primaryUnitCode}`, primary: true },
-    { label: 'Warehouse location', value: item.warehouseName || 'Unassigned' },
-    { label: 'Stock Value', value: `₹${item.openingValue.toLocaleString()}` },
-    { label: 'Reorder Alert Trigger', value: `${item.reorderLevel} ${item.primaryUnitCode}`, borderTop: true },
-    { label: 'Reorder Quantity', value: `${item.reorderQuantity} ${item.primaryUnitCode}` },
-    { label: 'Minimum Stock Limit', value: `${item.minimumStock} ${item.primaryUnitCode}` },
-    { label: 'Maximum Stock Limit', value: `${item.maximumStock} ${item.primaryUnitCode}` }
+    { label: 'Available Stock', value: `${currentQty} ${item.primaryUnitCode}`, primary: true },
+    { label: 'Reserved Stock', value: `0 ${item.primaryUnitCode} (Future)` },
+    { label: 'Incoming Stock', value: `0 ${item.primaryUnitCode} (Future)` },
+    { label: 'Stock Valuation (Avg Cost)', value: `₹${avgCost.toFixed(2)}` },
+    { label: 'Total Stock Value', value: `₹${stockVal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` },
+    { label: 'Stock Status', value: statusText, borderTop: true },
+    { label: 'Reorder Level Limit', value: `${reorder} ${item.primaryUnitCode}` },
+    { label: 'Last Purchase Date', value: item.lastPurchaseDate ? new Date(item.lastPurchaseDate).toLocaleDateString() : 'No Purchases Logged' },
+    { label: 'Last Sales Date', value: item.lastSalesDate ? new Date(item.lastSalesDate).toLocaleDateString() : 'No Sales Logged' }
   ];
 
   return (

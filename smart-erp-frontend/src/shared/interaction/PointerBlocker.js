@@ -6,6 +6,12 @@ export const PointerBlocker = {
     if (!PointerBlocker.active) return;
     if (PointerBlocker.isProgrammatic) return;
 
+    // Allow keyboard-triggered click events (e.g. pressing Space on checkbox, Enter on link/button)
+    // Keyboard-generated click events in all browsers have e.detail = 0
+    if (e.type === 'click' && e.detail === 0) {
+      return;
+    }
+
     e.preventDefault();
     e.stopPropagation();
     e.stopImmediatePropagation();

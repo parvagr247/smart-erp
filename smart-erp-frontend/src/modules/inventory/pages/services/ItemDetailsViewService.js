@@ -9,22 +9,23 @@ export function useItemDetailsViewData() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    const fetchItem = async () => {
-      try {
-        setLoading(true);
-        const res = await inventoryService.getItem(id);
-        if (res.success && res.data) {
-          setItem(res.data);
-        } else {
-          setError(res.message || "Failed to load item.");
-        }
-      } catch (err) {
-        setError("An error occurred loading item profile.");
-      } finally {
-        setLoading(false);
+  const fetchItem = async () => {
+    try {
+      setLoading(true);
+      const res = await inventoryService.getItem(id);
+      if (res.success && res.data) {
+        setItem(res.data);
+      } else {
+        setError(res.message || "Failed to load item.");
       }
-    };
+    } catch (err) {
+      setError("An error occurred loading item profile.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchItem();
   }, [id]);
 
@@ -45,7 +46,8 @@ export function useItemDetailsViewData() {
     item,
     loading,
     error,
-    handleDelete
+    handleDelete,
+    fetchItem
   };
 }
 

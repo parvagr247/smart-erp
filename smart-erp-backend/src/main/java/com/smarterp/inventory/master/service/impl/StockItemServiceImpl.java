@@ -39,6 +39,7 @@ public class StockItemServiceImpl implements StockItemService {
     private final TaxCategoryRepository taxCategoryRepository;
     private final HsnRepository hsnRepository;
     private final com.smarterp.common.audit.AuditLogService auditLogService;
+    private final InventoryTransactionRepository inventoryTransactionRepository;
 
     @Override
     @CacheEvict(value = "dashboard", key = "#company.id")
@@ -61,6 +62,7 @@ public class StockItemServiceImpl implements StockItemService {
         }
 
         StockItem item = request.toEntity(company, brand, manufacturer, stockGroup, primaryUnit, secondaryUnit, warehouse, taxCategory, hsn, categories);
+        item.setCurrentQuantity(item.getOpeningQuantity() != null ? item.getOpeningQuantity() : java.math.BigDecimal.ZERO);
         StockItem savedItem = repository.save(item);
 
         auditLogService.saveLog(company.getId(), "StockItem", savedItem.getId(), "CREATED", "Stock Item " + savedItem.getName() + " onboarded.");
@@ -120,7 +122,10 @@ public class StockItemServiceImpl implements StockItemService {
                 .filter(i -> i.getCompany().getId().equals(company.getId()))
                 .orElseThrow(() -> new ResourceNotFoundException("Stock item not found."));
 
-        return StockItemResponse.fromEntity(item);
+        StockItemResponse response = StockItemResponse.fromEntity(item);
+        response.setLastPurchaseDate(inventoryTransactionRepository.findLastTransactionDate(company, id, InventoryTransactionType.GOODS_RECEIPT));
+        response.setLastSalesDate(inventoryTransactionRepository.findLastTransactionDate(company, id, InventoryTransactionType.GOODS_ISSUE));
+        return response;
     }
 
     @Override
@@ -160,12 +165,12 @@ public class StockItemServiceImpl implements StockItemService {
         // Simple count of low stock and out of stock items
         long outOfStockCount = repository.findAll((root, query, cb) -> cb.and(
                 cb.equal(root.get("company"), company),
-                cb.lessThanOrEqualTo(root.get("openingQuantity"), BigDecimal.ZERO)
+                cb.lessThanOrEqualTo(root.get("currentQuantity"), BigDecimal.ZERO)
         )).size();
 
         long lowStockCount = repository.findAll((root, query, cb) -> cb.and(
                 cb.equal(root.get("company"), company),
-                cb.lessThanOrEqualTo(root.get("openingQuantity"), root.get("reorderLevel"))
+                cb.lessThanOrEqualTo(root.get("currentQuantity"), root.get("reorderLevel"))
         )).size();
 
         return InventorySummaryResponse.builder()

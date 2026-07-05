@@ -1,7 +1,7 @@
 import React from 'react';
 import './styles/ItemTable.css';
 
-export default function ItemTable({ items, onNavigate, onDelete }) {
+export default function ItemTable({ items, onNavigate, onDelete, onAdjust }) {
   return (
     <div className="registry-table-container">
       <table className="registry-table">
@@ -26,7 +26,7 @@ export default function ItemTable({ items, onNavigate, onDelete }) {
             </tr>
           ) : (
             items.map(item => {
-              const qty = parseFloat(item.openingQuantity) || 0;
+              const qty = parseFloat(item.currentQuantity !== undefined ? item.currentQuantity : item.openingQuantity) || 0;
               const reorder = parseFloat(item.reorderLevel) || 0;
               const isLow = qty <= reorder;
               const isOut = qty <= 0;
@@ -34,7 +34,7 @@ export default function ItemTable({ items, onNavigate, onDelete }) {
               let qtyClass = "qty-safe";
               if (isOut) qtyClass = "qty-danger";
               else if (isLow) qtyClass = "qty-warning";
-
+ 
               return (
                 <tr key={item.id}>
                   <td>
@@ -51,7 +51,7 @@ export default function ItemTable({ items, onNavigate, onDelete }) {
                   <td>{item.warehouseName || '-'}</td>
                   <td className="text-right">
                     <span className={`qty-pill ${qtyClass}`}>
-                      {item.openingQuantity} {item.primaryUnitCode}
+                      {item.currentQuantity !== undefined ? item.currentQuantity : item.openingQuantity} {item.primaryUnitCode}
                     </span>
                   </td>
                   <td className="text-right">{item.reorderLevel}</td>
@@ -61,7 +61,15 @@ export default function ItemTable({ items, onNavigate, onDelete }) {
                     </span>
                   </td>
                   <td className="text-right">
-                    <div className="flex justify-end gap-3">
+                    <div className="flex justify-end gap-3 items-center">
+                      {onAdjust && (
+                        <button 
+                          onClick={() => onAdjust(item)} 
+                          className="px-2 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 text-[10px] font-bold rounded-md cursor-pointer transition-colors"
+                        >
+                          Adjust
+                        </button>
+                      )}
                       <button 
                         onClick={() => onNavigate(`/inventory/stock-items/edit/${item.id}`)} 
                         className="action-btn-edit"

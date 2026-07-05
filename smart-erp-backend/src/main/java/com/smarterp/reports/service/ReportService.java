@@ -289,26 +289,28 @@ public class ReportService {
         List<StockRegisterResponse.RegisterRow> rows = new ArrayList<>();
 
         for (StockItem item : items) {
-            // Aggregate Inwards/Outwards from transaction history within dates
             List<InventoryTransaction> txs = inventoryTransactionRepository.findAllByCompanyAndStockItemIdOrderByTransactionDateDescCreatedAtDesc(company, item.getId());
 
+            BigDecimal opening = item.getOpeningQuantity() != null ? item.getOpeningQuantity() : BigDecimal.ZERO;
             BigDecimal inward = BigDecimal.ZERO;
             BigDecimal outward = BigDecimal.ZERO;
 
             for (InventoryTransaction tx : txs) {
-                if (startDate != null && tx.getTransactionDate().isBefore(startDate)) continue;
-                if (endDate != null && tx.getTransactionDate().isAfter(endDate)) continue;
-
+                LocalDate txDate = tx.getTransactionDate();
                 BigDecimal qty = tx.getQuantity() != null ? tx.getQuantity() : BigDecimal.ZERO;
-                if (qty.compareTo(BigDecimal.ZERO) > 0) {
-                    inward = inward.add(qty);
-                } else {
-                    outward = outward.add(qty.abs());
+
+                if (startDate != null && txDate.isBefore(startDate)) {
+                    opening = opening.add(qty);
+                } else if (endDate == null || !txDate.isAfter(endDate)) {
+                    if (qty.compareTo(BigDecimal.ZERO) > 0) {
+                        inward = inward.add(qty);
+                    } else {
+                        outward = outward.add(qty.abs());
+                    }
                 }
             }
 
-            BigDecimal closing = item.getCurrentQuantity() != null ? item.getCurrentQuantity() : BigDecimal.ZERO;
-            BigDecimal opening = closing.subtract(inward).add(outward);
+            BigDecimal closing = opening.add(inward).subtract(outward);
 
             rows.add(StockRegisterResponse.RegisterRow.builder()
                     .itemId(item.getId())

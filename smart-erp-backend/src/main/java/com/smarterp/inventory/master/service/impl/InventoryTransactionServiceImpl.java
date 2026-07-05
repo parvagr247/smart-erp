@@ -35,6 +35,7 @@ public class InventoryTransactionServiceImpl implements InventoryTransactionServ
     private final WarehouseRepository warehouseRepository;
     private final AuditLogService auditLogService;
     private final org.springframework.context.ApplicationEventPublisher eventPublisher;
+    private final org.springframework.cache.CacheManager cacheManager;
 
     @Override
     public InventoryTransactionResponse recordTransaction(InventoryTransactionRequest request, Company company, String performedBy) {
@@ -87,7 +88,23 @@ public class InventoryTransactionServiceImpl implements InventoryTransactionServ
         // If it's a transfer within the company, net stock item change is 0.
         boolean isLocalWarehouseTransfer = (request.getTransactionType() == InventoryTransactionType.TRANSFER_OUT && targetWh != null);
         
-        if (!isLocalWarehouseTransfer) {
+        if (isLocalWarehouseTransfer) {
+            InventoryTransaction targetTx = InventoryTransaction.builder()
+                    .company(company)
+                    .stockItem(item)
+                    .warehouse(targetWh)
+                    .targetWarehouse(wh)
+                    .transactionType(InventoryTransactionType.TRANSFER_IN)
+                    .quantity(qtyDelta.abs()) // Always positive for TRANSFER_IN
+                    .rate(request.getRate() != null ? request.getRate() : BigDecimal.ZERO)
+                    .referenceNumber(request.getReferenceNumber().trim())
+                    .transactionDate(request.getTransactionDate() != null ? request.getTransactionDate() : LocalDate.now())
+                    .notes("Transfer from " + wh.getName() + ": " + (request.getNotes() != null ? request.getNotes() : ""))
+                    .performedBy(performedBy)
+                    .build();
+            repository.save(targetTx);
+            auditLogService.saveLog(company.getId(), "InventoryTransaction", targetTx.getId(), "CREATED", "Inbound transfer transaction recorded for target warehouse: " + targetWh.getName());
+        } else {
             BigDecimal newQty = oldQty.add(qtyDelta);
             item.setCurrentQuantity(newQty);
             stockItemRepository.save(item);
@@ -100,6 +117,20 @@ public class InventoryTransactionServiceImpl implements InventoryTransactionServ
                 eventPublisher.publishEvent(new com.smarterp.inventory.master.event.StockBelowReorderLevelEvent(
                         this, item.getId(), company.getId(), item.getName(), newQty, item.getReorderLevel(), performedBy));
             }
+        }
+
+        // Evict stock-items cache to prevent stale item profiles
+        try {
+            org.springframework.cache.Cache cache = cacheManager.getCache("stock-items");
+            if (cache != null) {
+                cache.evict(company.getId() + "-" + item.getId());
+            }
+            org.springframework.cache.Cache dbCache = cacheManager.getCache("dashboard");
+            if (dbCache != null) {
+                dbCache.evict(company.getId());
+            }
+        } catch (Exception e) {
+            log.warn("Failed to evict cache for stock-items or dashboard:", e);
         }
 
         auditLogService.saveLog(company.getId(), "InventoryTransaction", savedTx.getId(), "CREATED", "Inventory transaction of type " + tx.getTransactionType() + " recorded.");

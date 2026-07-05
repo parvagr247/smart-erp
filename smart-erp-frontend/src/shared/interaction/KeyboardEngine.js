@@ -199,6 +199,22 @@ export const KeyboardEngine = {
       }
     }
 
+    // 5. Global fallback keys (Ctrl+S, Escape, F2, Delete)
+    if (e.ctrlKey && (e.key === 's' || e.key === 'S')) {
+      const activeForm = document.querySelector('form');
+      if (activeForm) {
+        const submitBtn = activeForm.querySelector('button[type="submit"], input[type="submit"]');
+        if (submitBtn) {
+          submitBtn.click();
+        } else {
+          activeForm.requestSubmit();
+        }
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+    }
+
     if (e.key === 'Escape') {
       const activeModal = document.querySelector('.modal-overlay');
       if (activeModal) {
@@ -208,6 +224,33 @@ export const KeyboardEngine = {
           e.preventDefault();
           return;
         }
+      }
+      const activeForm = document.querySelector('form');
+      if (activeForm) {
+        const cancelBtn = activeForm.querySelector('.btn-cancel, button[variant="outline"], button[type="button"]');
+        if (cancelBtn) {
+          cancelBtn.click();
+          e.preventDefault();
+          return;
+        }
+      }
+    }
+
+    if (e.key === 'F2') {
+      const editBtn = document.querySelector('button[title*="Edit"], button[aria-label*="edit"], .btn-edit, button.bg-blue-500, a[href*="edit"]');
+      if (editBtn) {
+        editBtn.click();
+        e.preventDefault();
+        return;
+      }
+    }
+
+    if (e.key === 'Delete' && !isInput) {
+      const deleteBtn = document.querySelector('button[title*="Delete"], button[aria-label*="delete"], .btn-delete, button.text-rose-600, .text-rose-600');
+      if (deleteBtn) {
+        deleteBtn.click();
+        e.preventDefault();
+        return;
       }
     }
 
@@ -307,6 +350,23 @@ export const KeyboardEngine = {
         e.preventDefault();
         e.stopPropagation();
         return;
+      }
+
+      // Fallback: Custom checkbox / switch / row select clicking via Enter
+      const activeEl = document.activeElement;
+      if (activeEl && activeEl !== document.body && !isInput) {
+        if (
+          activeEl.getAttribute('role') === 'checkbox' || 
+          activeEl.getAttribute('role') === 'switch' || 
+          activeEl.classList.contains('switch') || 
+          activeEl.tagName === 'TR' || 
+          activeEl.classList.contains('group/row')
+        ) {
+          activeEl.click();
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
       }
     }
 

@@ -270,6 +270,7 @@ export function useItemFormViewData(props) {
     
     purchasePrice, setPurchasePrice,
     sellingPrice, setSellingPrice,
+    isEdit: !!initialData,
 
     brands,
     manufacturers,

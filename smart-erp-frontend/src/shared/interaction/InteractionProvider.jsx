@@ -57,6 +57,19 @@ export function InteractionProvider({ children }) {
 
   useEffect(() => {
     PointerBlocker.init(keyboardOnlyMode);
+    
+    if (keyboardOnlyMode) {
+      try {
+        const alertCount = parseInt(localStorage.getItem('smartErp_spaceToggleAlertCount') || '0', 10);
+        if (alertCount < 2) {
+          alert('Keyboard Only Mode is now active.\n\nTip: Use the SPACE key to toggle checkboxes and switch buttons on or off.');
+          localStorage.setItem('smartErp_spaceToggleAlertCount', String(alertCount + 1));
+        }
+      } catch (e) {
+        // Fallback if localStorage is disabled/restricted
+      }
+    }
+
     return () => {
       PointerBlocker.destroy();
     };
@@ -182,6 +195,16 @@ export function InteractionProvider({ children }) {
       setIsCommandPaletteOpen
     }}>
       {children}
+      {keyboardOnlyMode && (
+        <div className="fixed bottom-4 right-4 z-50 pointer-events-none">
+          <div className="bg-slate-900/90 text-slate-100 dark:bg-white/95 dark:text-slate-900 text-[10px] md:text-xs font-semibold py-2 px-3.5 rounded-xl shadow-xl flex items-center gap-2 border border-slate-700/50 dark:border-slate-200/50 animate-in fade-in slide-in-from-bottom-2 duration-300 select-none pointer-events-auto">
+            <span className="text-base">⌨️</span>
+            <span>
+              <strong>Keyboard Tip:</strong> Press <strong>Enter</strong> to edit/select fields. Use <strong>Tab</strong>, <strong>Shift+Tab</strong>, or <strong>Arrow keys</strong> to navigate.
+            </span>
+          </div>
+        </div>
+      )}
       {isShortcutOverlayOpen && <ShortcutOverlay onClose={() => setIsShortcutOverlayOpen(false)} activeCompany={activeCompany} />}
     </InteractionContext.Provider>
   );

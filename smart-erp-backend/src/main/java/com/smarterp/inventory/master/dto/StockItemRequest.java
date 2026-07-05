@@ -186,8 +186,6 @@ public class StockItemRequest {
         item.setSku(this.sku.trim());
         item.setBarcode(this.barcode);
         item.setQrCode(this.qrCode);
-        item.setOpeningQuantity(this.openingQuantity != null ? this.openingQuantity : BigDecimal.ZERO);
-        item.setOpeningValue(this.openingValue != null ? this.openingValue : BigDecimal.ZERO);
         item.setMinimumStock(this.minimumStock != null ? this.minimumStock : BigDecimal.ZERO);
         item.setMaximumStock(this.maximumStock != null ? this.maximumStock : BigDecimal.ZERO);
         item.setReorderLevel(this.reorderLevel != null ? this.reorderLevel : BigDecimal.ZERO);

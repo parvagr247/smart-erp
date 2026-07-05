@@ -181,6 +181,7 @@ export const NavigationEngine = {
 
     const candidatesLog = [];
     let bestCandidate = null;
+    let minScore = Infinity;
 
     regionElements.forEach(candidate => {
       if (candidate === currentElement) return;

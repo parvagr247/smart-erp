@@ -15,6 +15,8 @@ export function useAdminSettingsViewData() {
   const [nextFy, setNextFy] = useState('2026-2027');
   const [fyStatus, setFyStatus] = useState('');
   const [importStatus, setImportStatus] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState('');
 
   useEffect(() => {
     setLocalSettings(settings);
@@ -49,6 +51,9 @@ export function useAdminSettingsViewData() {
   };
 
   const handleSaveSettings = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
+    setSaveStatus('Saving system configurations...');
     updateSettings(localSettings);
 
     if (activeCompany) {
@@ -62,11 +67,20 @@ export function useAdminSettingsViewData() {
           const response = await updateCompanyApi(activeCompany.id, payload);
           if (response.success && response.data) {
             updateActiveCompany(response.data);
+            setSaveStatus('Settings successfully saved!');
+            setTimeout(() => setSaveStatus(''), 4000);
           }
         }
       } catch (err) {
         console.error("Failed to save Keyboard Only Mode setting to database:", err);
+        setSaveStatus('Failed to save settings: ' + (err.response?.data?.message || err.message));
+      } finally {
+        setIsSaving(false);
       }
+    } else {
+      setSaveStatus('Settings updated locally.');
+      setIsSaving(false);
+      setTimeout(() => setSaveStatus(''), 4000);
     }
   };
 
@@ -168,6 +182,8 @@ export function useAdminSettingsViewData() {
     setNextFy,
     fyStatus,
     importStatus,
+    isSaving,
+    saveStatus,
     handleToggle,
     handleSaveSettings,
     handleSwitchFy,

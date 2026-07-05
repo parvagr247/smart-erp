@@ -12,6 +12,7 @@ export default function ItemFormContent({ activeTab, state }) {
     weight, setWeight, binLocation, setBinLocation, notes, setNotes, status, setStatus,
     purchasePrice, setPurchasePrice, sellingPrice, setSellingPrice,
     productType, setProductType, trackInventory, setTrackInventory,
+    isEdit,
     brands, manufacturers, groups, categories, units, warehouses, taxes, hsns,
     handleCategoryToggle, validationError
   } = state;
@@ -253,8 +254,18 @@ export default function ItemFormContent({ activeTab, state }) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Opening Stock (Qty)</label>
-                  <input type="number" step="0.01" value={openingQuantity} onChange={(e) => setOpeningQuantity(parseFloat(e.target.value) || 0)} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none" />
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="block text-xs font-semibold text-slate-500 uppercase">Opening Stock (Qty)</label>
+                    {isEdit && <span className="text-[9px] text-slate-400 font-semibold">(Immutable)</span>}
+                  </div>
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    value={openingQuantity} 
+                    onChange={(e) => setOpeningQuantity(parseFloat(e.target.value) || 0)} 
+                    disabled={isEdit} 
+                    className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none disabled:opacity-50 disabled:bg-slate-100 dark:disabled:bg-slate-800/50" 
+                  />
                 </div>
                 <div>
                   <div className="flex justify-between items-center mb-1">
