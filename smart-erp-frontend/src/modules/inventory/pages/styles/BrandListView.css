@@ -1,17 +1,17 @@
 @reference "../../../../shared/styles/global.css";
 
-.page-container-medium {
+.brand-page-container {
   @apply p-6 max-w-5xl mx-auto space-y-6 text-left;
 }
 
-.page-header-title {
+.brand-page-title {
   @apply text-3xl font-bold tracking-tight text-neutral-900 dark:text-slate-100;
 }
 
-.page-header-desc {
+.brand-page-desc {
   @apply text-neutral-500 dark:text-neutral-400 mt-2 text-sm;
 }
 
-.grid-three-col {
+.brand-grid-layout {
   @apply grid grid-cols-1 md:grid-cols-3 gap-6 w-full items-start;
 }

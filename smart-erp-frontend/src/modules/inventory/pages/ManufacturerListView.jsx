@@ -7,12 +7,12 @@ export default function ManufacturerListView() {
   const { data: manufacturers, submitLoading, message, handleCreate, handleDelete } = useManufacturerListViewData();
 
   return (
-    <div className="page-container-medium">
+    <div className="manufacturer-page-container">
       <div>
-        <h1 className="page-header-title">Manufacturers Master</h1>
-        <p className="page-header-desc">Configure item production companies.</p>
+        <h1 className="manufacturer-page-title">Manufacturers Master</h1>
+        <p className="manufacturer-page-desc">Configure item manufacturer details.</p>
       </div>
-      <div className="grid-three-col">
+      <div className="manufacturer-grid-layout">
         <ManufacturerForm submitLoading={submitLoading} message={message} onCreate={handleCreate} />
         <ManufacturerList manufacturers={manufacturers} onDelete={handleDelete} />
       </div>

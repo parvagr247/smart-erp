@@ -1,1 +1,5 @@
 @reference "../../../../shared/styles/global.css";
+
+.ledger-list-wrapper {
+  @apply space-y-6 text-left w-full;
+}

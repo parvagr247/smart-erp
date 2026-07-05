@@ -1,1 +1,37 @@
 @reference "../../../../shared/styles/global.css";
+
+.groups-grid-layout {
+  @apply grid grid-cols-1 lg:grid-cols-3 gap-6 w-full items-start;
+}
+
+.tree-toolbar {
+  @apply flex flex-col sm:flex-row gap-3 justify-between items-center mb-4 border-b border-[var(--border-light)] pb-4;
+}
+
+.tree-container {
+  @apply space-y-1 p-2 bg-[var(--bg-surface)] rounded-lg border border-[var(--border-light)] max-h-[60vh] overflow-y-auto;
+}
+
+.tree-list {
+  @apply space-y-1;
+}
+
+.toolbar-actions {
+  @apply flex gap-2 w-full sm:w-auto justify-end;
+}
+
+.search-wrapper {
+  @apply relative w-full sm:w-72;
+}
+
+.search-result-item {
+  @apply flex items-center justify-between py-2 px-3 hover:bg-[var(--bg-hover)] rounded border-b border-[var(--border-light)] last:border-0 text-sm;
+}
+
+.result-meta {
+  @apply flex items-center gap-2;
+}
+
+.result-actions {
+  @apply flex gap-3 items-center;
+}

@@ -7,12 +7,12 @@ export default function UnitListView() {
   const { data: units, submitLoading, message, handleCreate, handleDelete } = useUnitListViewData();
 
   return (
-    <div className="page-container-medium">
+    <div className="unit-page-container">
       <div>
-        <h1 className="page-header-title">Measurement Units Master</h1>
-        <p className="page-header-desc">Configure abbreviations and decimal precision constraints for inventory items.</p>
+        <h1 className="unit-page-title">Measurement Units Master</h1>
+        <p className="unit-page-desc">Configure abbreviations and decimal precision constraints for inventory items.</p>
       </div>
-      <div className="grid-three-col">
+      <div className="unit-grid-layout">
         <UnitForm submitLoading={submitLoading} message={message} onCreate={handleCreate} />
         <UnitList units={units} onDelete={handleDelete} />
       </div>

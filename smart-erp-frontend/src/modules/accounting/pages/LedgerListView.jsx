@@ -16,12 +16,14 @@ export default function LedgerListView() {
 
   return (
     <PageContainer>
-      <PageHeader title="Ledger Master List" description="Configure company ledger files and assign groups">
-        <ActionButton label="Create Ledger" icon={<Plus size={14} />} onClick={() => navigate('/accounting/ledgers/create')} />
-      </PageHeader>
-      <LedgerFilterPanel {...listState} onSearch={listState.loadLedgers} />
-      <LedgerTable ledgers={listState.ledgers} onNavigate={navigate} onDelete={listState.handleDelete} />
-      <Pagination currentPage={listState.page + 1} totalPages={listState.totalPages} onPageChange={(p) => listState.setPage(p - 1)} />
+      <div className="ledger-list-wrapper">
+        <PageHeader title="Ledger Master List" description="Configure company ledger files and assign groups">
+          <ActionButton label="Create Ledger" icon={<Plus size={14} />} onClick={() => navigate('/accounting/ledgers/create')} />
+        </PageHeader>
+        <LedgerFilterPanel {...listState} onSearch={listState.loadLedgers} />
+        <LedgerTable ledgers={listState.ledgers} onNavigate={navigate} onDelete={listState.handleDelete} />
+        <Pagination currentPage={listState.page + 1} totalPages={listState.totalPages} onPageChange={(p) => listState.setPage(p - 1)} />
+      </div>
     </PageContainer>
   );
 }
