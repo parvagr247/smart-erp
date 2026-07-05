@@ -1,23 +1,4 @@
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: smarterp-postgres
-    restart: always
-    environment:
-      POSTGRES_DB: smarterp
-      POSTGRES_USER: ${DATABASE_USERNAME:-postgres}
-      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-postgres}
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-
   backend:
     build:
       context: ./smart-erp-backend
@@ -25,17 +6,8 @@ services:
     container_name: smarterp-backend
     restart: always
 
-    depends_on:
-      postgres:
-        condition: service_healthy
-
     env_file:
       - ./smart-erp-backend/.env
-
-    environment:
-      DATABASE_URL: jdbc:postgresql://postgres:5432/smarterp
-      DATABASE_USERNAME: ${DATABASE_USERNAME:-postgres}
-      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-postgres}
 
     ports:
       - "9521:9521"
@@ -70,6 +42,3 @@ services:
       timeout: 5s
       retries: 3
       start_period: 20s
-
-volumes:
-  postgres_data:
