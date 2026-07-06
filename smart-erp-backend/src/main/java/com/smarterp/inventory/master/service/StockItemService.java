@@ -15,4 +15,5 @@ public interface StockItemService {
     void deleteItem(UUID id, Company company);
     Page<StockItemResponse> getItems(Company company, String search, UUID warehouseId, UUID categoryId, UUID groupId, UUID brandId, UUID manufacturerId, String stockStatus, Pageable pageable);
     InventorySummaryResponse getSummary(Company company);
+    com.smarterp.inventory.master.entity.StockItem getItemEntity(UUID id, Company company);
 }

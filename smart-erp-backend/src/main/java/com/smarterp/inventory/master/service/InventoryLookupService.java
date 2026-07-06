@@ -36,6 +36,7 @@ public interface InventoryLookupService {
     List<Warehouse> getWarehouses(Company company);
     Warehouse createWarehouse(WarehouseRequest request, Company company);
     void deleteWarehouse(UUID id, Company company);
+    Warehouse getWarehouseEntity(UUID id, Company company);
 
     // TaxCategories
     List<TaxCategory> getTaxCategories(Company company);

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { shortcutRegistry } from '../ShortcutRegistry';
+import { shortcutRegistry } from '@shared/interaction/ShortcutRegistry';
 
 export function useConfirmationDialogData({ isOpen, variant, confirmText = 'Confirm', loading = false, onConfirm }) {
   const isDestructive = variant === 'destructive' || variant === 'danger';

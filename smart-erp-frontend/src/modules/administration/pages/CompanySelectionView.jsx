@@ -5,7 +5,7 @@ import WorkspaceHeader from '../components/WorkspaceHeader';
 import WorkspaceHero from '../components/WorkspaceHero';
 import WorkspaceList from '../components/WorkspaceList';
 import WorkspaceFooter from '../components/WorkspaceFooter';
-import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
+import ConfirmationDialog from '@shared/components/ConfirmationDialog';
 import './styles/CompanySelectionView.css';
 
 export default function CompanySelectionView(props) {
@@ -25,7 +25,16 @@ export default function CompanySelectionView(props) {
         <WorkspaceList companies={companies} page={page} setPage={setPage} totalPages={totalPages} handleSelect={handleSelect} onEdit={props.onEditCompany} onDelete={triggerDeleteConfirm} onCreateCompany={props.onCreateCompany} isAdmin={isAdmin} />
       </main>
       <WorkspaceFooter user={user} currentTime={currentTime} />
-      <DeleteConfirmationDialog isOpen={deleteModal.isOpen} companyName={deleteModal.company?.name || ''} onConfirm={executeDelete} onCancel={() => setDeleteModal({ isOpen: false, company: null })} loading={deleteLoading} />
+      <ConfirmationDialog 
+        isOpen={deleteModal.isOpen} 
+        title="Delete Company" 
+        description={`Are you sure you want to delete ${deleteModal.company?.name || ''}? This action is permanent and will delete all ledger accounts, inventory balances, and transactions associated with this company profile.`} 
+        onConfirm={executeDelete} 
+        onCancel={() => setDeleteModal({ isOpen: false, company: null })} 
+        loading={deleteLoading} 
+        variant="destructive"
+        confirmText="Permanently Delete"
+      />
     </div>
   );
 }

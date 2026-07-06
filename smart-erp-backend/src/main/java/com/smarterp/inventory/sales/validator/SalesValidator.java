@@ -4,7 +4,7 @@ import com.smarterp.administration.company.entity.Company;
 import com.smarterp.common.exception.BusinessValidationException;
 import com.smarterp.common.exception.ResourceNotFoundException;
 import com.smarterp.inventory.master.entity.StockItem;
-import com.smarterp.inventory.master.repository.StockItemRepository;
+import com.smarterp.inventory.master.service.StockItemService;
 import com.smarterp.inventory.sales.dto.SalesLineRequest;
 import com.smarterp.inventory.sales.dto.SalesRequest;
 import com.smarterp.inventory.sales.entity.SalesStatus;
@@ -19,7 +19,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class SalesValidator {
 
-    private final StockItemRepository stockItemRepository;
+    private final StockItemService stockItemService;
 
     public void validateRequest(SalesRequest request, Company company) {
         if (request.getLineItems() == null || request.getLineItems().isEmpty()) {
@@ -38,11 +38,9 @@ public class SalesValidator {
         }
     }
 
-    public void checkStockAvailability(List<SalesLineRequest> lines, UUID companyId) {
+    public void checkStockAvailability(List<SalesLineRequest> lines, Company company) {
         for (SalesLineRequest line : lines) {
-            StockItem item = stockItemRepository.findById(line.getStockItemId())
-                    .filter(i -> i.getCompany().getId().equals(companyId))
-                    .orElseThrow(() -> new ResourceNotFoundException("Stock item not found."));
+            StockItem item = stockItemService.getItemEntity(line.getStockItemId(), company);
 
             if (item.getTrackInventory() != null && item.getTrackInventory()) {
                 BigDecimal available = item.getCurrentQuantity() != null ? item.getCurrentQuantity() : BigDecimal.ZERO;

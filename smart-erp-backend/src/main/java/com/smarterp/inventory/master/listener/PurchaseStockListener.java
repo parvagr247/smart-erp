@@ -1,4 +1,4 @@
-package com.smarterp.inventory.purchase.listener;
+package com.smarterp.inventory.master.listener;
 
 import com.smarterp.inventory.purchase.entity.Purchase;
 import com.smarterp.inventory.purchase.entity.PurchaseLine;

@@ -226,6 +226,14 @@ public class InventoryLookupServiceImpl implements InventoryLookupService {
         warehouseRepository.deleteById(id);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Warehouse getWarehouseEntity(UUID id, Company company) {
+        return warehouseRepository.findById(id)
+                .filter(w -> w.getCompany().getId().equals(company.getId()))
+                .orElseThrow(() -> new com.smarterp.common.exception.ResourceNotFoundException("Warehouse not found."));
+    }
+
     // ==========================================================================
     // TaxCategories
     // ==========================================================================

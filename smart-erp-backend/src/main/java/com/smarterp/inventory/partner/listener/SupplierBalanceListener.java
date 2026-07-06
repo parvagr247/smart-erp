@@ -1,4 +1,4 @@
-package com.smarterp.inventory.purchase.listener;
+package com.smarterp.inventory.partner.listener;
 
 import com.smarterp.inventory.partner.entity.BusinessPartner;
 import com.smarterp.inventory.partner.repository.PartnerRepository;
@@ -29,7 +29,7 @@ public class SupplierBalanceListener {
 
         BusinessPartner supplier = purchase.getSupplier();
         BigDecimal currentOutstanding = supplier.getOutstandingBalance() != null ? supplier.getOutstandingBalance() : BigDecimal.ZERO;
-        
+
         supplier.setOutstandingBalance(currentOutstanding.add(purchase.getGrandTotal()));
         supplier.setLastPurchaseDate(purchase.getPurchaseDate());
         partnerRepository.save(supplier);

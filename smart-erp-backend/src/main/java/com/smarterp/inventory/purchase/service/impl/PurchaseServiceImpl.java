@@ -4,11 +4,9 @@ import com.smarterp.administration.company.entity.Company;
 import com.smarterp.common.exception.BusinessValidationException;
 import com.smarterp.common.exception.ResourceNotFoundException;
 import com.smarterp.inventory.partner.entity.BusinessPartner;
-import com.smarterp.inventory.partner.repository.PartnerRepository;
-import com.smarterp.inventory.master.entity.StockItem;
+import com.smarterp.inventory.partner.service.PartnerService;
+import com.smarterp.inventory.master.service.InventoryLookupService;
 import com.smarterp.inventory.master.entity.Warehouse;
-import com.smarterp.inventory.master.repository.StockItemRepository;
-import com.smarterp.inventory.master.repository.WarehouseRepository;
 import com.smarterp.inventory.purchase.dto.PurchaseLineRequest;
 import com.smarterp.inventory.purchase.dto.PurchaseLineResponse;
 import com.smarterp.inventory.purchase.dto.PurchaseRequest;
@@ -45,8 +43,8 @@ import org.springframework.cache.annotation.CacheEvict;
 public class PurchaseServiceImpl implements PurchaseService {
 
     private final PurchaseRepository purchaseRepository;
-    private final PartnerRepository partnerRepository;
-    private final WarehouseRepository warehouseRepository;
+    private final PartnerService partnerService;
+    private final InventoryLookupService inventoryLookupService;
     private final ApplicationEventPublisher eventPublisher;
     private final com.smarterp.common.audit.AuditLogService auditLogService;
 
@@ -60,13 +58,8 @@ public class PurchaseServiceImpl implements PurchaseService {
         log.info("Creating purchase transaction for company {}", company.getId());
         purchaseValidator.validateRequest(request, company);
 
-        BusinessPartner supplier = partnerRepository.findById(request.getSupplierId())
-                .filter(p -> p.getCompany().getId().equals(company.getId()))
-                .orElseThrow(() -> new ResourceNotFoundException("Supplier not found."));
-
-        Warehouse warehouse = warehouseRepository.findById(request.getWarehouseId())
-                .filter(w -> w.getCompany().getId().equals(company.getId()))
-                .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found."));
+        BusinessPartner supplier = partnerService.getPartnerEntity(request.getSupplierId(), company);
+        Warehouse warehouse = inventoryLookupService.getWarehouseEntity(request.getWarehouseId(), company);
 
         String purchaseNum = generatePurchaseNumber(company);
 
@@ -111,13 +104,8 @@ public class PurchaseServiceImpl implements PurchaseService {
 
         purchaseValidator.validateRequest(request, company);
 
-        BusinessPartner supplier = partnerRepository.findById(request.getSupplierId())
-                .filter(p -> p.getCompany().getId().equals(company.getId()))
-                .orElseThrow(() -> new ResourceNotFoundException("Supplier not found."));
-
-        Warehouse warehouse = warehouseRepository.findById(request.getWarehouseId())
-                .filter(w -> w.getCompany().getId().equals(company.getId()))
-                .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found."));
+        BusinessPartner supplier = partnerService.getPartnerEntity(request.getSupplierId(), company);
+        Warehouse warehouse = inventoryLookupService.getWarehouseEntity(request.getWarehouseId(), company);
 
         purchase.setPurchaseDate(request.getPurchaseDate() != null ? request.getPurchaseDate() : LocalDate.now());
         purchase.setDueDate(request.getDueDate());

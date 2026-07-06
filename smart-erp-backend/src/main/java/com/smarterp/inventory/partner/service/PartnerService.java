@@ -18,4 +18,5 @@ public interface PartnerService {
     PartnerResponse updatePartnerStatus(UUID id, PartnerStatus status, Company company);
     Page<PartnerResponse> getPartners(Company company, String search, PartnerType type, PartnerStatus status, Pageable pageable);
     PartnerSummaryResponse getSummary(Company company);
+    com.smarterp.inventory.partner.entity.BusinessPartner getPartnerEntity(UUID id, Company company);
 }

@@ -222,4 +222,12 @@ public class StockItemServiceImpl implements StockItemService {
             throw new BusinessValidationException("Reorder level cannot be negative.");
         }
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public StockItem getItemEntity(UUID id, Company company) {
+        return repository.findById(id)
+                .filter(i -> i.getCompany().getId().equals(company.getId()))
+                .orElseThrow(() -> new ResourceNotFoundException("Stock item not found."));
+    }
 }

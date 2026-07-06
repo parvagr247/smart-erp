@@ -4,11 +4,9 @@ import com.smarterp.administration.company.entity.Company;
 import com.smarterp.common.exception.BusinessValidationException;
 import com.smarterp.common.exception.ResourceNotFoundException;
 import com.smarterp.inventory.partner.entity.BusinessPartner;
-import com.smarterp.inventory.partner.repository.PartnerRepository;
-import com.smarterp.inventory.master.entity.StockItem;
+import com.smarterp.inventory.partner.service.PartnerService;
+import com.smarterp.inventory.master.service.InventoryLookupService;
 import com.smarterp.inventory.master.entity.Warehouse;
-import com.smarterp.inventory.master.repository.StockItemRepository;
-import com.smarterp.inventory.master.repository.WarehouseRepository;
 import com.smarterp.inventory.sales.dto.SalesLineRequest;
 import com.smarterp.inventory.sales.dto.SalesLineResponse;
 import com.smarterp.inventory.sales.dto.SalesRequest;
@@ -20,9 +18,6 @@ import com.smarterp.inventory.sales.event.SalesApprovedEvent;
 import com.smarterp.inventory.sales.repository.SalesRepository;
 import com.smarterp.inventory.sales.service.SalesService;
 import com.smarterp.inventory.purchase.domain.TaxCalculator;
-import com.smarterp.inventory.master.service.InventoryTransactionService;
-import com.smarterp.inventory.master.dto.InventoryTransactionRequest;
-import com.smarterp.inventory.master.entity.InventoryTransactionType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -49,9 +44,8 @@ import org.springframework.cache.annotation.CacheEvict;
 public class SalesServiceImpl implements SalesService {
 
     private final SalesRepository salesRepository;
-    private final PartnerRepository partnerRepository;
-    private final WarehouseRepository warehouseRepository;
-    private final InventoryTransactionService inventoryTransactionService;
+    private final PartnerService partnerService;
+    private final InventoryLookupService inventoryLookupService;
     private final ApplicationEventPublisher eventPublisher;
 
     private final com.smarterp.inventory.sales.validator.SalesValidator salesValidator;
@@ -64,18 +58,13 @@ public class SalesServiceImpl implements SalesService {
         log.info("Creating sales transaction for company {}", company.getId());
         salesValidator.validateRequest(request, company);
 
-        BusinessPartner customer = partnerRepository.findById(request.getCustomerId())
-                .filter(p -> p.getCompany().getId().equals(company.getId()))
-                .orElseThrow(() -> new ResourceNotFoundException("Customer not found."));
-
-        Warehouse warehouse = warehouseRepository.findById(request.getWarehouseId())
-                .filter(w -> w.getCompany().getId().equals(company.getId()))
-                .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found."));
+        BusinessPartner customer = partnerService.getPartnerEntity(request.getCustomerId(), company);
+        Warehouse warehouse = inventoryLookupService.getWarehouseEntity(request.getWarehouseId(), company);
 
         // If status is APPROVED/COMPLETED, check stock availability
         SalesStatus initialStatus = request.getStatus() != null ? request.getStatus() : SalesStatus.DRAFT;
         if (initialStatus == SalesStatus.APPROVED || initialStatus == SalesStatus.COMPLETED) {
-            salesValidator.checkStockAvailability(request.getLineItems(), company.getId());
+            salesValidator.checkStockAvailability(request.getLineItems(), company);
         }
 
         String salesNum = generateSalesNumber(company);
@@ -98,10 +87,7 @@ public class SalesServiceImpl implements SalesService {
 
         Sales saved = salesRepository.save(sales);
 
-        // If approved/completed, trigger stock reductions via inventory transaction service
-        if (saved.getStatus() == SalesStatus.APPROVED || saved.getStatus() == SalesStatus.COMPLETED) {
-            reduceInventory(saved, userEmail);
-        }
+
 
         publishSalesLifecycleEvents(saved, company.getId(), userEmail, SalesStatus.DRAFT);
 
@@ -122,19 +108,14 @@ public class SalesServiceImpl implements SalesService {
 
         salesValidator.validateRequest(request, company);
 
-        BusinessPartner customer = partnerRepository.findById(request.getCustomerId())
-                .filter(p -> p.getCompany().getId().equals(company.getId()))
-                .orElseThrow(() -> new ResourceNotFoundException("Customer not found."));
-
-        Warehouse warehouse = warehouseRepository.findById(request.getWarehouseId())
-                .filter(w -> w.getCompany().getId().equals(company.getId()))
-                .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found."));
+        BusinessPartner customer = partnerService.getPartnerEntity(request.getCustomerId(), company);
+        Warehouse warehouse = inventoryLookupService.getWarehouseEntity(request.getWarehouseId(), company);
 
         SalesStatus oldStatus = sales.getStatus();
         SalesStatus newStatus = request.getStatus() != null ? request.getStatus() : SalesStatus.DRAFT;
 
         if (newStatus == SalesStatus.APPROVED || newStatus == SalesStatus.COMPLETED) {
-            salesValidator.checkStockAvailability(request.getLineItems(), company.getId());
+            salesValidator.checkStockAvailability(request.getLineItems(), company);
         }
 
         sales.setSalesDate(request.getSalesDate() != null ? request.getSalesDate() : LocalDate.now());
@@ -151,9 +132,7 @@ public class SalesServiceImpl implements SalesService {
 
         Sales saved = salesRepository.save(sales);
 
-        if (saved.getStatus() == SalesStatus.APPROVED || saved.getStatus() == SalesStatus.COMPLETED) {
-            reduceInventory(saved, userEmail);
-        }
+
 
         publishSalesLifecycleEvents(saved, company.getId(), userEmail, oldStatus);
 
@@ -194,15 +173,13 @@ public class SalesServiceImpl implements SalesService {
                             .quantity(l.getQuantity())
                             .build())
                     .collect(Collectors.toList());
-            salesValidator.checkStockAvailability(lines, company.getId());
+            salesValidator.checkStockAvailability(lines, company);
         }
 
         sales.setStatus(status);
         Sales saved = salesRepository.save(sales);
 
-        if (oldStatus == SalesStatus.DRAFT && (saved.getStatus() == SalesStatus.APPROVED || saved.getStatus() == SalesStatus.COMPLETED)) {
-            reduceInventory(saved, userEmail);
-        }
+
 
         publishSalesLifecycleEvents(saved, company.getId(), userEmail, oldStatus);
 
@@ -257,23 +234,6 @@ public class SalesServiceImpl implements SalesService {
         salesRepository.delete(sales);
     }
 
-    private void reduceInventory(Sales sales, String performedBy) {
-        for (SalesLine line : sales.getLineItems()) {
-            InventoryTransactionRequest req = InventoryTransactionRequest.builder()
-                    .stockItemId(line.getStockItem().getId())
-                    .warehouseId(line.getWarehouse() != null ? line.getWarehouse().getId() : sales.getWarehouse().getId())
-                    .transactionType(InventoryTransactionType.GOODS_ISSUE)
-                    .quantity(line.getQuantity())
-                    .rate(line.getRate())
-                    .referenceNumber(sales.getSalesNumber())
-                    .transactionDate(sales.getSalesDate())
-                    .notes("Sales dispatch invoice: " + sales.getSalesNumber())
-                    .build();
-
-            inventoryTransactionService.recordTransaction(req, sales.getCompany(), performedBy);
-        }
-    }
-
     private String generateSalesNumber(Company company) {
         int currentYear = LocalDate.now().getYear();
         String prefix = "SAL-" + currentYear + "-%";
@@ -294,7 +254,7 @@ public class SalesServiceImpl implements SalesService {
 
     private void publishSalesLifecycleEvents(Sales sales, UUID companyId, String performedBy, SalesStatus oldStatus) {
         if (oldStatus == SalesStatus.DRAFT) {
-            if (sales.getStatus() == SalesStatus.APPROVED) {
+            if (sales.getStatus() == SalesStatus.APPROVED || sales.getStatus() == SalesStatus.COMPLETED) {
                 eventPublisher.publishEvent(new SalesApprovedEvent(this, sales.getId(), companyId, performedBy));
             }
         }

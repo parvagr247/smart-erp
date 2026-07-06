@@ -195,4 +195,12 @@ public class PartnerServiceImpl implements PartnerService {
             }
         }
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public BusinessPartner getPartnerEntity(UUID id, Company company) {
+        return repository.findById(id)
+                .filter(p -> p.getCompany().getId().equals(company.getId()))
+                .orElseThrow(() -> new ResourceNotFoundException("Business partner not found."));
+    }
 }

@@ -1,4 +1,4 @@
-package com.smarterp.inventory.purchase.listener;
+package com.smarterp.accounting.voucher.listener;
 
 import com.smarterp.administration.company.entity.Company;
 import com.smarterp.accounting.ledger.entity.BalanceType;
