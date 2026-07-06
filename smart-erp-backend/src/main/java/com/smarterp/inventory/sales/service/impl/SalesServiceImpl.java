@@ -50,17 +50,19 @@ public class SalesServiceImpl implements SalesService {
 
     private final SalesRepository salesRepository;
     private final PartnerRepository partnerRepository;
-    private final StockItemRepository stockItemRepository;
     private final WarehouseRepository warehouseRepository;
-    private final TaxCalculator taxCalculator;
     private final InventoryTransactionService inventoryTransactionService;
     private final ApplicationEventPublisher eventPublisher;
+
+    private final com.smarterp.inventory.sales.validator.SalesValidator salesValidator;
+    private final com.smarterp.inventory.sales.mapper.SalesMapper salesMapper;
+    private final com.smarterp.inventory.sales.service.SalesCalculationService salesCalculationService;
 
     @Override
     @CacheEvict(value = "dashboard", key = "#company.id")
     public SalesResponse createSales(SalesRequest request, Company company, String userEmail) {
         log.info("Creating sales transaction for company {}", company.getId());
-        validateRequest(request, company);
+        salesValidator.validateRequest(request, company);
 
         BusinessPartner customer = partnerRepository.findById(request.getCustomerId())
                 .filter(p -> p.getCompany().getId().equals(company.getId()))
@@ -73,7 +75,7 @@ public class SalesServiceImpl implements SalesService {
         // If status is APPROVED/COMPLETED, check stock availability
         SalesStatus initialStatus = request.getStatus() != null ? request.getStatus() : SalesStatus.DRAFT;
         if (initialStatus == SalesStatus.APPROVED || initialStatus == SalesStatus.COMPLETED) {
-            checkStockAvailability(request.getLineItems(), company.getId());
+            salesValidator.checkStockAvailability(request.getLineItems(), company.getId());
         }
 
         String salesNum = generateSalesNumber(company);
@@ -92,7 +94,7 @@ public class SalesServiceImpl implements SalesService {
                 .attachments(request.getAttachments())
                 .build();
 
-        calculateTaxesAndTotals(sales, request.getLineItems(), request.getInvoiceDiscountAmount(), request.getIsTaxInclusive(), company);
+        salesCalculationService.calculateTaxesAndTotals(sales, request.getLineItems(), request.getInvoiceDiscountAmount(), request.getIsTaxInclusive(), company);
 
         Sales saved = salesRepository.save(sales);
 
@@ -103,7 +105,7 @@ public class SalesServiceImpl implements SalesService {
 
         publishSalesLifecycleEvents(saved, company.getId(), userEmail, SalesStatus.DRAFT);
 
-        return mapToResponse(saved);
+        return salesMapper.mapToResponse(saved);
     }
 
     @Override
@@ -118,7 +120,7 @@ public class SalesServiceImpl implements SalesService {
             throw new BusinessValidationException("Approved or Completed sales transactions cannot be modified.");
         }
 
-        validateRequest(request, company);
+        salesValidator.validateRequest(request, company);
 
         BusinessPartner customer = partnerRepository.findById(request.getCustomerId())
                 .filter(p -> p.getCompany().getId().equals(company.getId()))
@@ -132,7 +134,7 @@ public class SalesServiceImpl implements SalesService {
         SalesStatus newStatus = request.getStatus() != null ? request.getStatus() : SalesStatus.DRAFT;
 
         if (newStatus == SalesStatus.APPROVED || newStatus == SalesStatus.COMPLETED) {
-            checkStockAvailability(request.getLineItems(), company.getId());
+            salesValidator.checkStockAvailability(request.getLineItems(), company.getId());
         }
 
         sales.setSalesDate(request.getSalesDate() != null ? request.getSalesDate() : LocalDate.now());
@@ -145,7 +147,7 @@ public class SalesServiceImpl implements SalesService {
         sales.setStatus(newStatus);
 
         sales.getLineItems().clear();
-        calculateTaxesAndTotals(sales, request.getLineItems(), request.getInvoiceDiscountAmount(), request.getIsTaxInclusive(), company);
+        salesCalculationService.calculateTaxesAndTotals(sales, request.getLineItems(), request.getInvoiceDiscountAmount(), request.getIsTaxInclusive(), company);
 
         Sales saved = salesRepository.save(sales);
 
@@ -155,7 +157,7 @@ public class SalesServiceImpl implements SalesService {
 
         publishSalesLifecycleEvents(saved, company.getId(), userEmail, oldStatus);
 
-        return mapToResponse(saved);
+        return salesMapper.mapToResponse(saved);
     }
 
     @Override
@@ -164,7 +166,7 @@ public class SalesServiceImpl implements SalesService {
         Sales sales = salesRepository.findById(id)
                 .filter(s -> s.getCompany().getId().equals(company.getId()))
                 .orElseThrow(() -> new ResourceNotFoundException("Sales invoice not found."));
-        return mapToResponse(sales);
+        return salesMapper.mapToResponse(sales);
     }
 
     @Override
@@ -177,10 +179,10 @@ public class SalesServiceImpl implements SalesService {
 
         SalesStatus oldStatus = sales.getStatus();
         if (oldStatus == status) {
-            return mapToResponse(sales);
+            return salesMapper.mapToResponse(sales);
         }
 
-        if (!canTransition(oldStatus, status)) {
+        if (!salesValidator.canTransition(oldStatus, status)) {
             throw new BusinessValidationException("Invalid status transition from " + oldStatus + " to " + status + ".");
         }
 
@@ -192,7 +194,7 @@ public class SalesServiceImpl implements SalesService {
                             .quantity(l.getQuantity())
                             .build())
                     .collect(Collectors.toList());
-            checkStockAvailability(lines, company.getId());
+            salesValidator.checkStockAvailability(lines, company.getId());
         }
 
         sales.setStatus(status);
@@ -204,7 +206,7 @@ public class SalesServiceImpl implements SalesService {
 
         publishSalesLifecycleEvents(saved, company.getId(), userEmail, oldStatus);
 
-        return mapToResponse(saved);
+        return salesMapper.mapToResponse(saved);
     }
 
     @Override
@@ -238,7 +240,7 @@ public class SalesServiceImpl implements SalesService {
             return cb.and(predicates.toArray(new Predicate[0]));
         };
 
-        return salesRepository.findAll(spec, pageable).map(this::mapToSummaryResponse);
+        return salesRepository.findAll(spec, pageable).map(salesMapper::mapToSummaryResponse);
     }
 
     @Override
@@ -253,22 +255,6 @@ public class SalesServiceImpl implements SalesService {
         }
 
         salesRepository.delete(sales);
-    }
-
-    private void checkStockAvailability(List<SalesLineRequest> lines, UUID companyId) {
-        for (SalesLineRequest line : lines) {
-            StockItem item = stockItemRepository.findById(line.getStockItemId())
-                    .filter(i -> i.getCompany().getId().equals(companyId))
-                    .orElseThrow(() -> new ResourceNotFoundException("Stock item not found."));
-
-            if (item.getTrackInventory() != null && item.getTrackInventory()) {
-                BigDecimal available = item.getCurrentQuantity() != null ? item.getCurrentQuantity() : BigDecimal.ZERO;
-                if (available.compareTo(line.getQuantity()) < 0) {
-                    throw new BusinessValidationException("Insufficient stock for item: " + item.getName() + 
-                            ". Available: " + available + ", Required: " + line.getQuantity());
-                }
-            }
-        }
     }
 
     private void reduceInventory(Sales sales, String performedBy) {
@@ -306,208 +292,11 @@ public class SalesServiceImpl implements SalesService {
         return String.format("SAL-%d-%06d", currentYear, nextVal);
     }
 
-    private void calculateTaxesAndTotals(
-            Sales sales, List<SalesLineRequest> requests, BigDecimal invoiceDiscount, Boolean isTaxInclusive, Company company) {
-
-        BigDecimal totalGross = BigDecimal.ZERO;
-        BigDecimal totalLineDiscounts = BigDecimal.ZERO;
-        BigDecimal totalTaxAmount = BigDecimal.ZERO;
-        BigDecimal totalCgst = BigDecimal.ZERO;
-        BigDecimal totalSgst = BigDecimal.ZERO;
-        BigDecimal totalIgst = BigDecimal.ZERO;
-        BigDecimal totalCess = BigDecimal.ZERO;
-
-        boolean isIntraState = determineIntraState(sales.getCustomer(), company);
-        boolean inclusive = isTaxInclusive != null && isTaxInclusive;
-
-        for (SalesLineRequest req : requests) {
-            StockItem item = stockItemRepository.findById(req.getStockItemId())
-                    .filter(i -> i.getCompany().getId().equals(company.getId()))
-                    .orElseThrow(() -> new ResourceNotFoundException("Stock item not found."));
-
-            Warehouse lineWh = sales.getWarehouse();
-            if (req.getWarehouseId() != null) {
-                lineWh = warehouseRepository.findById(req.getWarehouseId())
-                        .orElse(sales.getWarehouse());
-            }
-
-            BigDecimal qty = req.getQuantity();
-            BigDecimal rate = req.getRate();
-            BigDecimal lineDiscount = req.getDiscount() != null ? req.getDiscount() : BigDecimal.ZERO;
-
-            TaxCalculator.TaxCalculationResult taxResult = taxCalculator.calculateTax(
-                    item, qty, rate, lineDiscount, inclusive, isIntraState
-            );
-
-            BigDecimal lineTotal = taxResult.taxableAmount.add(taxResult.taxAmount).add(taxResult.cess);
-
-            SalesLine line = SalesLine.builder()
-                    .sales(sales)
-                    .stockItem(item)
-                    .quantity(qty)
-                    .rate(rate)
-                    .discount(lineDiscount)
-                    .taxPercentage(item.getTaxCategory() != null ? item.getTaxCategory().getGstRate() : BigDecimal.ZERO)
-                    .taxAmount(taxResult.taxAmount)
-                    .totalAmount(lineTotal)
-                    .warehouse(lineWh)
-                    .batchNumber(req.getBatchNumber())
-                    .build();
-
-            sales.getLineItems().add(line);
-
-            totalGross = totalGross.add(qty.multiply(rate));
-            totalLineDiscounts = totalLineDiscounts.add(lineDiscount);
-            totalTaxAmount = totalTaxAmount.add(taxResult.taxAmount);
-            totalCgst = totalCgst.add(taxResult.cgst);
-            totalSgst = totalSgst.add(taxResult.sgst);
-            totalIgst = totalIgst.add(taxResult.igst);
-            totalCess = totalCess.add(taxResult.cess);
-        }
-
-        BigDecimal netTotal = totalGross.subtract(totalLineDiscounts).add(totalTaxAmount).add(totalCess);
-        BigDecimal invDisc = invoiceDiscount != null ? invoiceDiscount : BigDecimal.ZERO;
-        netTotal = netTotal.subtract(invDisc);
-
-        BigDecimal rounded = netTotal.setScale(0, RoundingMode.HALF_UP);
-        BigDecimal roundOff = rounded.subtract(netTotal);
-
-        sales.setGrossAmount(totalGross);
-        sales.setDiscountAmount(totalLineDiscounts.add(invDisc));
-        sales.setTaxAmount(totalTaxAmount);
-        sales.setCgst(totalCgst);
-        sales.setSgst(totalSgst);
-        sales.setIgst(totalIgst);
-        sales.setCess(totalCess);
-        sales.setRoundOff(roundOff);
-        sales.setGrandTotal(rounded);
-    }
-
-    private boolean determineIntraState(BusinessPartner customer, Company company) {
-        String compState = company.getState() != null ? company.getState().trim().toLowerCase() : "";
-        String custState = "";
-        if (customer.getAddresses() != null && !customer.getAddresses().isEmpty()) {
-            custState = customer.getAddresses().stream()
-                    .filter(a -> "BILLING".equalsIgnoreCase(a.getAddressType()))
-                    .findFirst()
-                    .orElse(customer.getAddresses().get(0))
-                    .getState();
-        }
-        if (custState == null) custState = "";
-        custState = custState.trim().toLowerCase();
-
-        return compState.isEmpty() || custState.isEmpty() || compState.equalsIgnoreCase(custState);
-    }
-
     private void publishSalesLifecycleEvents(Sales sales, UUID companyId, String performedBy, SalesStatus oldStatus) {
         if (oldStatus == SalesStatus.DRAFT) {
             if (sales.getStatus() == SalesStatus.APPROVED) {
                 eventPublisher.publishEvent(new SalesApprovedEvent(this, sales.getId(), companyId, performedBy));
             }
-        }
-    }
-
-    private void validateRequest(SalesRequest request, Company company) {
-        if (request.getLineItems() == null || request.getLineItems().isEmpty()) {
-            throw new BusinessValidationException("Sales invoice must contain at least one line item.");
-        }
-        for (SalesLineRequest line : request.getLineItems()) {
-            if (line.getStockItemId() == null) throw new BusinessValidationException("Stock item ID is required on all lines.");
-            if (line.getQuantity() == null || line.getQuantity().compareTo(BigDecimal.ZERO) <= 0) {
-                throw new BusinessValidationException("Quantity must be greater than zero.");
-            }
-            if (line.getRate() == null || line.getRate().compareTo(BigDecimal.ZERO) <= 0) {
-                throw new BusinessValidationException("Rate must be greater than zero.");
-            }
-        }
-    }
-
-    private SalesResponse mapToSummaryResponse(Sales s) {
-        return SalesResponse.builder()
-                .id(s.getId())
-                .salesNumber(s.getSalesNumber())
-                .salesDate(s.getSalesDate())
-                .dueDate(s.getDueDate())
-                .paymentTerms(s.getPaymentTerms())
-                .customerId(s.getCustomer().getId())
-                .customerName(s.getCustomer().getName())
-                .warehouseId(s.getWarehouse().getId())
-                .warehouseName(s.getWarehouse().getName())
-                .status(s.getStatus())
-                .grossAmount(s.getGrossAmount())
-                .discountAmount(s.getDiscountAmount())
-                .taxAmount(s.getTaxAmount())
-                .cgst(s.getCgst())
-                .sgst(s.getSgst())
-                .igst(s.getIgst())
-                .cess(s.getCess())
-                .roundOff(s.getRoundOff())
-                .grandTotal(s.getGrandTotal())
-                .notes(s.getNotes())
-                .attachments(s.getAttachments())
-                .createdBy(s.getCreatedBy())
-                .lineItems(null)
-                .build();
-    }
-
-    private SalesResponse mapToResponse(Sales s) {
-        List<SalesLineResponse> lines = s.getLineItems().stream()
-                .map(line -> SalesLineResponse.builder()
-                        .id(line.getId())
-                        .stockItemId(line.getStockItem().getId())
-                        .stockItemName(line.getStockItem().getName())
-                        .sku(line.getStockItem().getSku())
-                        .quantity(line.getQuantity())
-                        .rate(line.getRate())
-                        .discount(line.getDiscount())
-                        .taxPercentage(line.getTaxPercentage())
-                        .taxAmount(line.getTaxAmount())
-                        .totalAmount(line.getTotalAmount())
-                        .warehouseId(line.getWarehouse() != null ? line.getWarehouse().getId() : null)
-                        .warehouseName(line.getWarehouse() != null ? line.getWarehouse().getName() : "")
-                        .batchNumber(line.getBatchNumber())
-                        .build())
-                .collect(Collectors.toList());
-
-        return SalesResponse.builder()
-                .id(s.getId())
-                .salesNumber(s.getSalesNumber())
-                .salesDate(s.getSalesDate())
-                .dueDate(s.getDueDate())
-                .paymentTerms(s.getPaymentTerms())
-                .customerId(s.getCustomer().getId())
-                .customerName(s.getCustomer().getName())
-                .warehouseId(s.getWarehouse().getId())
-                .warehouseName(s.getWarehouse().getName())
-                .status(s.getStatus())
-                .grossAmount(s.getGrossAmount())
-                .discountAmount(s.getDiscountAmount())
-                .taxAmount(s.getTaxAmount())
-                .cgst(s.getCgst())
-                .sgst(s.getSgst())
-                .igst(s.getIgst())
-                .cess(s.getCess())
-                .roundOff(s.getRoundOff())
-                .grandTotal(s.getGrandTotal())
-                .notes(s.getNotes())
-                .attachments(s.getAttachments())
-                .createdBy(s.getCreatedBy())
-                .lineItems(lines)
-                .createdAt(s.getCreatedAt())
-                .build();
-    }
-    private boolean canTransition(SalesStatus current, SalesStatus target) {
-        if (current == target) return true;
-        switch (current) {
-            case DRAFT:
-                return target == SalesStatus.APPROVED || target == SalesStatus.CANCELLED;
-            case APPROVED:
-                return target == SalesStatus.COMPLETED || target == SalesStatus.CANCELLED;
-            case COMPLETED:
-            case CANCELLED:
-                return false;
-            default:
-                return false;
         }
     }
 }

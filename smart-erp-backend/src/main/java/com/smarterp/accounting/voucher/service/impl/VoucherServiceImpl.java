@@ -45,11 +45,14 @@ public class VoucherServiceImpl implements VoucherService {
     private final LedgerRepository ledgerRepository;
     private final ApplicationEventPublisher eventPublisher;
 
+    private final com.smarterp.accounting.voucher.validator.VoucherValidator voucherValidator;
+    private final com.smarterp.accounting.voucher.mapper.VoucherMapper voucherMapper;
+
     @Override
     @CacheEvict(value = "dashboard", key = "#company.id")
     public VoucherResponse createVoucher(VoucherRequest request, Company company, String userEmail) {
         log.info("Creating accounting voucher type {} for company {}", request.getVoucherType(), company.getId());
-        validateRequest(request, company);
+        voucherValidator.validateRequest(request, company);
 
         String voucherNum = generateVoucherNumber(company, request.getVoucherType());
         VoucherStatus initialStatus = request.getStatus() != null ? request.getStatus() : VoucherStatus.DRAFT;
@@ -73,7 +76,7 @@ public class VoucherServiceImpl implements VoucherService {
             eventPublisher.publishEvent(new VoucherApprovedEvent(this, saved.getId(), company.getId()));
         }
 
-        return mapToResponse(saved);
+        return voucherMapper.mapToResponse(saved);
     }
 
     @Override
@@ -88,7 +91,7 @@ public class VoucherServiceImpl implements VoucherService {
             throw new BusinessValidationException("Approved accounting vouchers cannot be modified.");
         }
 
-        validateRequest(request, company);
+        voucherValidator.validateRequest(request, company);
 
         VoucherStatus oldStatus = voucher.getStatus();
         VoucherStatus newStatus = request.getStatus() != null ? request.getStatus() : VoucherStatus.DRAFT;
@@ -107,7 +110,7 @@ public class VoucherServiceImpl implements VoucherService {
             eventPublisher.publishEvent(new VoucherApprovedEvent(this, saved.getId(), company.getId()));
         }
 
-        return mapToResponse(saved);
+        return voucherMapper.mapToResponse(saved);
     }
 
     @Override
@@ -116,7 +119,7 @@ public class VoucherServiceImpl implements VoucherService {
         Voucher voucher = repository.findById(id)
                 .filter(v -> v.getCompany().getId().equals(company.getId()))
                 .orElseThrow(() -> new ResourceNotFoundException("Voucher not found."));
-        return mapToResponse(voucher);
+        return voucherMapper.mapToResponse(voucher);
     }
 
     @Override
@@ -129,10 +132,10 @@ public class VoucherServiceImpl implements VoucherService {
 
         VoucherStatus oldStatus = voucher.getStatus();
         if (oldStatus == status) {
-            return mapToResponse(voucher);
+            return voucherMapper.mapToResponse(voucher);
         }
 
-        if (!canTransition(oldStatus, status)) {
+        if (!voucherValidator.canTransition(oldStatus, status)) {
             throw new BusinessValidationException("Invalid status transition from " + oldStatus + " to " + status + ".");
         }
 
@@ -143,7 +146,7 @@ public class VoucherServiceImpl implements VoucherService {
             eventPublisher.publishEvent(new VoucherApprovedEvent(this, saved.getId(), company.getId()));
         }
 
-        return mapToResponse(saved);
+        return voucherMapper.mapToResponse(saved);
     }
 
     @Override
@@ -178,7 +181,7 @@ public class VoucherServiceImpl implements VoucherService {
             return cb.and(predicates.toArray(new Predicate[0]));
         };
 
-        return repository.findAll(spec, pageable).map(this::mapToSummaryResponse);
+        return repository.findAll(spec, pageable).map(voucherMapper::mapToSummaryResponse);
     }
 
     @Override
@@ -195,38 +198,13 @@ public class VoucherServiceImpl implements VoucherService {
         repository.delete(voucher);
     }
 
-    private void validateRequest(VoucherRequest request, Company company) {
-        if (request.getLineItems() == null || request.getLineItems().size() < 2) {
-            throw new BusinessValidationException("A voucher must contain at least 2 ledger entries.");
-        }
-
-        BigDecimal debitTotal = BigDecimal.ZERO;
-        BigDecimal creditTotal = BigDecimal.ZERO;
-
-        for (VoucherLineRequest line : request.getLineItems()) {
-            if (line.getLedgerId() == null) {
-                throw new BusinessValidationException("Ledger ID is required on all lines.");
-            }
-            if (line.getAmount() == null || line.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
-                throw new BusinessValidationException("Voucher amount must be positive and greater than zero.");
-            }
-            if ("DEBIT".equalsIgnoreCase(line.getEntryType())) {
-                debitTotal = debitTotal.add(line.getAmount());
-            } else if ("CREDIT".equalsIgnoreCase(line.getEntryType())) {
-                creditTotal = creditTotal.add(line.getAmount());
-            } else {
-                throw new BusinessValidationException("Entry type must be either 'DEBIT' or 'CREDIT'.");
-            }
-        }
-
-        if (debitTotal.compareTo(creditTotal) != 0) {
-            throw new BusinessValidationException("Double-entry equation mismatch! Total debits (" + debitTotal + 
-                    ") must equal total credits (" + creditTotal + ").");
-        }
+    @Override
+    public String generateVoucherNo(Company company, VoucherType type) {
+        return generateVoucherNumber(company, type);
     }
 
-    private void populateLineItems(Voucher voucher, List<VoucherLineRequest> lines, Company company) {
-        for (VoucherLineRequest req : lines) {
+    private void populateLineItems(Voucher voucher, List<VoucherLineRequest> requests, Company company) {
+        for (VoucherLineRequest req : requests) {
             Ledger ledger = ledgerRepository.findById(req.getLedgerId())
                     .filter(l -> l.getCompany().getId().equals(company.getId()))
                     .orElseThrow(() -> new ResourceNotFoundException("Ledger not found."));
@@ -265,59 +243,5 @@ public class VoucherServiceImpl implements VoucherService {
         }
 
         return String.format("%s-%d-%06d", typePrefix, currentYear, nextVal);
-    }
-
-    private VoucherResponse mapToSummaryResponse(Voucher v) {
-        return VoucherResponse.builder()
-                .id(v.getId())
-                .voucherNumber(v.getVoucherNumber())
-                .voucherDate(v.getVoucherDate())
-                .voucherType(v.getVoucherType())
-                .status(v.getStatus())
-                .narration(v.getNarration())
-                .lineItems(null)
-                .createdBy(v.getCreatedBy())
-                .createdAt(v.getCreatedAt())
-                .build();
-    }
-
-    private VoucherResponse mapToResponse(Voucher v) {
-        List<VoucherLineResponse> lines = v.getLineItems().stream()
-                .map(line -> VoucherLineResponse.builder()
-                        .id(line.getId())
-                        .ledgerId(line.getLedger().getId())
-                        .ledgerName(line.getLedger().getName())
-                        .ledgerCode(line.getLedger().getName()) // Using name as code for representation or actual code if available
-                        .amount(line.getAmount())
-                        .entryType(line.getEntryType())
-                        .build())
-                .collect(Collectors.toList());
-
-        return VoucherResponse.builder()
-                .id(v.getId())
-                .voucherNumber(v.getVoucherNumber())
-                .voucherDate(v.getVoucherDate())
-                .voucherType(v.getVoucherType())
-                .status(v.getStatus())
-                .narration(v.getNarration())
-                .lineItems(lines)
-                .createdBy(v.getCreatedBy())
-                .createdAt(v.getCreatedAt())
-                .build();
-    }
-    @Override
-    public String generateVoucherNo(Company company, VoucherType type) {
-        return generateVoucherNumber(company, type);
-    }
-
-    private boolean canTransition(VoucherStatus current, VoucherStatus target) {
-        if (current == target) return true;
-        if (current == VoucherStatus.DRAFT) {
-            return target == VoucherStatus.APPROVED || target == VoucherStatus.CANCELLED;
-        }
-        if (current == VoucherStatus.APPROVED) {
-            return target == VoucherStatus.CANCELLED;
-        }
-        return false;
     }
 }

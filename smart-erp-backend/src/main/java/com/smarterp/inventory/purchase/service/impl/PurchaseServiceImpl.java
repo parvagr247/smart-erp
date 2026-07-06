@@ -46,17 +46,19 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     private final PurchaseRepository purchaseRepository;
     private final PartnerRepository partnerRepository;
-    private final StockItemRepository stockItemRepository;
     private final WarehouseRepository warehouseRepository;
-    private final TaxCalculator taxCalculator;
     private final ApplicationEventPublisher eventPublisher;
     private final com.smarterp.common.audit.AuditLogService auditLogService;
+
+    private final com.smarterp.inventory.purchase.validator.PurchaseValidator purchaseValidator;
+    private final com.smarterp.inventory.purchase.mapper.PurchaseMapper purchaseMapper;
+    private final com.smarterp.inventory.purchase.service.PurchaseCalculationService purchaseCalculationService;
 
     @Override
     @CacheEvict(value = "dashboard", key = "#company.id")
     public PurchaseResponse createPurchase(PurchaseRequest request, Company company, String userEmail) {
         log.info("Creating purchase transaction for company {}", company.getId());
-        validateRequest(request, company);
+        purchaseValidator.validateRequest(request, company);
 
         BusinessPartner supplier = partnerRepository.findById(request.getSupplierId())
                 .filter(p -> p.getCompany().getId().equals(company.getId()))
@@ -82,7 +84,7 @@ public class PurchaseServiceImpl implements PurchaseService {
                 .attachments(request.getAttachments())
                 .build();
 
-        calculateTaxesAndTotals(purchase, request.getLineItems(), request.getInvoiceDiscountAmount(), request.getIsTaxInclusive(), company);
+        purchaseCalculationService.calculateTaxesAndTotals(purchase, request.getLineItems(), request.getInvoiceDiscountAmount(), request.getIsTaxInclusive(), company);
 
         Purchase saved = purchaseRepository.save(purchase);
 
@@ -92,7 +94,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         // Publish Lifecycle domain events if posted/approved immediately
         publishPurchaseLifecycleEvents(saved, company.getId(), userEmail, PurchaseStatus.DRAFT);
 
-        return mapToResponse(saved);
+        return purchaseMapper.mapToResponse(saved);
     }
 
     @Override
@@ -107,7 +109,7 @@ public class PurchaseServiceImpl implements PurchaseService {
             throw new BusinessValidationException("Approved or Completed purchase transactions cannot be modified.");
         }
 
-        validateRequest(request, company);
+        purchaseValidator.validateRequest(request, company);
 
         BusinessPartner supplier = partnerRepository.findById(request.getSupplierId())
                 .filter(p -> p.getCompany().getId().equals(company.getId()))
@@ -130,13 +132,13 @@ public class PurchaseServiceImpl implements PurchaseService {
         purchase.setStatus(newStatus);
 
         purchase.getLineItems().clear();
-        calculateTaxesAndTotals(purchase, request.getLineItems(), request.getInvoiceDiscountAmount(), request.getIsTaxInclusive(), company);
+        purchaseCalculationService.calculateTaxesAndTotals(purchase, request.getLineItems(), request.getInvoiceDiscountAmount(), request.getIsTaxInclusive(), company);
 
         Purchase saved = purchaseRepository.save(purchase);
 
         publishPurchaseLifecycleEvents(saved, company.getId(), userEmail, oldStatus);
 
-        return mapToResponse(saved);
+        return purchaseMapper.mapToResponse(saved);
     }
 
     @Override
@@ -145,7 +147,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         Purchase purchase = purchaseRepository.findById(id)
                 .filter(p -> p.getCompany().getId().equals(company.getId()))
                 .orElseThrow(() -> new ResourceNotFoundException("Purchase voucher not found."));
-        return mapToResponse(purchase);
+        return purchaseMapper.mapToResponse(purchase);
     }
 
     @Override
@@ -158,10 +160,10 @@ public class PurchaseServiceImpl implements PurchaseService {
 
         PurchaseStatus oldStatus = purchase.getStatus();
         if (oldStatus == status) {
-            return mapToResponse(purchase);
+            return purchaseMapper.mapToResponse(purchase);
         }
 
-        if (!canTransition(oldStatus, status)) {
+        if (!purchaseValidator.canTransition(oldStatus, status)) {
             throw new BusinessValidationException("Invalid status transition from " + oldStatus + " to " + status + ".");
         }
 
@@ -170,7 +172,7 @@ public class PurchaseServiceImpl implements PurchaseService {
 
         publishPurchaseLifecycleEvents(saved, company.getId(), userEmail, oldStatus);
 
-        return mapToResponse(saved);
+        return purchaseMapper.mapToResponse(saved);
     }
 
     @Override
@@ -219,7 +221,7 @@ public class PurchaseServiceImpl implements PurchaseService {
 
         Page<Purchase> page = purchaseRepository.findAll(spec, pageable);
         List<PurchaseResponse> dtoList = page.getContent().stream()
-                .map(this::mapToSummaryResponse)
+                .map(purchaseMapper::mapToSummaryResponse)
                 .collect(Collectors.toList());
 
         return new PageImpl<>(dtoList, pageable, page.getTotalElements());
@@ -240,24 +242,6 @@ public class PurchaseServiceImpl implements PurchaseService {
         purchaseRepository.delete(purchase);
     }
 
-    private void validateRequest(PurchaseRequest request, Company company) {
-        if (request.getSupplierId() == null) throw new BusinessValidationException("Supplier is required.");
-        if (request.getWarehouseId() == null) throw new BusinessValidationException("Primary warehouse is required.");
-        if (request.getLineItems() == null || request.getLineItems().isEmpty()) {
-            throw new BusinessValidationException("Purchase voucher must contain at least one item line.");
-        }
-
-        for (PurchaseLineRequest line : request.getLineItems()) {
-            if (line.getStockItemId() == null) throw new BusinessValidationException("Stock item ID is required on all lines.");
-            if (line.getQuantity() == null || line.getQuantity().compareTo(BigDecimal.ZERO) <= 0) {
-                throw new BusinessValidationException("Quantity must be greater than zero.");
-            }
-            if (line.getRate() == null || line.getRate().compareTo(BigDecimal.ZERO) <= 0) {
-                throw new BusinessValidationException("Rate must be greater than zero.");
-            }
-        }
-    }
-
     private String generatePurchaseNumber(Company company) {
         int currentYear = LocalDate.now().getYear();
         String prefix = "PUR-" + currentYear + "-%";
@@ -276,197 +260,11 @@ public class PurchaseServiceImpl implements PurchaseService {
         return String.format("PUR-%d-%06d", currentYear, nextVal);
     }
 
-    private void calculateTaxesAndTotals(
-            Purchase purchase,
-            List<PurchaseLineRequest> requests,
-            BigDecimal invoiceDiscount,
-            Boolean isTaxInclusive,
-            Company company) {
-
-        BigDecimal totalGross = BigDecimal.ZERO;
-        BigDecimal totalLineDiscounts = BigDecimal.ZERO;
-        BigDecimal totalTaxAmount = BigDecimal.ZERO;
-        BigDecimal totalCgst = BigDecimal.ZERO;
-        BigDecimal totalSgst = BigDecimal.ZERO;
-        BigDecimal totalIgst = BigDecimal.ZERO;
-        BigDecimal totalCess = BigDecimal.ZERO;
-
-        boolean isIntraState = determineIntraState(purchase.getSupplier(), company);
-        boolean inclusive = isTaxInclusive != null && isTaxInclusive;
-
-        for (PurchaseLineRequest req : requests) {
-            StockItem item = stockItemRepository.findById(req.getStockItemId())
-                    .filter(i -> i.getCompany().getId().equals(company.getId()))
-                    .orElseThrow(() -> new ResourceNotFoundException("Stock item not found."));
-
-            Warehouse lineWh = purchase.getWarehouse();
-            if (req.getWarehouseId() != null) {
-                lineWh = warehouseRepository.findById(req.getWarehouseId())
-                        .orElse(purchase.getWarehouse());
-            }
-
-            BigDecimal qty = req.getQuantity();
-            BigDecimal rate = req.getRate();
-            BigDecimal lineDiscount = req.getDiscount() != null ? req.getDiscount() : BigDecimal.ZERO;
-
-            TaxCalculator.TaxCalculationResult taxResult = taxCalculator.calculateTax(
-                    item, qty, rate, lineDiscount, inclusive, isIntraState
-            );
-
-            BigDecimal lineTotal = taxResult.taxableAmount.add(taxResult.taxAmount).add(taxResult.cess);
-
-            PurchaseLine line = PurchaseLine.builder()
-                    .stockItem(item)
-                    .quantity(qty)
-                    .rate(rate)
-                    .discount(lineDiscount)
-                    .taxPercentage(item.getTaxCategory() != null ? item.getTaxCategory().getGstRate() : BigDecimal.ZERO)
-                    .taxAmount(taxResult.taxAmount)
-                    .totalAmount(lineTotal)
-                    .warehouse(lineWh)
-                    .batchNumber(req.getBatchNumber())
-                    .build();
-
-            purchase.addLineItem(line);
-
-            totalGross = totalGross.add(qty.multiply(rate));
-            totalLineDiscounts = totalLineDiscounts.add(lineDiscount);
-            totalTaxAmount = totalTaxAmount.add(taxResult.taxAmount);
-            totalCgst = totalCgst.add(taxResult.cgst);
-            totalSgst = totalSgst.add(taxResult.sgst);
-            totalIgst = totalIgst.add(taxResult.igst);
-            totalCess = totalCess.add(taxResult.cess);
-        }
-
-        BigDecimal netTotal = totalGross.subtract(totalLineDiscounts).add(totalTaxAmount).add(totalCess);
-        BigDecimal invDisc = invoiceDiscount != null ? invoiceDiscount : BigDecimal.ZERO;
-        netTotal = netTotal.subtract(invDisc);
-
-        BigDecimal rounded = netTotal.setScale(0, RoundingMode.HALF_UP);
-        BigDecimal roundOff = rounded.subtract(netTotal);
-
-        purchase.setGrossAmount(totalGross);
-        purchase.setDiscountAmount(totalLineDiscounts.add(invDisc));
-        purchase.setTaxAmount(totalTaxAmount);
-        purchase.setCgst(totalCgst);
-        purchase.setSgst(totalSgst);
-        purchase.setIgst(totalIgst);
-        purchase.setCess(totalCess);
-        purchase.setRoundOff(roundOff);
-        purchase.setGrandTotal(rounded);
-    }
-
-    private boolean determineIntraState(BusinessPartner supplier, Company company) {
-        String compState = company.getState() != null ? company.getState().trim().toLowerCase() : "";
-        String suppState = "";
-        if (supplier.getAddresses() != null && !supplier.getAddresses().isEmpty()) {
-            suppState = supplier.getAddresses().stream()
-                    .filter(a -> "BILLING".equalsIgnoreCase(a.getAddressType()))
-                    .findFirst()
-                    .orElse(supplier.getAddresses().get(0))
-                    .getState();
-        }
-        if (suppState == null) suppState = "";
-        suppState = suppState.trim().toLowerCase();
-
-        return compState.isEmpty() || suppState.isEmpty() || compState.equalsIgnoreCase(suppState);
-    }
-
     private void publishPurchaseLifecycleEvents(Purchase purchase, UUID companyId, String performedBy, PurchaseStatus oldStatus) {
         if (oldStatus == PurchaseStatus.DRAFT) {
             if (purchase.getStatus() == PurchaseStatus.APPROVED) {
                 eventPublisher.publishEvent(new PurchaseApprovedEvent(this, purchase.getId(), companyId, performedBy));
             }
-        }
-    }
-
-    private PurchaseResponse mapToSummaryResponse(Purchase purchase) {
-        return PurchaseResponse.builder()
-                .id(purchase.getId())
-                .purchaseNumber(purchase.getPurchaseNumber())
-                .purchaseDate(purchase.getPurchaseDate())
-                .dueDate(purchase.getDueDate())
-                .paymentTerms(purchase.getPaymentTerms())
-                .supplierId(purchase.getSupplier().getId())
-                .supplierName(purchase.getSupplier().getName())
-                .warehouseId(purchase.getWarehouse().getId())
-                .warehouseName(purchase.getWarehouse().getName())
-                .status(purchase.getStatus())
-                .grossAmount(purchase.getGrossAmount())
-                .discountAmount(purchase.getDiscountAmount())
-                .taxAmount(purchase.getTaxAmount())
-                .cgst(purchase.getCgst())
-                .sgst(purchase.getSgst())
-                .igst(purchase.getIgst())
-                .cess(purchase.getCess())
-                .roundOff(purchase.getRoundOff())
-                .grandTotal(purchase.getGrandTotal())
-                .notes(purchase.getNotes())
-                .attachments(purchase.getAttachments())
-                .createdBy(purchase.getCreatedBy())
-                .lineItems(null)
-                .build();
-    }
-
-    private PurchaseResponse mapToResponse(Purchase purchase) {
-        List<PurchaseLineResponse> lines = purchase.getLineItems().stream()
-                .map(line -> PurchaseLineResponse.builder()
-                        .id(line.getId())
-                        .stockItemId(line.getStockItem().getId())
-                        .stockItemName(line.getStockItem().getName())
-                        .sku(line.getStockItem().getSku())
-                        .quantity(line.getQuantity())
-                        .rate(line.getRate())
-                        .discount(line.getDiscount())
-                        .taxPercentage(line.getTaxPercentage())
-                        .taxAmount(line.getTaxAmount())
-                        .totalAmount(line.getTotalAmount())
-                        .warehouseId(line.getWarehouse() != null ? line.getWarehouse().getId() : null)
-                        .warehouseName(line.getWarehouse() != null ? line.getWarehouse().getName() : "")
-                        .batchNumber(line.getBatchNumber())
-                        .build())
-                .collect(Collectors.toList());
-
-        return PurchaseResponse.builder()
-                .id(purchase.getId())
-                .purchaseNumber(purchase.getPurchaseNumber())
-                .purchaseDate(purchase.getPurchaseDate())
-                .dueDate(purchase.getDueDate())
-                .paymentTerms(purchase.getPaymentTerms())
-                .supplierId(purchase.getSupplier().getId())
-                .supplierName(purchase.getSupplier().getName())
-                .warehouseId(purchase.getWarehouse().getId())
-                .warehouseName(purchase.getWarehouse().getName())
-                .status(purchase.getStatus())
-                .grossAmount(purchase.getGrossAmount())
-                .discountAmount(purchase.getDiscountAmount())
-                .taxAmount(purchase.getTaxAmount())
-                .cgst(purchase.getCgst())
-                .sgst(purchase.getSgst())
-                .igst(purchase.getIgst())
-                .cess(purchase.getCess())
-                .roundOff(purchase.getRoundOff())
-                .grandTotal(purchase.getGrandTotal())
-                .notes(purchase.getNotes())
-                .attachments(purchase.getAttachments())
-                .createdBy(purchase.getCreatedBy())
-                .lineItems(lines)
-                .build();
-    }
-    private boolean canTransition(PurchaseStatus current, PurchaseStatus target) {
-        if (current == target) return true;
-        switch (current) {
-            case DRAFT:
-                return target == PurchaseStatus.APPROVED || target == PurchaseStatus.CANCELLED;
-            case APPROVED:
-                return target == PurchaseStatus.RECEIVED || target == PurchaseStatus.COMPLETED || target == PurchaseStatus.CANCELLED;
-            case RECEIVED:
-                return target == PurchaseStatus.COMPLETED || target == PurchaseStatus.CANCELLED;
-            case COMPLETED:
-            case CANCELLED:
-                return false;
-            default:
-                return false;
         }
     }
 }
