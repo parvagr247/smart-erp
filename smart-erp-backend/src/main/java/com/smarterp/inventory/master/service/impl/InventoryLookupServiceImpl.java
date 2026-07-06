@@ -16,6 +16,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
+import com.smarterp.common.aop.annotations.AuditOperation;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -29,7 +31,6 @@ public class InventoryLookupServiceImpl implements InventoryLookupService {
     private final WarehouseRepository warehouseRepository;
     private final TaxCategoryRepository taxCategoryRepository;
     private final HsnRepository hsnRepository;
-    private final com.smarterp.common.audit.AuditLogService auditLogService;
 
     // ==========================================================================
     // Brands
@@ -203,6 +204,7 @@ public class InventoryLookupServiceImpl implements InventoryLookupService {
 
     @Override
     @CacheEvict(value = "warehouses", key = "#company.id")
+    @AuditOperation(action = "CREATED", entityType = "Warehouse", details = "'Warehouse ' + #result.name + ' registered.'")
     public Warehouse createWarehouse(WarehouseRequest request, Company company) {
         if (warehouseRepository.existsByCompanyAndCode(company, request.getCode().trim().toUpperCase())) {
             throw new BusinessValidationException("Warehouse code already exists.");
@@ -216,7 +218,6 @@ public class InventoryLookupServiceImpl implements InventoryLookupService {
                 .build();
 
         Warehouse saved = warehouseRepository.save(wh);
-        auditLogService.saveLog(company.getId(), "Warehouse", saved.getId(), "CREATED", "Warehouse " + saved.getName() + " registered.");
         return saved;
     }
 

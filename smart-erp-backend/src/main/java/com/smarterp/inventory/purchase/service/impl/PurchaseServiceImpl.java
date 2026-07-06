@@ -18,6 +18,7 @@ import com.smarterp.inventory.purchase.event.PurchaseApprovedEvent;
 import com.smarterp.inventory.purchase.repository.PurchaseRepository;
 import com.smarterp.inventory.purchase.service.PurchaseService;
 import com.smarterp.inventory.purchase.domain.TaxCalculator;
+import com.smarterp.common.aop.annotations.AuditOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -46,7 +47,6 @@ public class PurchaseServiceImpl implements PurchaseService {
     private final PartnerService partnerService;
     private final InventoryLookupService inventoryLookupService;
     private final ApplicationEventPublisher eventPublisher;
-    private final com.smarterp.common.audit.AuditLogService auditLogService;
 
     private final com.smarterp.inventory.purchase.validator.PurchaseValidator purchaseValidator;
     private final com.smarterp.inventory.purchase.mapper.PurchaseMapper purchaseMapper;
@@ -54,6 +54,7 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     @Override
     @CacheEvict(value = "dashboard", key = "#company.id")
+    @AuditOperation(action = "CREATED", entityType = "Purchase", details = "'Purchase Voucher ' + #result.purchaseNumber + ' recorded.'")
     public PurchaseResponse createPurchase(PurchaseRequest request, Company company, String userEmail) {
         log.info("Creating purchase transaction for company {}", company.getId());
         purchaseValidator.validateRequest(request, company);
@@ -80,9 +81,6 @@ public class PurchaseServiceImpl implements PurchaseService {
         purchaseCalculationService.calculateTaxesAndTotals(purchase, request.getLineItems(), request.getInvoiceDiscountAmount(), request.getIsTaxInclusive(), company);
 
         Purchase saved = purchaseRepository.save(purchase);
-
-        auditLogService.saveLog(company.getId(), "Purchase", saved.getId(), "CREATED", 
-                "Purchase Voucher created. Supplier: " + saved.getSupplier().getName() + " | Grand Total: " + saved.getGrandTotal());
 
         // Publish Lifecycle domain events if posted/approved immediately
         publishPurchaseLifecycleEvents(saved, company.getId(), userEmail, PurchaseStatus.DRAFT);

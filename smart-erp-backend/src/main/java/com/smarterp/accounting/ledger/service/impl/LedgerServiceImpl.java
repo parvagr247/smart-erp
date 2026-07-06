@@ -13,7 +13,7 @@ import com.smarterp.accounting.ledger.repository.LedgerRepository;
 import com.smarterp.accounting.ledger.service.LedgerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import com.smarterp.common.audit.AuditLogService;
+import com.smarterp.common.aop.annotations.AuditOperation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.cache.annotation.CacheEvict;
@@ -31,10 +31,10 @@ public class LedgerServiceImpl implements LedgerService {
 
     private final LedgerRepository repository;
     private final AccountGroupRepository groupRepository;
-    private final AuditLogService auditLogService;
 
     @Override
     @CacheEvict(value = "dashboard", key = "#company.id")
+    @AuditOperation(action = "CREATED", entityType = "Ledger", details = "'Ledger account created.'")
     public LedgerResponse createLedger(LedgerRequest request, Company company) {
         AccountGroup group = groupRepository.findById(request.getGroupId())
                 .orElseThrow(() -> new ResourceNotFoundException("Account group not found with ID: " + request.getGroupId()));
@@ -44,8 +44,6 @@ public class LedgerServiceImpl implements LedgerService {
         Ledger ledger = request.toEntity(company, group);
         Ledger savedLedger = repository.save(ledger);
 
-        auditLogService.saveLog(company.getId(), "Ledger", savedLedger.getId(), "CREATED", "Ledger account created.");
-
         return LedgerResponse.fromEntity(savedLedger);
     }
 
@@ -54,6 +52,7 @@ public class LedgerServiceImpl implements LedgerService {
         @CacheEvict(value = "ledgers", key = "#company.id + '-' + #id"),
         @CacheEvict(value = "dashboard", key = "#company.id")
     })
+    @AuditOperation(action = "UPDATED", entityType = "Ledger", details = "'Ledger account parameters updated.'")
     public LedgerResponse updateLedger(UUID id, LedgerRequest request, Company company) {
         Ledger ledger = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ledger not found with ID: " + id));
@@ -70,8 +69,6 @@ public class LedgerServiceImpl implements LedgerService {
 
         Ledger updatedLedger = repository.save(ledger);
 
-        auditLogService.saveLog(company.getId(), "Ledger", updatedLedger.getId(), "UPDATED", "Ledger account parameters updated.");
-
         return LedgerResponse.fromEntity(updatedLedger);
     }
 
@@ -80,6 +77,7 @@ public class LedgerServiceImpl implements LedgerService {
         @CacheEvict(value = "ledgers", key = "#company.id + '-' + #id"),
         @CacheEvict(value = "dashboard", key = "#company.id")
     })
+    @AuditOperation(action = "DELETED", entityType = "Ledger", details = "'Ledger account deleted.'", entityId = "#id")
     public void deleteLedger(UUID id, Company company) {
         Ledger ledger = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ledger not found with ID: " + id));
@@ -89,7 +87,6 @@ public class LedgerServiceImpl implements LedgerService {
         }
 
         repository.delete(ledger);
-        auditLogService.saveLog(company.getId(), "Ledger", id, "DELETED", "Ledger account deleted.");
     }
 
     @Override

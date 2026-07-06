@@ -18,6 +18,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import com.smarterp.common.aop.annotations.AuditOperation;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
@@ -38,11 +39,11 @@ public class StockItemServiceImpl implements StockItemService {
     private final UnitRepository unitRepository;
     private final TaxCategoryRepository taxCategoryRepository;
     private final HsnRepository hsnRepository;
-    private final com.smarterp.common.audit.AuditLogService auditLogService;
     private final InventoryTransactionRepository inventoryTransactionRepository;
 
     @Override
     @CacheEvict(value = "dashboard", key = "#company.id")
+    @AuditOperation(action = "CREATED", entityType = "StockItem", details = "'Stock Item ' + #result.name + ' onboarded.'")
     public StockItemResponse createItem(StockItemRequest request, Company company) {
         log.info("Creating stock item {} under company {}", request.getName(), company.getId());
         validateCreate(company, request);
@@ -65,8 +66,6 @@ public class StockItemServiceImpl implements StockItemService {
         item.setCurrentQuantity(item.getOpeningQuantity() != null ? item.getOpeningQuantity() : java.math.BigDecimal.ZERO);
         StockItem savedItem = repository.save(item);
 
-        auditLogService.saveLog(company.getId(), "StockItem", savedItem.getId(), "CREATED", "Stock Item " + savedItem.getName() + " onboarded.");
-
         return StockItemResponse.fromEntity(savedItem);
     }
 
@@ -75,6 +74,7 @@ public class StockItemServiceImpl implements StockItemService {
         @CacheEvict(value = "stock-items", key = "#company.id + '-' + #id"),
         @CacheEvict(value = "dashboard", key = "#company.id")
     })
+    @AuditOperation(action = "ADJUSTED", entityType = "StockItem", details = "'Stock quantity adjusted for ' + #result.name + '. Old Qty: ' + #oldQty + ', New Qty: ' + #result.currentQuantity + '. Reason: Manual Stock adjustment / edit'", condition = "#oldQty != null && T(java.lang.Double).valueOf(#oldQty) != #result.currentQuantity.doubleValue()")
     public StockItemResponse updateItem(UUID id, StockItemRequest request, Company company) {
         log.info("Updating stock item {} under company {}", id, company.getId());
         StockItem item = repository.findById(id)
@@ -102,14 +102,6 @@ public class StockItemServiceImpl implements StockItemService {
         request.updateEntity(item, brand, manufacturer, stockGroup, primaryUnit, secondaryUnit, warehouse, taxCategory, hsn, categories);
         StockItem savedItem = repository.save(item);
         
-        BigDecimal newQty = savedItem.getCurrentQuantity() != null ? savedItem.getCurrentQuantity() : BigDecimal.ZERO;
-        
-        if (oldQty.compareTo(newQty) != 0) {
-            auditLogService.saveLog(company.getId(), "StockItem", savedItem.getId(), "ADJUSTED", 
-                "Stock quantity adjusted for " + savedItem.getName() + ". Old Qty: " + oldQty + ", New Qty: " + newQty + ". Reason: Manual Stock adjustment / edit"
-            );
-        }
-
         return StockItemResponse.fromEntity(savedItem);
     }
 

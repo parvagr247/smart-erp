@@ -3,7 +3,7 @@ package com.smarterp.inventory.partner.service.impl;
 import com.smarterp.administration.company.entity.Company;
 import com.smarterp.common.exception.ResourceNotFoundException;
 import com.smarterp.common.exception.BusinessValidationException;
-import com.smarterp.common.audit.AuditLogService;
+import com.smarterp.common.aop.annotations.AuditOperation;
 import com.smarterp.inventory.partner.dto.PartnerRequest;
 import com.smarterp.inventory.partner.dto.PartnerResponse;
 import com.smarterp.inventory.partner.dto.PartnerSummaryResponse;
@@ -34,7 +34,6 @@ import java.util.regex.Pattern;
 public class PartnerServiceImpl implements PartnerService {
 
     private final PartnerRepository repository;
-    private final AuditLogService auditLogService;
 
     private static final Pattern GST_PATTERN = Pattern.compile("^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$");
     private static final Pattern PAN_PATTERN = Pattern.compile("^[A-Z]{5}[0-9]{4}[A-Z]{1}$");
@@ -42,6 +41,7 @@ public class PartnerServiceImpl implements PartnerService {
 
     @Override
     @CacheEvict(value = "dashboard", key = "#company.id")
+    @AuditOperation(action = "CREATED", entityType = "BusinessPartner", details = "'Business Partner onboarded.'")
     public PartnerResponse createPartner(PartnerRequest request, Company company) {
         log.info("Creating business partner {} for company {}", request.getName(), company.getId());
         validateCreate(company, request);
@@ -49,7 +49,6 @@ public class PartnerServiceImpl implements PartnerService {
         BusinessPartner partner = request.toEntity(company);
         BusinessPartner savedPartner = repository.save(partner);
 
-        auditLogService.saveLog(company.getId(), "BusinessPartner", savedPartner.getId(), "CREATED", "Business Partner onboarded.");
         return PartnerResponse.fromEntity(savedPartner);
     }
 
@@ -58,6 +57,7 @@ public class PartnerServiceImpl implements PartnerService {
         @CacheEvict(value = "partners", key = "#company.id + '-' + #id"),
         @CacheEvict(value = "dashboard", key = "#company.id")
     })
+    @AuditOperation(action = "UPDATED", entityType = "BusinessPartner", details = "'Business Partner profile updated.'")
     public PartnerResponse updatePartner(UUID id, PartnerRequest request, Company company) {
         log.info("Updating business partner {} in company {}", id, company.getId());
         BusinessPartner partner = repository.findById(id)
@@ -68,7 +68,6 @@ public class PartnerServiceImpl implements PartnerService {
         request.updateEntity(partner);
 
         BusinessPartner savedPartner = repository.save(partner);
-        auditLogService.saveLog(company.getId(), "BusinessPartner", savedPartner.getId(), "UPDATED", "Business Partner profile updated.");
         return PartnerResponse.fromEntity(savedPartner);
     }
 
@@ -89,6 +88,7 @@ public class PartnerServiceImpl implements PartnerService {
         @CacheEvict(value = "partners", key = "#company.id + '-' + #id"),
         @CacheEvict(value = "dashboard", key = "#company.id")
     })
+    @AuditOperation(action = "DELETED", entityType = "BusinessPartner", details = "'Business Partner profile deleted.'", entityId = "#id")
     public void deletePartner(UUID id, Company company) {
         log.info("Deleting business partner {} in company {}", id, company.getId());
         BusinessPartner partner = repository.findById(id)
@@ -96,7 +96,6 @@ public class PartnerServiceImpl implements PartnerService {
                 .orElseThrow(() -> new ResourceNotFoundException("Business partner not found."));
 
         repository.delete(partner);
-        auditLogService.saveLog(company.getId(), "BusinessPartner", id, "DELETED", "Business Partner profile deleted.");
     }
 
     @Override
@@ -104,6 +103,11 @@ public class PartnerServiceImpl implements PartnerService {
         @CacheEvict(value = "partners", key = "#company.id + '-' + #id"),
         @CacheEvict(value = "dashboard", key = "#company.id")
     })
+    @AuditOperation(
+        action = "#status == T(com.smarterp.inventory.partner.entity.PartnerStatus).BLOCKED ? 'BLOCKED' : 'UPDATED'",
+        entityType = "BusinessPartner",
+        details = "#status == T(com.smarterp.inventory.partner.entity.PartnerStatus).BLOCKED ? 'Business Partner blocked.' : 'Business Partner status set to ' + #status + '.'"
+    )
     public PartnerResponse updatePartnerStatus(UUID id, PartnerStatus status, Company company) {
         log.info("Transitioning business partner {} status to {} in company {}", id, status, company.getId());
         BusinessPartner partner = repository.findById(id)
@@ -114,12 +118,6 @@ public class PartnerServiceImpl implements PartnerService {
         partner.setIsActive(status == PartnerStatus.ACTIVE);
 
         BusinessPartner savedPartner = repository.save(partner);
-
-        if (status == PartnerStatus.BLOCKED) {
-            auditLogService.saveLog(company.getId(), "BusinessPartner", savedPartner.getId(), "BLOCKED", "Business Partner blocked.");
-        } else {
-            auditLogService.saveLog(company.getId(), "BusinessPartner", savedPartner.getId(), "UPDATED", "Business Partner status set to " + status + ".");
-        }
 
         return PartnerResponse.fromEntity(savedPartner);
     }
